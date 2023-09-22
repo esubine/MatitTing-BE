@@ -1,0 +1,28 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: # h2 url ex_): jdbc:h2:tcp://localhost/~/test
+    driver-class-name: org.h2.Driver
+    username: # h2 id
+    password: # h2 password
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+    hibernate:
+      ddl-auto: create
+
+    open-in-view: false
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+        type: trace
