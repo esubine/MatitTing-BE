@@ -20,8 +20,8 @@ public class LogAop {
     public void allRepository() {
     }
 
-    @Around("allController() || allService() || allRepository()")
-    public Object logTrace() {
-        return new Object();
-    }
+//    @Around("allController() || allService() || allRepository()")
+//    public Object logTrace() {
+//        return new Object();
+//    }
 }
