@@ -44,6 +44,6 @@ logging:
         type: trace
 
 kakao:
-  client-id: d5741d35440025fd9b0a7537f7a8aaf8
-  client-secret: nPsWMJBVUzFqFncJGsLQwPB2HdG95e36
+  client-id: #Cliend-id
+  client-secret: #Secret-id 
   redirect-uri: http://localhost:8080/auth/kakao/callback
