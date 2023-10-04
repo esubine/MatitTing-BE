@@ -5,12 +5,14 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.UserRepository;
+import com.kr.matitting.util.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Getter
 @Slf4j
+@Transactional
 
 public class JwtService {
     @Value("${jwt.secret}")
@@ -44,7 +47,7 @@ public class JwtService {
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
-
+    private final RedisUtil redisUtil;
     private final UserRepository userRepository;
 
     /**
@@ -54,8 +57,7 @@ public class JwtService {
         Date now = new Date();
         return JWT.create() //JWT 토큰 생성 빌더 반환
                 .withSubject(ACCESS_TOKEN_SUBJECT) //JWT Subject 지정 -> AccessToken
-                .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod)) //토큰 만료 시간
-                .withClaim("id", user.getId())
+                .withClaim("id", user.getSocialId())
                 .withClaim("role", user.getRole().getKey())
                 .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
@@ -64,10 +66,12 @@ public class JwtService {
     /**
      * RefreshToken 생성
      */
-    public String createRefreshToken() {
+    public String createRefreshToken(User user) {
         Date now = new Date();
         return JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
+                .withClaim("id", user.getSocialId())
+                .withClaim("role", user.getRole().getKey())
                 .withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
     }
@@ -93,18 +97,8 @@ public class JwtService {
         log.info("Access Token, Refresh Token 헤더 설정 완료");
     }
 
-    /**
-     * header에서 AccessToken 추출
-     * 토큰 형식: Bearer XXX에서 순수 Token 값만 추출
-     */
-    public Optional<String> extractAccessToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(accessHeader))
-                .filter(accessToken -> accessToken.startsWith(BEARER))
-                .map(accessToken -> accessToken.replace(BEARER, ""));
-    }
-
-    public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(refreshHeader))
+    public Optional<String> extractToken(HttpServletRequest request) {
+        return Optional.ofNullable(request.getHeader("Authorization"))
                 .filter(refreshToken -> refreshToken.startsWith(BEARER))
                 .map(refreshToken -> refreshToken.replace(BEARER, ""));
     }
@@ -115,18 +109,19 @@ public class JwtService {
 
     /**
      * RefreshToken DB 저장(업데이트)
+     * => redis에 email:refreshToken을 저장
      */
-    @Transactional
-    public void updateRefreshToken(String email, String refreshToken) {
-        userRepository.findByEmail(email)
-                .ifPresentOrElse(
-                        user -> user.updateRefreshToken(refreshToken),
-                        () -> new Exception("일치하는 회원이 없습니다.")
-                );
-    }
 
-    public DecodedJWT isTokenValid(String token) {
-            return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
+    public void updateRefreshToken(String socialId, String refreshToken) {
+        // RDBMS refreshToken
+//        userRepository.findByEmail(email)
+//                .ifPresentOrElse(
+//                        user -> user.updateRefreshToken(refreshToken),
+//                        () -> new Exception("일치하는 회원이 없습니다.")
+//                );
+
+        // Redis refreshToken
+        redisUtil.setDateExpire(socialId, refreshToken, refreshTokenExpirationPeriod);
     }
 
     private void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
@@ -135,15 +130,40 @@ public class JwtService {
     private void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
         response.setHeader(refreshHeader, refreshToken);
     }
+    public DecodedJWT isTokenValid(String token) {
+            return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
+    }
+
 
     public String renewToken(String refreshToken) {
-        // token 이 존재하는지 찾고, 존재한다면 RefreshToken 안의 memberId 를 가져와서 member 를 찾은 후 AccessToken 생성
-        User user = userRepository.findByRefreshToken(refreshToken).orElseThrow(NoSuchElementException::new);
+        //request refreshToken -> User SocialId를 get -> redis refreshToken 유효한지 찾아서 검사
+        DecodedJWT decodedJWT = isTokenValid(refreshToken);
+        String id = decodedJWT.getClaim("id").asString();
+        String role = decodedJWT.getClaim("role").asString();
+
+        String findToken = redisUtil.getData(id);
+
+        if (refreshToken == null) {
+            throw new NoSuchElementException("refreshToken이 유효하지 않습니다.");
+        }
+
+        //TODO: findBySocialTypeAndSocialId을 이용하기 위해서 role -> socialType으로 변경 방법 찾아보기
+        User user = userRepository.findBySocialId(id).orElseThrow(NoSuchElementException::new);
 
         if (user.getId() == null) {
             throw new UsernameNotFoundException("회원을 찾을 수 없습니다.");
         }
         return createAccessToken(user);
+    }
+
+    public Long getExpiration(String accessToken) {
+        // accessToken 남은 유효시간
+        Date expiration = JWT
+                .decode(accessToken)
+                .getExpiresAt();
+        // 현재 시간
+        Long now = new Date().getTime();
+        return (expiration.getTime() - now);
     }
 
 

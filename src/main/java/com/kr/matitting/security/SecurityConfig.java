@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
@@ -35,7 +35,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((request) ->
                         request.requestMatchers("/", "/home").permitAll() //default path
-                                .requestMatchers("/member/signupForm", "/oauth2/signUp", "/loginSuccess").permitAll() //login path
+                                .requestMatchers("/member/signupForm", "/oauth2/signUp", "/loginSuccess", "/oauth2/logout").permitAll() //login path
                                 .requestMatchers("/renew").permitAll() //token path
                                 .requestMatchers("/resources/**").permitAll() //resource path
                                 .anyRequest().authenticated())
@@ -49,8 +49,10 @@ public class SecurityConfig {
                                 .successHandler(oAuth2LoginSuccessHandler)
                                 .failureHandler(oAuth2LoginFailureHandler)
                                 .userInfoEndpoint(userService -> userService.userService(customOAuth2UserService)));
+
         http
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

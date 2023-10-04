@@ -7,6 +7,10 @@ spring:
     suffix: .html
     cache: false
 
+  redis:
+    host: localhost
+    port: 6379
+
   datasource:
     url: # h2 url ex_): jdbc:h2:tcp://localhost/~/test
     driver-class-name: org.h2.Driver
@@ -84,9 +88,10 @@ jwt:
   secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
 
   access:
-    expiration: 8000000
+    expiration: 1800000
     header: Authorization
 
   refresh:
-    expiration: 9000000
+    expiration: 259200000
+
     header: Authorization-refresh
