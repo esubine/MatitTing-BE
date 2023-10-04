@@ -30,7 +30,7 @@ public class User extends BaseTimeEntity{
     private int age; //나이
 
     //프로필 이미지
-    @Column(nullable = true, name = "member_img")
+    @Column(nullable = true, name = "user_img")
     private String imgUrl; //이미지 url
 
     @Column
@@ -41,10 +41,4 @@ public class User extends BaseTimeEntity{
 
     @Enumerated(EnumType.STRING)
     private SocialType socialType; // KAKAO, NAVER, GOOGLE
-
-    private String refreshToken; // 리프레시 토큰
-
-    public void updateRefreshToken(String updateRefreshToken) {
-        this.refreshToken = updateRefreshToken;
-    }
 }

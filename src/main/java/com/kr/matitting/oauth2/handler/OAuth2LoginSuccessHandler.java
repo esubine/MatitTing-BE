@@ -23,13 +23,14 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtService jwtService;
-    private final UserRepository userRepository;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("OAuth2 Login 성공!");
         
         User user = ((CustomOauth2User) authentication.getPrincipal()).getUser();
         String accessToken = jwtService.createAccessToken(user);
+        
+
         
         if (user.getRole().equals(Role.GUEST)) { //신규 유저 -> signUp으로 email, socialType, socialId를 send
             response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
@@ -42,8 +43,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     .toUriString();
             getRedirectStrategy().sendRedirect(request, response, redirectURL);
         } else { //기존 유저 -> refreshToken을 발급하고 update, response에 accessToken, refreshToken을 담아서 send
-            String refreshToken = jwtService.createRefreshToken();
-            jwtService.updateRefreshToken(user.getEmail(), refreshToken);
+            String refreshToken = jwtService.createRefreshToken(user);
+            jwtService.updateRefreshToken(user.getSocialId(), refreshToken);
 
             response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
             response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);

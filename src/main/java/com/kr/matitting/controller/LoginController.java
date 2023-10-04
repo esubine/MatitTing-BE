@@ -5,7 +5,6 @@ import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,7 +13,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -27,7 +25,7 @@ public class LoginController {
 
     @GetMapping(value = "/home")
     public String home() {
-        return "/new/home";
+        return "/home";
     }
 
     // OAuth2 로그인 시 최초 로그인인 경우 회원가입 진행, 필요한 정보를 쿼리 파라미터로 받는다
@@ -42,9 +40,6 @@ public class LoginController {
         userInfo.put("socialType", socialType);
         userInfo.put("socialId", socialId);
         return ResponseEntity.ok().body(userInfo);
-
-        //thymeleaf test
-//        return "/member/signupForm";
     }
 
     @PostMapping("/oauth2/signUp")
@@ -60,16 +55,19 @@ public class LoginController {
     @GetMapping("/loginSuccess")
     public ResponseEntity success() {
         return ResponseEntity.ok("login success");
-
-        //thymeleaf test
-//        return "/member/loginSuccess";
     }
 
+    @PostMapping("/oauth2/logout")
+    public ResponseEntity logout(HttpServletRequest request) {
+        String accessToken = jwtService.extractToken(request).get();
+        userService.logout(accessToken);
+        return ResponseEntity.ok("logout Success");
+    }
 
     @GetMapping("/renew")
     public ResponseEntity renewToken(HttpServletRequest request, HttpServletResponse response) {
         try {
-            String refreshToken = jwtService.extractRefreshToken(request).get();
+            String refreshToken = jwtService.extractToken(request).get();
             return ResponseEntity.ok("BEARER " + jwtService.renewToken(refreshToken));
         } catch (NoSuchElementException e) {
             return ResponseEntity.badRequest().body("Refresh Token 이 만료되었습니다");
