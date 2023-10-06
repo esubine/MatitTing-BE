@@ -13,9 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class PartyService {
-    private final PartyRepositoryCustom partyRepositoryCustom;
-
-    public Page<Party> getPartyPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
-        return partyRepositoryCustom.searchPage(partySearchCondDto, pageable);
-    }
+//    private final PartyRepositoryCustom partyRepositoryCustom;
+//
+//    public Page<Party> getPartyPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
+//        return partyRepositoryCustom.searchPage(partySearchCondDto, pageable);
+//    }
 }
