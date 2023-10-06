@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 
 @Controller
 @RequiredArgsConstructor
-public class LoginController {
+public class OAuthController {
     private final UserService userService;
     private final JwtService jwtService;
 

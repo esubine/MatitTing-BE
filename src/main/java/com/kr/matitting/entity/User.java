@@ -1,5 +1,7 @@
 package com.kr.matitting.entity;
 
+import com.kr.matitting.constant.Role;
+import com.kr.matitting.constant.SocialType;
 import jakarta.persistence.*;
 import lombok.*;
 

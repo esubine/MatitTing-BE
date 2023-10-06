@@ -26,13 +26,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                //http default 인증 관련
                 .httpBasic(hb -> hb.disable())
                 .csrf(cr -> cr.disable());
 
         http
+                //token 기반 무상태성 설정
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http
+                //인증 허용 관련 설정
                 .authorizeHttpRequests((request) ->
                         request.requestMatchers("/", "/home").permitAll() //default path
                                 .requestMatchers("/member/signupForm", "/oauth2/signUp", "/loginSuccess", "/oauth2/logout").permitAll() //login path
@@ -44,6 +47,7 @@ public class SecurityConfig {
                         .permitAll());
 
         http
+                //oauth 로그인 설정
                 .oauth2Login(oauth ->
                         oauth
                                 .successHandler(oAuth2LoginSuccessHandler)
@@ -51,6 +55,7 @@ public class SecurityConfig {
                                 .userInfoEndpoint(userService -> userService.userService(customOAuth2UserService)));
 
         http
+                //jwt custom filter 적용
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
