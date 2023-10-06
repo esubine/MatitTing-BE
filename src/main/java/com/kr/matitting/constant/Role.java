@@ -1,4 +1,4 @@
-package com.kr.matitting.entity;
+package com.kr.matitting.constant;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

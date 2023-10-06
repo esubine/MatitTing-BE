@@ -1,10 +1,9 @@
 package com.kr.matitting.oauth2.handler;
 
-import com.kr.matitting.entity.Role;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.oauth2.CustomOauth2User;
-import com.kr.matitting.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

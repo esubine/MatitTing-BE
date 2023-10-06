@@ -1,6 +1,6 @@
 package com.kr.matitting.repository;
 
-import com.kr.matitting.entity.SocialType;
+import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

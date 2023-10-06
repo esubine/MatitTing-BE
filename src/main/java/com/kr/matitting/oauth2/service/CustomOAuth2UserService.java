@@ -1,8 +1,8 @@
 package com.kr.matitting.oauth2.service;
 
-import com.kr.matitting.entity.Role;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.entity.SocialType;
+import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.oauth2.CustomOauth2User;
 import com.kr.matitting.oauth2.OAuthAttributes;
 import com.kr.matitting.oauth2.userinfo.OAuth2UserInfo;
