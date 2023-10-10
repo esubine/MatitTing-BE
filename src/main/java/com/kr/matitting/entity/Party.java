@@ -11,9 +11,11 @@ import org.hibernate.annotations.ColumnDefault;
 import java.time.LocalDateTime;
 
 @Getter
-@Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "party")
+@Entity
+@Table(name = "PARTY")
 public class Party extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,18 +35,14 @@ public class Party extends BaseTimeEntity {
     private LocalDateTime partyDeadline; // 파티 모집 시간
     @Column(name = "party_time")
     private LocalDateTime partyTime; // 파티 시작 시간
-
     @Column(name = "total_participant")
     private int totalParticipant; // 모집 인원
-
     @Column(name = "participant_count")
     @ColumnDefault("0")
     private int participantCount; // 참가자 수
-
     @Column(name = "hit")
     @ColumnDefault("0")
     private int hit;
-
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
