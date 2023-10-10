@@ -15,13 +15,10 @@ import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import static org.springframework.data.crossstore.ChangeSetPersister.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -53,7 +50,7 @@ public class PartyService {
             throw new IllegalStateException("데이터의 요청이 잘못되었습니다.");
         }
 
-        Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
+        Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(() -> new NotFoundException("joinParty(): 파티를 찾을 수 없습니다."));
         PartyJoin partyJoin = PartyJoin.builder().party(party).parentId(partyJoinDto.getParentId()).userId(partyJoinDto.getUserId()).build();
         partyJoinRepository.save(partyJoin);
     }
@@ -67,13 +64,13 @@ public class PartyService {
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndParentIdAndUserId(
                 partyJoinDto.getPartyId(),
                 partyJoinDto.getParentId(),
-                partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
+                partyJoinDto.getUserId()).orElseThrow(() -> new NotFoundException("파티 참가 요청을 찾을 수 없습니다."));
         partyJoinRepository.delete(findPartyJoin);
 
         if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT) {
             //파티방 Table에 정보를 입력
-            User user = userRepository.findById(partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
-            Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
+            User user = userRepository.findById(partyJoinDto.getUserId()).orElseThrow(() -> new NotFoundException("decideUser(): 유저를 찾을 수 없습니다."));
+            Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(() -> new NotFoundException("decideUser(): 파티를 찾을 수 없습니다."));
             Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
             return "Accept Request Completed";
