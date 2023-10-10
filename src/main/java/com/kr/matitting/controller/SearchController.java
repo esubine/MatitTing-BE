@@ -2,8 +2,10 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.dto.PartySearchCondDto;
 import com.kr.matitting.dto.ResponseRankingDto;
+import com.kr.matitting.entity.Party;
 import com.kr.matitting.service.SearchService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -26,21 +28,12 @@ public class SearchController {
                                       @PathVariable(name = "page") Optional<Integer> page,
                                       @RequestParam int limit,
                                       @RequestParam Map<String, String> orders) {
-        //검색 keyword score increase
-        if (partySearchCondDto.getPartyTitle() != null) {
-            searchService.increaseKeyWordScore(partySearchCondDto.getPartyTitle());
-        }
 
-        //TODO: offset, limit 활용법 제대로 익히기
-        PageRequest pageable = PageRequest.of(!page.isPresent() ? 0 : page.get(), limit);
-        orders.forEach((orderColumn, orderType) -> {
-            pageable.withSort(
-                    (orderType == "desc") ? Sort.Direction.DESC : Sort.Direction.ASC, orderColumn);
-        });
+        PageRequest pageable = PageRequest.of(!page.isPresent() ? 0 : page.get(), limit,
+                orders.get("type") == "desc" ? Sort.by(orders.get("column")).descending() : Sort.by(orders.get("column")).ascending());
+        Page<Party> partyPage = searchService.getPartyPage(partySearchCondDto, pageable);
 
-        searchService.getPartyPage(partySearchCondDto, pageable);
-
-        return null;
+        return ResponseEntity.ok().body(partyPage);
     }
 
     @GetMapping("/api/search/rank")

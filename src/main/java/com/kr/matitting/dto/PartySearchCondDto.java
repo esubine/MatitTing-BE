@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 public class PartySearchCondDto {
-    private String partyTitle;
+    private String title;
     private String menu;
-    private PartyStatus partyStatus;
+    private PartyStatus status;
     private int hit;
 }
