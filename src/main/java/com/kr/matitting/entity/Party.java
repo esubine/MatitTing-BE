@@ -6,24 +6,27 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "PARTY")
 public class Party extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long partyId;
-    private String partyTitle;
+    @Column(name = "party_id")
+    private Long id;
+    private String title;
     private String menu;
     @Enumerated(EnumType.STRING)
     private PartyStatus status;
 
-    private LocalDateTime partyDeadline;
-
-    private int hit = 0;
+    private LocalDateTime deadline;
+    @ColumnDefault("0")
+    private int hit;
 }
