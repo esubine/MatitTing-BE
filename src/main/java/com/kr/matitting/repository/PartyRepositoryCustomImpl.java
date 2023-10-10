@@ -39,7 +39,7 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
         List<Party> content = queryFactory
                 .select(party)
                 .from(party)
-                .where(titleLike(partySearchCondDto.getPartyTitle()), menuLike(partySearchCondDto.getMenu()), stateEq(partySearchCondDto.getPartyStatus()))
+                .where(titleLike(partySearchCondDto.getTitle()), menuLike(partySearchCondDto.getMenu()), stateEq(partySearchCondDto.getStatus()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(partySort(pageable))
@@ -52,14 +52,14 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
                 .select(party.count())
                 .from(party)
                 .where(
-                        party.partyTitle.eq(partySearchCondDto.getPartyTitle())
+                        titleLike(partySearchCondDto.getTitle()), menuLike(partySearchCondDto.getMenu()), stateEq(partySearchCondDto.getStatus())
                 )
                 .fetchOne();
         return count;
     }
 
     private BooleanExpression titleLike(String title) {
-        return StringUtils.hasText(title) ? party.partyTitle.contains(title) : null;
+        return StringUtils.hasText(title) ? party.title.contains(title) : null;
     }
 
     private BooleanExpression menuLike(String menu) {
@@ -81,10 +81,10 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
                 switch (order.getProperty()) {
                     case "hit": //조회순
                         return new OrderSpecifier(direction, party.hit);
-                    case "Latest": //최신순(생성순)
+                    case "latest": //최신순(생성순)
                         return new OrderSpecifier(direction, party.createDate);
                     case "deadline": //마감순
-                        return new OrderSpecifier(direction, party.partyDeadline);
+                        return new OrderSpecifier(direction, party.deadline);
                 }
             }
         }
