@@ -95,3 +95,6 @@ jwt:
     expiration: 259200000
 
     header: Authorization-refresh
+
+kakaoMap:
+  key: REST API 키

@@ -1,5 +1,7 @@
 package com.kr.matitting.service;
 
+import com.kr.matitting.dto.CreatePartyRequest;
+import org.webjars.NotFoundException;
 import com.kr.matitting.constant.PartyJoinStatus;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.PartyJoinDto;
@@ -30,6 +32,19 @@ public class PartyService {
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
+    private final MapService mapService;
+    
+    public void createParty(CreatePartyRequest request) {
+        Long userId = 1L;
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
+
+        String address = mapService.coordToAddr(request.getLongitude(), request.getLatitude());
+
+        Party party = Party.create(request, user, address);
+
+        partyRepository.save(party);
+    }
+    
     public void joinParty(PartyJoinDto partyJoinDto) throws NotFoundException {
         if (partyJoinDto.getPartyId() == null ||
                 partyJoinDto.getParentId() == null ||
