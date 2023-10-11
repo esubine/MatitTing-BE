@@ -1,15 +1,13 @@
 package com.kr.matitting.service;
 
-import com.kr.matitting.constant.PartyCategory;
-import com.kr.matitting.constant.PartyJoinStatus;
-import com.kr.matitting.constant.PartyStatus;
-import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.CreatePartyRequest;
+import org.webjars.NotFoundException;
+import com.kr.matitting.constant.PartyJoinStatus;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.PartyJoinDto;
+import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.PartyJoin;
 import com.kr.matitting.entity.Team;
-import org.webjars.NotFoundException;
-import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
@@ -17,11 +15,13 @@ import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import static org.springframework.data.crossstore.ChangeSetPersister.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -99,39 +99,43 @@ public class PartyService {
     }
 
     public void joinParty(PartyJoinDto partyJoinDto) throws NotFoundException {
+        log.info("=== joinParty() start ===");
+
         if (partyJoinDto.getPartyId() == null ||
-                partyJoinDto.getParentId() == null ||
+                partyJoinDto.getLeaderId() == null ||
                 partyJoinDto.getUserId() == null) {
-            log.error("JoinParty:[Request Data is null!!]");
-            throw new IllegalStateException("데이터의 요청이 잘못되었습니다.");
+            log.error("=== JoinParty:Request Data is null ===");
+            throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
         }
 
-        Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
-        PartyJoin partyJoin = PartyJoin.builder().party(party).parentId(partyJoinDto.getParentId()).userId(partyJoinDto.getUserId()).build();
+        Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.getLeaderId()).userId(partyJoinDto.getUserId()).build();
         partyJoinRepository.save(partyJoin);
     }
 
-    public String decideUser(PartyJoinDto partyJoinDto) throws NotFoundException {
-        if (partyJoinDto.getStatus() == PartyJoinStatus.WAIT) {
-            log.info("Party Join Status 정보가 잘못 Request 되었습니다.");
-            throw new IllegalStateException("NOT FOUND Accept or Refuse status");
+    public String decideUser(PartyJoinDto partyJoinDto){
+        log.info("=== decideUser() start ===");
+
+        if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT || partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
+            log.error("=== Party Join Status was requested incorrectly ===");
+            throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
 
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndParentIdAndUserId(
                 partyJoinDto.getPartyId(),
-                partyJoinDto.getParentId(),
-                partyJoinDto.getUserId())
-                .orElseThrow(NotFoundException::new);
+                partyJoinDto.getLeaderId(),
+                partyJoinDto.getUserId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
         partyJoinRepository.delete(findPartyJoin);
 
         if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT) {
-            //파티방 Table에 정보를 입력
-            User user = userRepository.findById(partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
-            Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
+            log.info("=== ACCEPT ===");
+            User user = userRepository.findById(partyJoinDto.getUserId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+            Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
             return "Accept Request Completed";
         } else if (partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
+            log.info("=== REFUSE ===");
             return "Refuse Request Completed";
         }
         return null;
@@ -139,10 +143,10 @@ public class PartyService {
 
     public List<PartyJoin> getJoinList(PartyJoinDto partyJoinDto) {
         if (partyJoinDto.getPartyId() == null ||
-                partyJoinDto.getParentId() == null) {
+                partyJoinDto.getLeaderId() == null) {
             log.error("GetJoinList:[Request Data is null!!]");
-            throw new IllegalStateException("데이터의 요청이 잘못되었습니다.");
+            throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
         }
-        return partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getParentId());
+        return partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
     }
 }

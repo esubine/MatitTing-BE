@@ -38,9 +38,8 @@ public class SecurityConfig {
                 //인증 허용 관련 설정
                 .authorizeHttpRequests((request) ->
                         request.requestMatchers("/", "/home").permitAll() //default path
-                                .requestMatchers("/member/signupForm", "/oauth2/signUp", "/loginSuccess", "/oauth2/logout").permitAll() //login path
-                                .requestMatchers("/renew").permitAll() //token path
-                                .requestMatchers("/resources/**", "/**").permitAll() //resource path
+                                .requestMatchers("/member/signupForm", "/oauth2/**").permitAll() //oauth2 path
+                                .requestMatchers("/resources/**").permitAll() //resource path
                                 .anyRequest().authenticated())
                 .formLogin((form) -> form
                         .loginPage("/")

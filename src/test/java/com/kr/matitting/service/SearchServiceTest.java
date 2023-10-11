@@ -5,23 +5,18 @@ import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.dto.PartySearchCondDto;
 import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyRepositoryCustom;
 import com.kr.matitting.repository.UserRepository;
-import lombok.Builder;
 import lombok.Data;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -99,10 +94,10 @@ class SearchServiceTest {
 
         for (int i = 1; i <= 20; i++) {
             Party party = Party.builder()
-                    .title(title_list.get(i % 5) + String.valueOf(i))
+                    .partyTitle(title_list.get(i % 5) + String.valueOf(i))
                     .menu(menu_list.get(i % 5) + String.valueOf(i))
-                    .status((i%2 == 0) ? PartyStatus.ON : PartyStatus.OFF)
-                    .deadline(LocalDateTime.of(2023, 10, 12, 15, 23, i))
+                    .status((i%2 == 0) ? PartyStatus.RECRUIT : PartyStatus.FINISH)
+                    .partyDeadline(LocalDateTime.of(2023, 10, 12, 15, 23, i))
                     .hit(i)
                     .build();
             partyRepository.save(party);
@@ -178,7 +173,7 @@ class SearchServiceTest {
     void 파티방검색_상태() {
         //given
         PartySearchCondDto partySearchCondDto = new PartySearchCondDto();
-        partySearchCondDto.setStatus(PartyStatus.ON);
+        partySearchCondDto.setStatus(PartyStatus.RECRUIT);
 
         //when
         Page<Party> parties = partyRepositoryCustom.searchPage(partySearchCondDto, PageRequest.of(0, 10));
@@ -226,7 +221,7 @@ class SearchServiceTest {
 
         //then
         assertThat(parties.getTotalElements()).isEqualTo(8);
-        assertThat(parties.getContent().get(0).getTitle()).isEqualTo("아무거나 먹을사람20");
+        assertThat(parties.getContent().get(0).getPartyTitle()).isEqualTo("아무거나 먹을사람20");
     }
 
     @Test
@@ -247,7 +242,7 @@ class SearchServiceTest {
 
         //then
         assertThat(parties.getTotalElements()).isEqualTo(8);
-        assertThat(parties.getContent().get(0).getTitle()).isEqualTo("먹는거 좋아하는 사람3");
+        assertThat(parties.getContent().get(0).getPartyTitle()).isEqualTo("먹는거 좋아하는 사람3");
     }
 
 }

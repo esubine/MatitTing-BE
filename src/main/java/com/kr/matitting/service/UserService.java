@@ -2,13 +2,17 @@ package com.kr.matitting.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,6 +28,8 @@ public class UserService {
     }
 
     public void logout(String accessToken) {
+        log.info("=== logout() start ===");
+
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
         String socialId = decodedJWT.getClaim("id").asString();
 
@@ -34,7 +40,15 @@ public class UserService {
         if (redisUtil.getData(socialId) != null) {
             redisUtil.deleteData(socialId);
         }
-
         redisUtil.setDateExpire(accessToken, "logout", expiration);
+    }
+
+    public void withdraw(String accessToken) {
+        log.info("=== withdraw() start ===");
+
+        DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
+        String socialId = decodedJWT.getClaim("id").asString();
+        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        userRepository.delete(user);
     }
 }

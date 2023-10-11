@@ -19,6 +19,8 @@ public class PartyJoin extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "party_id")
     private Party party;
-    private Long parentId;
+    @Column(name = "leader_id")
+    private Long leaderId;
+    @Column(name = "user_id")
     private Long userId;
 }

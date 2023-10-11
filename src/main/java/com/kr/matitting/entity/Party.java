@@ -1,11 +1,8 @@
 package com.kr.matitting.entity;
 
-import com.kr.matitting.constant.PartyCategory;
-import com.kr.matitting.constant.PartyGender;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.dto.CreatePartyRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
