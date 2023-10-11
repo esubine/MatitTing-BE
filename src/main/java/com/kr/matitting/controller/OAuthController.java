@@ -1,6 +1,9 @@
 package com.kr.matitting.controller;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,10 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -33,7 +34,7 @@ public class OAuthController {
     @GetMapping("signUp")
     public ResponseEntity loadOAuthSignUp(@RequestParam String email, @RequestParam String socialType, @RequestParam String socialId) {
         if (email == null || socialId == null || socialType == null) {
-            throw new NullPointerException("신규 회원 Data 요청이 잘못되었습니다.");
+            throw new UserException(UserExceptionType.NULL_POINT_USER);
         }
         Map<String, String> userInfo = new HashMap<>();
         userInfo.put("email", email);
@@ -62,6 +63,13 @@ public class OAuthController {
         String accessToken = jwtService.extractToken(request).get();
         userService.logout(accessToken);
         return ResponseEntity.ok("logout Success");
+    }
+
+    @DeleteMapping("withdraw")
+    public ResponseEntity withdraw(HttpServletRequest request) {
+        String accessToken = jwtService.extractToken(request).get();
+        userService.withdraw(accessToken);
+        return ResponseEntity.ok("withdraw Success");
     }
     
     @GetMapping("renewToken")
