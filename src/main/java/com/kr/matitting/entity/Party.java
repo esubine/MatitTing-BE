@@ -26,7 +26,7 @@ public class Party extends BaseTimeEntity {
     @Column(nullable = false, name = "title")
     private String partyTitle; // 파티 모집 제목
     @Column(nullable = false, name = "content", length = 500)
-    private String content; // 파티 모집 글
+    private String partyContent; // 파티 모집 글
     @Column(nullable = false, name = "menu")
     private String menu; // 메뉴
     @Column(nullable = false, name = "address")

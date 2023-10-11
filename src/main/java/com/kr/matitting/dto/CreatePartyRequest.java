@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Setter
 public class CreatePartyRequest {
 
-    private String partyTitle;
-    private String partyContent;
+    private String title;
+    private String content;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime partyTime;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

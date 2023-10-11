@@ -45,7 +45,7 @@ public class PartyService {
         Long userId = 1L;
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
 
-        if (request.getPartyTitle() == null || request.getPartyContent() == null
+        if (request.getTitle() == null || request.getContent() == null
                 || request.getPartyTime() == null || request.getLongitude() == null || request.getLatitude() == null
                 || request.getMenu() == null || request.getGender() == null || request.getCategory() == null) {
             log.info("=== CreatePartyRequest: Request Data is null ===");
@@ -89,8 +89,8 @@ public class PartyService {
     // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
     private Party.PartyBuilder createBasePartyBuilder(CreatePartyRequest request, User user) {
         return Party.builder()
-                .partyTitle(request.getPartyTitle())
-                .content(request.getPartyContent())
+                .partyTitle(request.getTitle())
+                .partyContent(request.getContent())
                 .longitude(request.getLongitude())
                 .latitude(request.getLatitude())
                 .menu(request.getMenu())
