@@ -69,9 +69,9 @@ class PartyServiceTest {
         userRepository.save(guest);
 
         Party party = Party.builder()
-                .title("파티Test")
-                .menu("돈까스").status(PartyStatus.ON)
-                .deadline(LocalDateTime.of(2023, 10, 12, 15, 23, 32))
+                .partyTitle("파티Test")
+                .menu("돈까스").status(PartyStatus.RECRUIT)
+                .partyDeadline(LocalDateTime.of(2023, 10, 12, 15, 23, 32))
                 .hit(1)
                 .build();
         partyRepository.save(party);
@@ -91,7 +91,7 @@ class PartyServiceTest {
     @Test
     void 파티신청_성공() throws Exception {
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 
@@ -102,19 +102,19 @@ class PartyServiceTest {
         partyService.joinParty(partyJoinDto);
 
         log.info("=== Party Select by PartyId And ParentId ===");
-        List<PartyJoin> partyJoinList = partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getParentId());
+        Optional<List<PartyJoin>> partyJoinList = partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId());
 
         //then
-        assertThat(partyJoinList.size()).isEqualTo(1);
-        assertThat(partyJoinList.get(0).getParty().getId()).isEqualTo(partyJoinDto.getPartyId());
-        assertThat(partyJoinList.get(0).getParentId()).isEqualTo(partyJoinDto.getParentId());
-        assertThat(partyJoinList.get(0).getUserId()).isEqualTo(partyJoinDto.getUserId());
+        assertThat(partyJoinList.get().size()).isEqualTo(1);
+        assertThat(partyJoinList.get().get(0).getParty().getId()).isEqualTo(partyJoinDto.getPartyId());
+        assertThat(partyJoinList.get().get(0).getLeaderId()).isEqualTo(partyJoinDto.getLeaderId());
+        assertThat(partyJoinList.get().get(0).getUserId()).isEqualTo(partyJoinDto.getUserId());
     }
 
     @Test
     void 파티신청_실패_방장Id가_없을때() throws Exception {
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 
@@ -131,13 +131,13 @@ class PartyServiceTest {
     @Test
     void 파티신청_실패_파티Id가_없을때(){
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 
         //when, then
         PartyJoinDto partyJoinDto = new PartyJoinDto();
-        partyJoinDto.setParentId(user.get().getId());
+        partyJoinDto.setLeaderId(user.get().getId());
         partyJoinDto.setUserId(guest.get().getId());
 
         assertThrows(IllegalStateException.class, () -> {
@@ -148,14 +148,14 @@ class PartyServiceTest {
     @Test
     void 파티신청_실패_사용자Id가_없을때(){
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 
         //when, then
         PartyJoinDto partyJoinDto = new PartyJoinDto();
         partyJoinDto.setPartyId(findParty.get().getId());
-        partyJoinDto.setParentId(user.get().getId());
+        partyJoinDto.setLeaderId(user.get().getId());
 
         assertThrows(IllegalStateException.class, () -> {
             partyService.joinParty(partyJoinDto);
@@ -165,7 +165,7 @@ class PartyServiceTest {
     @Test
     void 파티요청_수락_성공() throws Exception {
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 
@@ -186,7 +186,7 @@ class PartyServiceTest {
     @Test
     void 파티요청_수락_실패_상태대기() throws Exception {
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 
@@ -201,7 +201,7 @@ class PartyServiceTest {
     @Test
     void 파티요청_수락_실패_파티없음() throws Exception {
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
 
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
@@ -219,7 +219,7 @@ class PartyServiceTest {
     @Test
     void 파티요청_수락_실패_유저없음() throws Exception {
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 
@@ -238,7 +238,7 @@ class PartyServiceTest {
     @Test
     void 파티요청_거절_성공() throws Exception{
         //given
-        Optional<Party> findParty = partyRepository.findByTitle(title);
+        Optional<Party> findParty = partyRepository.findByPartyTitle(title);
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
         Optional<User> user = userRepository.findBySocialId(userSocialId);
 

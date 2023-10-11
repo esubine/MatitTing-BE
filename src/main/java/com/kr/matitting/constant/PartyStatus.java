@@ -1,5 +1,6 @@
 package com.kr.matitting.constant;
 
 public enum PartyStatus {
-    ON, OFF
+    //모집 여부
+    RECRUIT, FINISH 
 }

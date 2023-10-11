@@ -20,27 +20,24 @@ public class User extends BaseTimeEntity{
     @Column(length = 30, unique = true, name = "social_id")
     private String socialId;   //카카오 or 네이버 인증 Id
 
+    @Enumerated(EnumType.STRING)
+    private SocialType socialType; // KAKAO, NAVER, GOOGLE
+
     @Column(nullable = false, length = 30, unique = true)
     private String email;   //이메일
 
-    //닉네임
     @Column(nullable = false, length = 30, unique = true)
     private String nickname; //닉네임
 
-    //나이
     @Column(nullable = false, length = 30)
     private int age; //나이
 
-    //프로필 이미지
     @Column(nullable = true, name = "user_img")
-    private String imgUrl; //이미지 url
+    private String imgUrl; //프로필 이미지
 
-    @Column
-    private String city; // 사는 도시
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(name = "city")
+    private String city; //사는 도시
 
     @Enumerated(EnumType.STRING)
-    private SocialType socialType; // KAKAO, NAVER, GOOGLE
+    private Role role; //신규유저 or 기존유저
 }

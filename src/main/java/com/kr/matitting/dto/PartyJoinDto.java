@@ -9,16 +9,16 @@ import lombok.Setter;
 public class PartyJoinDto {
     private Long partyId;
 
-    private Long parentId;
+    private Long leaderId;
     private Long userId;
     private PartyJoinStatus status;
     public PartyJoinDto() {
         this.status = PartyJoinStatus.WAIT;
     }
 
-    public PartyJoinDto(Long partyId, Long parentId, Long userId) {
+    public PartyJoinDto(Long partyId, Long leaderId, Long userId) {
         this.partyId = partyId;
-        this.parentId = parentId;
+        this.leaderId = leaderId;
         this.userId = userId;
         this.status = PartyJoinStatus.WAIT;
     }

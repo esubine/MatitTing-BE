@@ -6,9 +6,11 @@ import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,6 +26,8 @@ public class UserService {
     }
 
     public void logout(String accessToken) {
+        log.info("=== logout() start ===");
+
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
         String socialId = decodedJWT.getClaim("id").asString();
 
@@ -34,7 +38,6 @@ public class UserService {
         if (redisUtil.getData(socialId) != null) {
             redisUtil.deleteData(socialId);
         }
-
         redisUtil.setDateExpire(accessToken, "logout", expiration);
     }
 }

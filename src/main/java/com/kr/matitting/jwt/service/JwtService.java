@@ -4,6 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.util.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +27,6 @@ import java.util.Optional;
 @Getter
 @Slf4j
 @Transactional
-
 public class JwtService {
     @Value("${jwt.secret}")
     private String secretKey;
@@ -107,18 +108,9 @@ public class JwtService {
     }
 
     /**
-     * RefreshToken DB 저장(업데이트)
-     * => redis에 email:refreshToken을 저장
+     * redis에 email:refreshToken을 저장
      */
-
     public void updateRefreshToken(String socialId, String refreshToken) {
-        // RDBMS refreshToken
-//        userRepository.findByEmail(email)
-//                .ifPresentOrElse(
-//                        user -> user.updateRefreshToken(refreshToken),
-//                        () -> new Exception("일치하는 회원이 없습니다.")
-//                );
-
         // Redis refreshToken
         redisUtil.setDateExpire(socialId, refreshToken, refreshTokenExpirationPeriod);
     }
@@ -132,26 +124,14 @@ public class JwtService {
     public DecodedJWT isTokenValid(String token) {
             return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
     }
-
-
     public String renewToken(String refreshToken) {
         //request refreshToken -> User SocialId를 get -> redis refreshToken 유효한지 찾아서 검사
         DecodedJWT decodedJWT = isTokenValid(refreshToken);
-        String id = decodedJWT.getClaim("id").asString();
+        String socialId = decodedJWT.getClaim("id").asString();
         String role = decodedJWT.getClaim("role").asString();
+        String findToken = redisUtil.getData(socialId);
 
-        String findToken = redisUtil.getData(id);
-
-        if (refreshToken == null) {
-            throw new NoSuchElementException("refreshToken이 유효하지 않습니다.");
-        }
-
-        //TODO: findBySocialTypeAndSocialId을 이용하기 위해서 role -> socialType으로 변경 방법 찾아보기
-        User user = userRepository.findBySocialId(id).orElseThrow(NoSuchElementException::new);
-
-        if (user.getId() == null) {
-            throw new UsernameNotFoundException("회원을 찾을 수 없습니다.");
-        }
+        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         return createAccessToken(user);
     }
 
