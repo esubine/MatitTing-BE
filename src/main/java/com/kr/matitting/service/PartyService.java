@@ -1,20 +1,21 @@
 package com.kr.matitting.service;
 
+import com.kr.matitting.constant.PartyCategory;
+import com.kr.matitting.constant.PartyJoinStatus;
+import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.CreatePartyRequest;
+import com.kr.matitting.dto.PartyJoinDto;
+import com.kr.matitting.entity.Party;
+import com.kr.matitting.entity.PartyJoin;
+import com.kr.matitting.entity.Team;
+import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
-import org.webjars.NotFoundException;
-import com.kr.matitting.constant.PartyJoinStatus;
-import com.kr.matitting.constant.Role;
-import com.kr.matitting.dto.PartyJoinDto;
-import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.PartyJoin;
-import com.kr.matitting.entity.Team;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyTeamRepository;
@@ -23,7 +24,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -36,18 +39,69 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final MapService mapService;
-    
+
     public void createParty(CreatePartyRequest request) {
+        log.info("=== createParty() start ===");
         Long userId = 1L;
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
 
+        if (request.getTitle() == null || request.getContent() == null
+                || request.getPartyTime() == null || request.getLongitude() == null || request.getLatitude() == null
+                || request.getMenu() == null || request.getGender() == null || request.getCategory() == null) {
+            log.info("=== CreatePartyRequest: Request Data is null ===");
+            throw new PartyException(PartyExceptionType.NOT_FOUND_CONTENT);
+        }
+
+        // 위도, 경도 -> 주소 변환
         String address = mapService.coordToAddr(request.getLongitude(), request.getLatitude());
 
-        Party party = Party.create(request, user, address);
+        //모집 기간(선택 사항)을 따로 지정 안 하면 식사 시간(필수 입력 사항) 1시간 전으로
+        LocalDateTime deadline = request.getDeadline();
+        if (deadline == null) {
+            deadline = request.getPartyTime().minusHours(1L);
+        }
+
+        //썸네일 없는 경우 카테고리에 따라 이미지 설정
+        String thumbnail = request.getThumbnail();
+        if (thumbnail == null) {
+            PartyCategory category = request.getCategory();
+
+            switch (category) {
+                case KOREAN -> thumbnail = "한식.img";
+                case WESTERN -> thumbnail = "양식.img";
+                case CHINESE -> thumbnail = "중식.img";
+                case JAPANESE -> thumbnail = "일식.img";
+                case ETC -> thumbnail = "기타.img";
+            }
+        }
+
+        // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
+        Party party = createBasePartyBuilder(request, user)
+                .address(address)
+                .deadline(deadline)
+                .thumbnail(thumbnail)
+                .build();
 
         partyRepository.save(party);
     }
-    
+
+
+    // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
+    private Party.PartyBuilder createBasePartyBuilder(CreatePartyRequest request, User user) {
+        return Party.builder()
+                .partyTitle(request.getTitle())
+                .partyContent(request.getContent())
+                .longitude(request.getLongitude())
+                .latitude(request.getLatitude())
+                .menu(request.getMenu())
+                .partyTime(request.getPartyTime())
+                .totalParticipant(request.getTotalParticipant())
+                .category(request.getCategory())
+                .gender(request.getGender())
+                .status(PartyStatus.RECRUIT)
+                .user(user);
+    }
+
     public void joinParty(PartyJoinDto partyJoinDto) throws NotFoundException {
         log.info("=== joinParty() start ===");
 
@@ -63,7 +117,7 @@ public class PartyService {
         partyJoinRepository.save(partyJoin);
     }
 
-    public String decideUser(PartyJoinDto partyJoinDto){
+    public String decideUser(PartyJoinDto partyJoinDto) {
         log.info("=== decideUser() start ===");
 
         if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT || partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
@@ -71,7 +125,7 @@ public class PartyService {
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
 
-        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndParentIdAndUserId(
+        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(
                 partyJoinDto.getPartyId(),
                 partyJoinDto.getLeaderId(),
                 partyJoinDto.getUserId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
@@ -97,6 +151,6 @@ public class PartyService {
             log.error("GetJoinList:[Request Data is null!!]");
             throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
         }
-        return partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        return partyJoinRepository.findByPartyIdAndLeaderId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
     }
 }
