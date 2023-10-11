@@ -12,10 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -23,22 +21,19 @@ import java.util.Optional;
 public class SearchController {
     private final SearchService searchService;
 
-    @GetMapping({"/main/search", "/main/search/{page}"})
+    @GetMapping({"/api/search", "/api/search/{page}"})
     public ResponseEntity partySearch(PartySearchCondDto partySearchCondDto,
-                                      @PathVariable(name = "page") Optional<Integer> page,
-                                      @RequestParam int limit,
-                                      @RequestParam Map<String, String> orders) {
+                                      @PathVariable(name = "page") Optional<Integer> page) {
 
-        PageRequest pageable = PageRequest.of(!page.isPresent() ? 0 : page.get(), limit,
-                orders.get("type") == "desc" ? Sort.by(orders.get("column")).descending() : Sort.by(orders.get("column")).ascending());
+        PageRequest pageable = PageRequest.of(!page.isPresent() ? 0 : page.get(), partySearchCondDto.getLimit(),
+                partySearchCondDto.getOrders().get("type") == "desc" ? Sort.by(partySearchCondDto.getOrders().get("column")).descending() : Sort.by(partySearchCondDto.getOrders().get("column")).ascending());
         Page<Party> partyPage = searchService.getPartyPage(partySearchCondDto, pageable);
-
         return ResponseEntity.ok().body(partyPage);
     }
 
     @GetMapping("/api/search/rank")
     public ResponseEntity<List<ResponseRankingDto>> searchRankList() {
-        List<ResponseRankingDto> responseRankingDtoList = searchService.SearchRankList();
+        List<ResponseRankingDto> responseRankingDtoList = searchService.searchRankList();
         return ResponseEntity.ok().body(responseRankingDtoList);
     }
 }

@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface PartyRepository extends JpaRepository<Party, Long> {
-    Optional<Party> findByTitle(String title);
+    Optional<Party> findByPartyTitle(String partyTitle);
 }

@@ -3,6 +3,7 @@ package com.kr.matitting.entity;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.dto.CreatePartyRequest;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,7 +56,7 @@ public class Party extends BaseTimeEntity {
         this.user = user;
         this.partyTime = partyTime;
         this.partyDeadline = partyDeadline;
-        this.status = PartyStatus.ON;
+        this.status = PartyStatus.RECRUIT;
         this.address = address;
         this.totalParticipant = totalParticipant;
         this.participantCount = 0;
