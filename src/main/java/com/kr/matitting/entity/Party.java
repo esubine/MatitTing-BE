@@ -32,6 +32,11 @@ public class Party extends BaseTimeEntity {
     private String menu; // 메뉴
     @Column(nullable = false, name = "address")
     private String address; // 주소
+
+    @Column(name = "longitude")
+    private String longitude;
+    @Column(name = "latitude")
+    private String latitude;
     @Enumerated(EnumType.STRING)
     private PartyStatus status; // 파티 상태
     @Column(name = "deadline")
@@ -59,19 +64,4 @@ public class Party extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    public static Party create(CreatePartyRequest request, User user, String address) {
-        return Party.builder()
-                .title(request.getPartyTitle())
-                .content(request.getPartyContent())
-                .menu("메뉴")
-                .address(address)
-                .status(PartyStatus.ON)
-                .deadline(request.getPartyDeadline())
-                .partyTime(request.getPartyTime())
-                .totalParticipant(request.getTotalParticipant())
-                .user(user)
-                .gender(request.getGender())
-                .category(request.getCategory())
-                .build();
-    }
 }

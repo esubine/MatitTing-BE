@@ -3,6 +3,7 @@ package com.kr.matitting.controller;
 import com.kr.matitting.dto.CreatePartyRequest;
 import com.kr.matitting.service.PartyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,10 +18,11 @@ public class PartyController {
 
     // 파티 모집 글 생성
     @PostMapping("/party")
-    public void createParty(
+    public ResponseEntity createParty(
             @RequestBody CreatePartyRequest request
     ) {
         partyService.createParty(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("파티 글이 생성되었습니다.");
     }
 
     //유저가 파티방에 참가를 요청하는 logic
