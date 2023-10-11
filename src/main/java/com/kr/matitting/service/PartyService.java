@@ -41,13 +41,14 @@ public class PartyService {
     private final MapService mapService;
 
     public void createParty(CreatePartyRequest request) {
+        log.info("=== createParty() start ===");
         Long userId = 1L;
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
 
         if (request.getPartyTitle() == null || request.getPartyContent() == null
                 || request.getPartyTime() == null || request.getLongitude() == null || request.getLatitude() == null
                 || request.getMenu() == null || request.getGender() == null || request.getCategory() == null) {
-            log.error("CreatePartyRequest:[Request Data is null!!]");
+            log.info("=== CreatePartyRequest: Request Data is null ===");
             throw new PartyException(PartyExceptionType.NOT_FOUND_CONTENT);
         }
 
@@ -88,7 +89,7 @@ public class PartyService {
     // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
     private Party.PartyBuilder createBasePartyBuilder(CreatePartyRequest request, User user) {
         return Party.builder()
-                .title(request.getPartyTitle())
+                .partyTitle(request.getPartyTitle())
                 .content(request.getPartyContent())
                 .longitude(request.getLongitude())
                 .latitude(request.getLatitude())
@@ -124,7 +125,7 @@ public class PartyService {
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
 
-        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndParentIdAndUserId(
+        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(
                 partyJoinDto.getPartyId(),
                 partyJoinDto.getLeaderId(),
                 partyJoinDto.getUserId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
@@ -150,6 +151,6 @@ public class PartyService {
             log.error("GetJoinList:[Request Data is null!!]");
             throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
         }
-        return partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        return partyJoinRepository.findByPartyIdAndLeaderId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
     }
 }

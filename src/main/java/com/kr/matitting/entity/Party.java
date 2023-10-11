@@ -3,7 +3,6 @@ package com.kr.matitting.entity;
 import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyGender;
 import com.kr.matitting.constant.PartyStatus;
-import com.kr.matitting.dto.CreatePartyRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +24,7 @@ public class Party extends BaseTimeEntity {
     @Column(name = "party_id")
     private Long id;
     @Column(nullable = false, name = "title")
-    private String title; // 파티 모집 제목
+    private String partyTitle; // 파티 모집 제목
     @Column(nullable = false, name = "content", length = 500)
     private String content; // 파티 모집 글
     @Column(nullable = false, name = "menu")

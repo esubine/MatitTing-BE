@@ -102,7 +102,7 @@ class PartyServiceTest {
         partyService.joinParty(partyJoinDto);
 
         log.info("=== Party Select by PartyId And ParentId ===");
-        Optional<List<PartyJoin>> partyJoinList = partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId());
+        Optional<List<PartyJoin>> partyJoinList = partyJoinRepository.findByPartyIdAndLeaderId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId());
 
         //then
         assertThat(partyJoinList.get().size()).isEqualTo(1);
