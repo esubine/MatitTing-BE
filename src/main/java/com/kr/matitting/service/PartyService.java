@@ -120,7 +120,7 @@ public class PartyService {
     public String decideUser(PartyJoinDto partyJoinDto) {
         log.info("=== decideUser() start ===");
 
-        if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT || partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
+        if (!(partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT || partyJoinDto.getStatus() == PartyJoinStatus.REFUSE)) {
             log.error("=== Party Join Status was requested incorrectly ===");
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }

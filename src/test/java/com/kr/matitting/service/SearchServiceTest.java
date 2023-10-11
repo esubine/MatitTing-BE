@@ -97,7 +97,7 @@ class SearchServiceTest {
                     .partyTitle(title_list.get(i % 5) + String.valueOf(i))
                     .menu(menu_list.get(i % 5) + String.valueOf(i))
                     .status((i%2 == 0) ? PartyStatus.RECRUIT : PartyStatus.FINISH)
-                    .partyDeadline(LocalDateTime.of(2023, 10, 12, 15, 23, i))
+                    .deadline(LocalDateTime.of(2023, 10, 12, 15, 23, i))
                     .hit(i)
                     .build();
             partyRepository.save(party);

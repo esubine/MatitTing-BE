@@ -38,6 +38,9 @@ public class User extends BaseTimeEntity{
     @Column(name = "city")
     private String city; //사는 도시
 
+    @Column(name = "gender")
+    private String gender; //성별
+
     @Enumerated(EnumType.STRING)
     private Role role; //신규유저 or 기존유저
 }

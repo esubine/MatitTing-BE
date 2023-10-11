@@ -9,24 +9,27 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class SearchController {
     private final SearchService searchService;
 
     @GetMapping({"/api/search", "/api/search/{page}"})
-    public ResponseEntity partySearch(PartySearchCondDto partySearchCondDto,
+    public ResponseEntity<Page<Party>> partySearch(PartySearchCondDto partySearchCondDto,
                                       @PathVariable(name = "page") Optional<Integer> page) {
+        partySearchCondDto.checkOrder();
+        Map<String, String> orders = partySearchCondDto.getOrders();
 
         PageRequest pageable = PageRequest.of(!page.isPresent() ? 0 : page.get(), partySearchCondDto.getLimit(),
-                partySearchCondDto.getOrders().get("type") == "desc" ? Sort.by(partySearchCondDto.getOrders().get("column")).descending() : Sort.by(partySearchCondDto.getOrders().get("column")).ascending());
+                orders.get("type") == "desc" ? Sort.by(orders.get("column")).descending() : Sort.by(orders.get("column")).ascending());
         Page<Party> partyPage = searchService.getPartyPage(partySearchCondDto, pageable);
         return ResponseEntity.ok().body(partyPage);
     }
