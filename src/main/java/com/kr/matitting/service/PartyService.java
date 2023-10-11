@@ -1,6 +1,14 @@
 package com.kr.matitting.service;
 
+import com.kr.matitting.constant.PartyCategory;
+import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.dto.CreatePartyRequest;
+import com.kr.matitting.exception.party.PartyException;
+import com.kr.matitting.exception.party.PartyExceptionType;
+import com.kr.matitting.exception.partyjoin.PartyJoinException;
+import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
 import org.webjars.NotFoundException;
 import com.kr.matitting.constant.PartyJoinStatus;
 import com.kr.matitting.constant.Role;
@@ -20,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.data.crossstore.ChangeSetPersister.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,7 +103,7 @@ public class PartyService {
                 .totalParticipant(request.getTotalParticipant())
                 .category(request.getCategory())
                 .gender(request.getGender())
-                .status(PartyStatus.ON)
+                .status(PartyStatus.RECRUIT)
                 .user(user);
     }
 
