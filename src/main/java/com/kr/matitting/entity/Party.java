@@ -32,7 +32,6 @@ public class Party extends BaseTimeEntity {
     private String menu; // 메뉴
     @Column(nullable = false, name = "address")
     private String address; // 주소
-
     @Column(name = "longitude")
     private String longitude;
     @Column(name = "latitude")

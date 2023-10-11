@@ -1,36 +1,33 @@
 package com.kr.matitting.service;
 
 import com.kr.matitting.constant.PartyCategory;
+import com.kr.matitting.constant.PartyJoinStatus;
 import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.CreatePartyRequest;
+import com.kr.matitting.dto.PartyJoinDto;
+import com.kr.matitting.entity.Party;
+import com.kr.matitting.entity.PartyJoin;
+import com.kr.matitting.entity.Team;
+import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
-import org.webjars.NotFoundException;
-import com.kr.matitting.constant.PartyJoinStatus;
-import com.kr.matitting.constant.Role;
-import com.kr.matitting.dto.PartyJoinDto;
-import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.PartyJoin;
-import com.kr.matitting.entity.Team;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import static org.springframework.data.crossstore.ChangeSetPersister.*;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -43,17 +40,15 @@ public class PartyService {
     private final UserRepository userRepository;
     private final MapService mapService;
 
-    // TODO
-    //  : 예외처리
-    //  : return 값
     public void createParty(CreatePartyRequest request) {
         Long userId = 1L;
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
 
-        if(request.getPartyTitle() == null || request.getPartyContent() == null
-                || request.getPartyTime() == null ){
+        if (request.getPartyTitle() == null || request.getPartyContent() == null
+                || request.getPartyTime() == null || request.getLongitude() == null || request.getLatitude() == null
+                || request.getMenu() == null || request.getGender() == null || request.getCategory() == null) {
             log.error("CreatePartyRequest:[Request Data is null!!]");
-            throw new IllegalStateException("잘못된 요청 값 입니다.");
+            throw new PartyException(PartyExceptionType.NOT_FOUND_CONTENT);
         }
 
         // 위도, 경도 -> 주소 변환
@@ -70,7 +65,7 @@ public class PartyService {
         if (thumbnail == null) {
             PartyCategory category = request.getCategory();
 
-            switch (category){
+            switch (category) {
                 case KOREAN -> thumbnail = "한식.img";
                 case WESTERN -> thumbnail = "양식.img";
                 case CHINESE -> thumbnail = "중식.img";
@@ -79,6 +74,7 @@ public class PartyService {
             }
         }
 
+        // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
         Party party = createBasePartyBuilder(request, user)
                 .address(address)
                 .deadline(deadline)
@@ -88,10 +84,8 @@ public class PartyService {
         partyRepository.save(party);
     }
 
-    /**
-     * 추가로 필요한 필드
-     * address, deadline, thumbnail
-     */
+
+    // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
     private Party.PartyBuilder createBasePartyBuilder(CreatePartyRequest request, User user) {
         return Party.builder()
                 .title(request.getPartyTitle())
@@ -122,7 +116,7 @@ public class PartyService {
         partyJoinRepository.save(partyJoin);
     }
 
-    public String decideUser(PartyJoinDto partyJoinDto){
+    public String decideUser(PartyJoinDto partyJoinDto) {
         log.info("=== decideUser() start ===");
 
         if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT || partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
