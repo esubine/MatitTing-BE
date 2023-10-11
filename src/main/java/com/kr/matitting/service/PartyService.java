@@ -41,6 +41,13 @@ public class PartyService {
         Long userId = 1L;
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
 
+        if(request.getPartyTitle() == null || request.getPartyContent() == null
+                || request.getPartyTime() == null ){
+            log.error("CreatePartyRequest:[Request Data is null!!]");
+            throw new IllegalStateException("잘못된 요청 값 입니다.");
+        }
+
+        // 위도, 경도 -> 주소 변환
         String address = mapService.coordToAddr(request.getLongitude(), request.getLatitude());
 
         //모집 기간(선택 사항)을 따로 지정 안 하면 식사 시간(필수 입력 사항) 1시간 전으로
@@ -113,7 +120,8 @@ public class PartyService {
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndParentIdAndUserId(
                 partyJoinDto.getPartyId(),
                 partyJoinDto.getParentId(),
-                partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
+                partyJoinDto.getUserId())
+                .orElseThrow(NotFoundException::new);
         partyJoinRepository.delete(findPartyJoin);
 
         if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT) {

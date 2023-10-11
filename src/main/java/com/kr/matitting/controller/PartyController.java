@@ -26,17 +26,17 @@ public class PartyController {
     }
 
     //유저가 파티방에 참가를 요청하는 logic
-//    @PostMapping("/api/party/{partyId}/{참가Id}")
-//    public ResponseEntity JoinParty(PartyJoinDto partyJoinDto) throws ChangeSetPersister.NotFoundException {
-//        partyService.joinParty(partyJoinDto);
-//        return ResponseEntity.ok().body("Success join request!");
-//    }
+    @PostMapping("/api/party/{partyId}/{참가Id}")
+    public ResponseEntity JoinParty(PartyJoinDto partyJoinDto) throws ChangeSetPersister.NotFoundException {
+        partyService.joinParty(partyJoinDto);
+        return ResponseEntity.ok().body("Success join request!");
+    }
 
     //방장이 파티방에 대한 수락/거절을 하는 logic
-//    @PostMapping("/api/party/{partyId}/{방장Id}/{참가Id}")
-//    public ResponseEntity AcceptRefuseParty(PartyJoinDto partyJoinDto) throws ChangeSetPersister.NotFoundException {
-//        String result = partyService.decideUser(partyJoinDto);
-//        return ResponseEntity.ok().body(result);
-//    }
+    @PostMapping("/api/party/{partyId}/{방장Id}/{참가Id}")
+    public ResponseEntity AcceptRefuseParty(PartyJoinDto partyJoinDto) throws ChangeSetPersister.NotFoundException {
+        String result = partyService.decideUser(partyJoinDto);
+        return ResponseEntity.ok().body(result);
+    }
 
 }
