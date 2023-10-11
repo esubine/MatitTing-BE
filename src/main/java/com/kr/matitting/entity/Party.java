@@ -1,8 +1,11 @@
 package com.kr.matitting.entity;
 
+import com.kr.matitting.constant.PartyCategory;
+import com.kr.matitting.constant.PartyGender;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.dto.CreatePartyRequest;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,56 +24,54 @@ public class Party extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "party_id")
     private Long id;
-    @Column(name = "party_title")
-    private String partyTitle; // 파티 모집 제목
-    @Column(name = "party_content", length = 500)
-    private String partyContent; // 파티 모집 글
-    @Column(name = "menu")
+    @Column(nullable = false, name = "title")
+    private String title; // 파티 모집 제목
+    @Column(nullable = false, name = "content", length = 500)
+    private String content; // 파티 모집 글
+    @Column(nullable = false, name = "menu")
     private String menu; // 메뉴
-    @Column(name = "address")
+    @Column(nullable = false, name = "address")
     private String address; // 주소
     @Enumerated(EnumType.STRING)
     private PartyStatus status; // 파티 상태
-    @Column(name = "party_deadline")
-    private LocalDateTime partyDeadline; // 파티 모집 시간
-    @Column(name = "party_time")
+    @Column(name = "deadline")
+    private LocalDateTime deadline; // 파티 모집 시간
+    @Column(nullable = false, name = "party_time")
     private LocalDateTime partyTime; // 파티 시작 시간
-    @Column(name = "total_participant")
+    @Column(nullable = false, name = "total_participant")
     private int totalParticipant; // 모집 인원
     @Column(name = "participant_count")
     @ColumnDefault("0")
     private int participantCount; // 참가자 수
+    @Column(nullable = false, name = "category")
+    @Enumerated(EnumType.STRING)
+    private PartyCategory category; // 음식 카테고리
+    @Column(nullable = false, name = "gender")
+    @Enumerated(EnumType.STRING)
+    private PartyGender gender; // 참여 가능 성별
+
+    @Column(nullable = true, name = "thumbnail")
+    private String thumbnail; //파티 썸네일
     @Column(name = "hit")
     @ColumnDefault("0")
     private int hit;
-    @JoinColumn(name = "user_id")
+    @JoinColumn(nullable = false, name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @Builder
-    public Party(String partyTitle, String partyContent, LocalDateTime partyTime, LocalDateTime partyDeadline,
-                 PartyStatus partyStatus, String address, String menu, User user, int totalParticipant, int participantCount) {
-        this.partyTitle = partyTitle;
-        this.partyContent = partyContent;
-        this.user = user;
-        this.partyTime = partyTime;
-        this.partyDeadline = partyDeadline;
-        this.status = PartyStatus.ON;
-        this.address = address;
-        this.totalParticipant = totalParticipant;
-        this.participantCount = 0;
-        this.menu = "메뉴";
-    }
-
     public static Party create(CreatePartyRequest request, User user, String address) {
         return Party.builder()
-                .partyTitle(request.getPartyTitle())
-                .partyContent(request.getPartyContent())
-                .partyTime(request.getPartyTime())
-                .partyDeadline(request.getPartyDeadline())
-                .totalParticipant(request.getTotalParticipant())
+                .title(request.getPartyTitle())
+                .content(request.getPartyContent())
+                .menu("메뉴")
                 .address(address)
+                .status(PartyStatus.ON)
+                .deadline(request.getPartyDeadline())
+                .partyTime(request.getPartyTime())
+                .totalParticipant(request.getTotalParticipant())
                 .user(user)
+                .gender(request.getGender())
+                .category(request.getCategory())
                 .build();
     }
 }

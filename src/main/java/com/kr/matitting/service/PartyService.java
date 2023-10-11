@@ -33,7 +33,11 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final MapService mapService;
-    
+
+    // TODO
+    //  : 썸네일 없는 경우 카테고리에 따라 이미지 설정
+    //  : 모집 기간(선택 사항) 을 따로 지정 안 하면 식사 시간(필수 입력 사항) 1시간 전으로
+    //  :
     public void createParty(CreatePartyRequest request) {
         Long userId = 1L;
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
@@ -45,50 +49,50 @@ public class PartyService {
         partyRepository.save(party);
     }
     
-    public void joinParty(PartyJoinDto partyJoinDto) throws NotFoundException {
-        if (partyJoinDto.getPartyId() == null ||
-                partyJoinDto.getParentId() == null ||
-                partyJoinDto.getUserId() == null) {
-            log.error("JoinParty:[Request Data is null!!]");
-            throw new IllegalStateException("데이터의 요청이 잘못되었습니다.");
-        }
-
-        Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
-        PartyJoin partyJoin = PartyJoin.builder().party(party).parentId(partyJoinDto.getParentId()).userId(partyJoinDto.getUserId()).build();
-        partyJoinRepository.save(partyJoin);
-    }
-
-    public String decideUser(PartyJoinDto partyJoinDto) throws NotFoundException {
-        if (partyJoinDto.getStatus() == PartyJoinStatus.WAIT) {
-            log.info("Party Join Status 정보가 잘못 Request 되었습니다.");
-            throw new IllegalStateException("NOT FOUND Accept or Refuse status");
-        }
-
-        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndParentIdAndUserId(
-                partyJoinDto.getPartyId(),
-                partyJoinDto.getParentId(),
-                partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
-        partyJoinRepository.delete(findPartyJoin);
-
-        if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT) {
-            //파티방 Table에 정보를 입력
-            User user = userRepository.findById(partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
-            Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
-            Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
-            teamRepository.save(member);
-            return "Accept Request Completed";
-        } else if (partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
-            return "Refuse Request Completed";
-        }
-        return null;
-    }
-
-    public List<PartyJoin> getJoinList(PartyJoinDto partyJoinDto) {
-        if (partyJoinDto.getPartyId() == null ||
-                partyJoinDto.getParentId() == null) {
-            log.error("GetJoinList:[Request Data is null!!]");
-            throw new IllegalStateException("데이터의 요청이 잘못되었습니다.");
-        }
-        return partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getParentId());
-    }
+//    public void joinParty(PartyJoinDto partyJoinDto) throws NotFoundException {
+//        if (partyJoinDto.getPartyId() == null ||
+//                partyJoinDto.getParentId() == null ||
+//                partyJoinDto.getUserId() == null) {
+//            log.error("JoinParty:[Request Data is null!!]");
+//            throw new IllegalStateException("데이터의 요청이 잘못되었습니다.");
+//        }
+//
+//        Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
+//        PartyJoin partyJoin = PartyJoin.builder().party(party).parentId(partyJoinDto.getParentId()).userId(partyJoinDto.getUserId()).build();
+//        partyJoinRepository.save(partyJoin);
+//    }
+//
+//    public String decideUser(PartyJoinDto partyJoinDto) throws NotFoundException {
+//        if (partyJoinDto.getStatus() == PartyJoinStatus.WAIT) {
+//            log.info("Party Join Status 정보가 잘못 Request 되었습니다.");
+//            throw new IllegalStateException("NOT FOUND Accept or Refuse status");
+//        }
+//
+//        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndParentIdAndUserId(
+//                partyJoinDto.getPartyId(),
+//                partyJoinDto.getParentId(),
+//                partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
+//        partyJoinRepository.delete(findPartyJoin);
+//
+//        if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT) {
+//            //파티방 Table에 정보를 입력
+//            User user = userRepository.findById(partyJoinDto.getUserId()).orElseThrow(NotFoundException::new);
+//            Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(NotFoundException::new);
+//            Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
+//            teamRepository.save(member);
+//            return "Accept Request Completed";
+//        } else if (partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
+//            return "Refuse Request Completed";
+//        }
+//        return null;
+//    }
+//
+//    public List<PartyJoin> getJoinList(PartyJoinDto partyJoinDto) {
+//        if (partyJoinDto.getPartyId() == null ||
+//                partyJoinDto.getParentId() == null) {
+//            log.error("GetJoinList:[Request Data is null!!]");
+//            throw new IllegalStateException("데이터의 요청이 잘못되었습니다.");
+//        }
+//        return partyJoinRepository.findByPartyIdAndParentId(partyJoinDto.getPartyId(), partyJoinDto.getParentId());
+//    }
 }

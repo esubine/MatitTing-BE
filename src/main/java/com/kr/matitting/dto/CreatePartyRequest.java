@@ -1,5 +1,7 @@
 package com.kr.matitting.dto;
 
+import com.kr.matitting.constant.PartyCategory;
+import com.kr.matitting.constant.PartyGender;
 import lombok.Getter;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -18,5 +20,7 @@ public class CreatePartyRequest {
     private int totalParticipant;
     private String longitude;
     private String latitude;
+    private PartyGender gender;
+    private PartyCategory category;
 
 }

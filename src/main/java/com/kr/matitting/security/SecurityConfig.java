@@ -40,7 +40,7 @@ public class SecurityConfig {
                         request.requestMatchers("/", "/home").permitAll() //default path
                                 .requestMatchers("/member/signupForm", "/oauth2/signUp", "/loginSuccess", "/oauth2/logout").permitAll() //login path
                                 .requestMatchers("/renew").permitAll() //token path
-                                .requestMatchers("/resources/**").permitAll() //resource path
+                                .requestMatchers("/resources/**", "/**").permitAll() //resource path
                                 .anyRequest().authenticated())
                 .formLogin((form) -> form
                         .loginPage("/")
