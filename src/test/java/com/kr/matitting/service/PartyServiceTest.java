@@ -71,7 +71,7 @@ class PartyServiceTest {
         Party party = Party.builder()
                 .partyTitle("파티Test")
                 .menu("돈까스").status(PartyStatus.RECRUIT)
-                .partyDeadline(LocalDateTime.of(2023, 10, 12, 15, 23, 32))
+                .deadline(LocalDateTime.of(2023, 10, 12, 15, 23, 32))
                 .hit(1)
                 .build();
         partyRepository.save(party);

@@ -26,14 +26,14 @@ public class PartyController {
 
     //유저가 파티방에 참가를 요청하는 logic
     @PostMapping("/api/party/participation")
-    public ResponseEntity JoinParty(PartyJoinDto partyJoinDto) throws Exception {
+    public ResponseEntity<String> JoinParty(PartyJoinDto partyJoinDto) throws Exception {
         partyService.joinParty(partyJoinDto);
         return ResponseEntity.ok().body("Success join request!");
     }
 
     //방장이 파티방에 대한 수락/거절을 하는 logic
     @PostMapping("/api/party/decision")
-    public ResponseEntity AcceptRefuseParty(PartyJoinDto partyJoinDto) throws Exception {
+    public ResponseEntity<String> AcceptRefuseParty(PartyJoinDto partyJoinDto) throws Exception {
         String result = partyService.decideUser(partyJoinDto);
         return ResponseEntity.ok().body(result);
     }
