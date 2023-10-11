@@ -45,9 +45,9 @@ public class PartyService {
         Long userId = 1L;
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
 
-        if (request.getTitle() == null || request.getContent() == null
-                || request.getPartyTime() == null || request.getLongitude() == null || request.getLatitude() == null
-                || request.getMenu() == null || request.getGender() == null || request.getCategory() == null) {
+        if (request.getTitle() == null || request.getContent() == null || request.getPartyTime() == null
+                || request.getLongitude() == null || request.getLatitude() == null || request.getMenu() == null
+                || request.getGender() == null || request.getCategory() == null || request.getAge() == null) {
             log.info("=== CreatePartyRequest: Request Data is null ===");
             throw new PartyException(PartyExceptionType.NOT_FOUND_CONTENT);
         }
@@ -98,6 +98,7 @@ public class PartyService {
                 .totalParticipant(request.getTotalParticipant())
                 .category(request.getCategory())
                 .gender(request.getGender())
+                .age(request.getAge())
                 .status(PartyStatus.RECRUIT)
                 .user(user);
     }

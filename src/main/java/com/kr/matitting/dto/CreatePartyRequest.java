@@ -1,5 +1,6 @@
 package com.kr.matitting.dto;
 
+import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyGender;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class CreatePartyRequest {
     private String latitude;
     private PartyGender gender;
     private PartyCategory category;
+    private PartyAge age;
     private String menu;
     private String thumbnail;
 

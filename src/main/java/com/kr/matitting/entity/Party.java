@@ -1,5 +1,6 @@
 package com.kr.matitting.entity;
 
+import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyGender;
 import com.kr.matitting.constant.PartyStatus;
@@ -52,6 +53,9 @@ public class Party extends BaseTimeEntity {
     @Column(nullable = false, name = "gender")
     @Enumerated(EnumType.STRING)
     private PartyGender gender; // 참여 가능 성별
+    @Column(nullable = false, name = "age")
+    @Enumerated(EnumType.STRING)
+    private PartyAge age; // 연령대
 
     @Column(nullable = true, name = "thumbnail")
     private String thumbnail; //파티 썸네일
