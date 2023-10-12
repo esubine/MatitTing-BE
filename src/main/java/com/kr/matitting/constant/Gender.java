@@ -4,19 +4,19 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
-public enum PartyGender {
-    ALL("all"), MALE("male"), FEMALE("female");
+public enum Gender {
+    ALL("ALL"), MALE("MALE"), FEMALE("FEMALE");
 
     @Getter
     private final String value;
 
-    PartyGender(String value) {
+    Gender(String value) {
         this.value = value;
     }
 
     @JsonCreator
-    public static PartyGender from(String value) {
-        for (PartyGender status : PartyGender.values()) {
+    public static Gender from(String value) {
+        for (Gender status : Gender.values()) {
             if (status.getValue().equals(value)) {
                 return status;
             }

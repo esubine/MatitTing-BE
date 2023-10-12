@@ -6,6 +6,7 @@ import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.CreatePartyRequest;
 import com.kr.matitting.dto.PartyJoinDto;
+import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.PartyJoin;
 import com.kr.matitting.entity.Team;
@@ -28,6 +29,7 @@ import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -83,6 +85,44 @@ public class PartyService {
                 .build();
 
         partyRepository.save(party);
+    }
+
+    @Transactional
+    public void partyUpdate(PartyUpdateDto partyUpdateDto) {
+        Party party = partyRepository.findById(partyUpdateDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        if (!partyUpdateDto.partyTitle().isEmpty()) {
+            party.setPartyTitle(partyUpdateDto.partyTitle().get());
+        }
+        if (!partyUpdateDto.partyContent().isEmpty()) {
+            party.setPartyContent(partyUpdateDto.partyContent().get());
+        }
+        if (!partyUpdateDto.menu().isEmpty()) {
+            party.setMenu(partyUpdateDto.menu().get());
+        }
+        if (!partyUpdateDto.longitude().isEmpty() && !partyUpdateDto.latitude().isEmpty()) {
+            mapService.coordToAddr(partyUpdateDto.longitude().get(), partyUpdateDto.latitude().get());
+        }
+        if (!partyUpdateDto.status().isEmpty()) {
+            party.setStatus(partyUpdateDto.status().get());
+        }
+        if (!partyUpdateDto.thumbnail().isEmpty()) {
+            party.setThumbnail(partyUpdateDto.thumbnail().get());
+        }
+        if (!partyUpdateDto.deadline().isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime deadlineTime = partyUpdateDto.deadline().get();
+            if (now.isBefore(deadlineTime) && party.getPartyTime().isBefore(deadlineTime)) {
+                party.setDeadline(deadlineTime);
+            }
+        }
+        if (!partyUpdateDto.totalParticipant().isEmpty()) {
+            if (party.getParticipantCount() <= partyUpdateDto.totalParticipant().get()) {
+                party.setTotalParticipant(partyUpdateDto.totalParticipant().get());
+            }
+        }
+        if (!partyUpdateDto.gender().isEmpty()) {
+            party.setGender(partyUpdateDto.gender().get());
+        }
     }
 
 

@@ -1,15 +1,18 @@
 package com.kr.matitting.dto;
 
 import com.kr.matitting.constant.PartyJoinStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class PartyJoinDto {
+    @NotNull
     private Long partyId;
-
+    @NotNull
     private Long leaderId;
+    @NotNull
     private Long userId;
     private PartyJoinStatus status;
     public PartyJoinDto() {
