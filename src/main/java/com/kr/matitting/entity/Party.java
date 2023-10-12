@@ -1,22 +1,22 @@
 package com.kr.matitting.entity;
 
+import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.PartyCategory;
-import com.kr.matitting.constant.PartyGender;
 import com.kr.matitting.constant.PartyStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@DynamicUpdate
 @Table(name = "PARTY")
 public class Party extends BaseTimeEntity {
     @Id
@@ -51,7 +51,7 @@ public class Party extends BaseTimeEntity {
     private PartyCategory category; // 음식 카테고리
     @Column(nullable = false, name = "gender")
     @Enumerated(EnumType.STRING)
-    private PartyGender gender; // 참여 가능 성별
+    private Gender gender; // 참여 가능 성별
 
     @Column(nullable = true, name = "thumbnail")
     private String thumbnail; //파티 썸네일

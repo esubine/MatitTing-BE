@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum PartyStatus {
     //모집 여부
-    RECRUIT("RECRUIT"), FINISH("FINISH");
+    RECRUIT("RECRUIT"), PARTICIPATE("PARTICIPATE"), FINISH("FINISH");
     PartyStatus(String key) {
         this.key = key;
     }

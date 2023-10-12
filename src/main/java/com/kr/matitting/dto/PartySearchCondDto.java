@@ -1,6 +1,7 @@
 package com.kr.matitting.dto;
 
 import com.kr.matitting.constant.PartyStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ public class PartySearchCondDto {
     private String menu;
     private PartyStatus status;
     private Map<String, String> orders;
+    @NotNull
     private int limit;
 
     public void checkOrder() {
