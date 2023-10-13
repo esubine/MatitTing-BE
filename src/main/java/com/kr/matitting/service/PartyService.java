@@ -7,20 +7,14 @@ import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.CreatePartyRequest;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
-import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.PartyJoin;
-import com.kr.matitting.entity.Team;
-import com.kr.matitting.entity.User;
+import com.kr.matitting.entity.*;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
-import com.kr.matitting.repository.PartyJoinRepository;
-import com.kr.matitting.repository.PartyRepository;
-import com.kr.matitting.repository.PartyTeamRepository;
-import com.kr.matitting.repository.UserRepository;
+import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,19 +34,14 @@ public class PartyService {
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
+
+    private final MenuRepository menuRepository;
     private final MapService mapService;
 
     public void createParty(CreatePartyRequest request) {
         log.info("=== createParty() start ===");
         Long userId = 1L;
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user 정보가 없습니다."));
-
-        if (request.getTitle() == null || request.getContent() == null
-                || request.getPartyTime() == null || request.getLongitude() == null || request.getLatitude() == null
-                || request.getMenu() == null || request.getGender() == null || request.getCategory() == null) {
-            log.info("=== CreatePartyRequest: Request Data is null ===");
-            throw new PartyException(PartyExceptionType.NOT_FOUND_CONTENT);
-        }
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
         // 위도, 경도 -> 주소 변환
         String address = mapService.coordToAddr(request.getLongitude(), request.getLatitude());
@@ -77,11 +66,17 @@ public class PartyService {
             }
         }
 
+        Menu menu = createBaseMenuBuilder(request)
+                .thumbnail(thumbnail)
+                .build();
+
+        menuRepository.save(menu);
+
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
         Party party = createBasePartyBuilder(request, user)
                 .address(address)
                 .deadline(deadline)
-                .thumbnail(thumbnail)
+                .menu(menu)
                 .build();
 
         partyRepository.save(party);
@@ -125,7 +120,6 @@ public class PartyService {
         }
     }
 
-
     // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
     private Party.PartyBuilder createBasePartyBuilder(CreatePartyRequest request, User user) {
         return Party.builder()
@@ -133,13 +127,18 @@ public class PartyService {
                 .partyContent(request.getContent())
                 .longitude(request.getLongitude())
                 .latitude(request.getLatitude())
-                .menu(request.getMenu())
                 .partyTime(request.getPartyTime())
                 .totalParticipant(request.getTotalParticipant())
-                .category(request.getCategory())
                 .gender(request.getGender())
+                .age(request.getAge())
                 .status(PartyStatus.RECRUIT)
                 .user(user);
+    }
+
+    private Menu.MenuBuilder createBaseMenuBuilder(CreatePartyRequest request) {
+        return Menu.builder()
+                .menu(request.getMenu())
+                .category(request.getCategory());
     }
 
     public void joinParty(PartyJoinDto partyJoinDto) throws NotFoundException {
