@@ -1,7 +1,9 @@
 package com.kr.matitting.controller;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.token.TokenException;
+import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
@@ -9,12 +11,10 @@ import com.kr.matitting.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/oauth2/")
@@ -35,13 +35,9 @@ public class OAuthController {
     }
 
     @PostMapping("signUp")
-    public ResponseEntity<String> loadOAuthSignUp(HttpServletRequest request) {
-        User user = User.builder().email(request.getParameter("email")).build();
-        String newUserEmail = userService.signUp(user);
-        if (newUserEmail == null) {
-            return ResponseEntity.badRequest().body("회원가입 실패!");
-        }
-        return ResponseEntity.ok().body("회원가입 성공!");
+    public ResponseEntity<User> loadOAuthSignUp(UserSignUpDto userSignUpDto) {
+        User user = userService.signUp(userSignUpDto);
+        return ResponseEntity.ok().body(user);
     }
 
     @GetMapping("loginSuccess")
@@ -64,14 +60,8 @@ public class OAuthController {
     }
     
     @GetMapping("renewToken")
-    public ResponseEntity<String> renewToken(HttpServletRequest request) {
-        try {
-            String refreshToken = jwtService.extractToken(request).get();
-            return ResponseEntity.ok("BEARER " + jwtService.renewToken(refreshToken));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.badRequest().body("Refresh Token 이 만료되었습니다");
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<String> renewToken(HttpServletRequest request) throws Exception {
+        String refreshToken = jwtService.extractToken(request).orElseThrow(() -> new TokenException(TokenExceptionType.INVALID_REFRESH_TOKEN));
+        return ResponseEntity.ok("BEARER " + jwtService.renewToken(refreshToken));
     }
 }

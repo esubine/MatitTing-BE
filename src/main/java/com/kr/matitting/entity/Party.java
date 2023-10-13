@@ -67,6 +67,9 @@ public class Party extends BaseTimeEntity {
     @ColumnDefault("0")
     private int hit;
 
+    @Column(name = "thumbnail")
+    private String thumbnail;
+
     @JoinColumn(nullable = false, name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

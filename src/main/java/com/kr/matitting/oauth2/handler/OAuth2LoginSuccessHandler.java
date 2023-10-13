@@ -23,14 +23,12 @@ import java.nio.charset.StandardCharsets;
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtService jwtService;
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         log.info("OAuth2 Login 성공!");
         
         User user = ((CustomOauth2User) authentication.getPrincipal()).getUser();
         String accessToken = jwtService.createAccessToken(user);
-        
 
-        
         if (user.getRole().equals(Role.GUEST)) { //신규 유저 -> signUp으로 email, socialType, socialId를 send
             response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
             String redirectURL = UriComponentsBuilder.fromUriString("http://localhost:8080/oauth2/signUp")
