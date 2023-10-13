@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -26,6 +27,12 @@ public class ExceptionAdvice {
     public ResponseEntity handleValidEx(BindException exception) {
         log.error("@ValidException 발생!!", exception.getMessage());
         return new ResponseEntity(new ExceptionDto(2000), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity methodValidException(MethodArgumentNotValidException e){
+        log.error("MethodArgumentNotValidException 발생!!!", e.getMessage());
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
