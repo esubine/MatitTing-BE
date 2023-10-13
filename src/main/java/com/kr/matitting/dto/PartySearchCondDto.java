@@ -1,26 +1,28 @@
 package com.kr.matitting.dto;
 
 import com.kr.matitting.constant.PartyStatus;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-@Data
-public class PartySearchCondDto {
-    private String title;
-    private String menu;
-    private PartyStatus status;
-    private Map<String, String> orders;
-    @NotNull
-    private int limit;
-
+public record PartySearchCondDto(
+        Optional<String> title,
+        Optional<String> menu,
+        Optional<PartyStatus> status,
+        Optional<Map<String, String>> orders,
+        @NotNull
+        Integer limit
+) {
     public void checkOrder() {
-        if (this.orders == null) {
-            this.orders = new HashMap<String, String>();
-            orders.put("column", "hit");
-            orders.put("type", "desc");
+        if (orders == null) {
+            orders.get().put("column", "hit");
+            orders.get().put("type", "desc");
         }
+    }
+
+    public PartySearchCondDto partySearchCondDto(Optional<String> title, Optional<String> menu, Optional<PartyStatus> status, Optional<Map<String, String>> orders, Integer limit) {
+        return new PartySearchCondDto(title, menu, status, orders, limit);
     }
 }

@@ -1,35 +1,23 @@
 package com.kr.matitting.dto;
 
 import com.kr.matitting.constant.PartyJoinStatus;
+import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.entity.PartyJoin;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public class PartyJoinDto {
-    @NotNull
-    private Long partyId;
-    @NotNull
-    private Long leaderId;
-    @NotNull
-    private Long userId;
-    private PartyJoinStatus status;
-    public PartyJoinDto() {
-        this.status = PartyJoinStatus.WAIT;
-    }
+import java.util.Optional;
 
-    public PartyJoinDto(Long partyId, Long leaderId, Long userId) {
-        this.partyId = partyId;
-        this.leaderId = leaderId;
-        this.userId = userId;
-        this.status = PartyJoinStatus.WAIT;
-    }
+public record PartyJoinDto(
+        @NotNull
+        Long partyId,
+        @NotNull
+        Long leaderId,
+        @NotNull
+        Long userId,
+        Optional<PartyJoinStatus> status
 
-    public void Accept() {
-        this.status = PartyJoinStatus.ACCEPT;
-    }
-    public void Refuse() {
-        this.status = PartyJoinStatus.REFUSE;
+) {
+    public PartyJoinDto PartyJoinDto(Long partyId, Long leaderId, Long userId, Optional<PartyJoinStatus> status) {
+        return new PartyJoinDto(partyId, leaderId, userId, status);
     }
 }

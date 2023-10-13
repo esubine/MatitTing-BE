@@ -8,6 +8,8 @@ import com.kr.matitting.dto.CreatePartyRequest;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.entity.*;
+import com.kr.matitting.exception.menu.MenuException;
+import com.kr.matitting.exception.menu.MenuExceptionType;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
@@ -56,7 +58,6 @@ public class PartyService {
         String thumbnail = request.getThumbnail();
         if (thumbnail == null) {
             PartyCategory category = request.getCategory();
-
             switch (category) {
                 case KOREAN -> thumbnail = "한식.img";
                 case WESTERN -> thumbnail = "양식.img";
@@ -82,7 +83,6 @@ public class PartyService {
         partyRepository.save(party);
     }
 
-    @Transactional
     public void partyUpdate(PartyUpdateDto partyUpdateDto) {
         Party party = partyRepository.findById(partyUpdateDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         if (!partyUpdateDto.partyTitle().isEmpty()) {
@@ -92,7 +92,8 @@ public class PartyService {
             party.setPartyContent(partyUpdateDto.partyContent().get());
         }
         if (!partyUpdateDto.menu().isEmpty()) {
-            party.setMenu(partyUpdateDto.menu().get());
+            Menu menu = menuRepository.findByMenu(partyUpdateDto.menu().get()).orElseThrow(() -> new MenuException(MenuExceptionType.NOT_FOUND_MENU));
+            party.setMenu(menu);
         }
         if (!partyUpdateDto.longitude().isEmpty() && !partyUpdateDto.latitude().isEmpty()) {
             mapService.coordToAddr(partyUpdateDto.longitude().get(), partyUpdateDto.latitude().get());
@@ -141,43 +142,43 @@ public class PartyService {
                 .category(request.getCategory());
     }
 
-    public void joinParty(PartyJoinDto partyJoinDto) throws NotFoundException {
+    public void joinParty(PartyJoinDto partyJoinDto){
         log.info("=== joinParty() start ===");
 
-        if (partyJoinDto.getPartyId() == null ||
-                partyJoinDto.getLeaderId() == null ||
-                partyJoinDto.getUserId() == null) {
+        if (partyJoinDto.partyId() == null ||
+                partyJoinDto.leaderId() == null ||
+                partyJoinDto.userId() == null) {
             log.error("=== JoinParty:Request Data is null ===");
             throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
         }
 
-        Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
-        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.getLeaderId()).userId(partyJoinDto.getUserId()).build();
+        Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(partyJoinDto.userId()).build();
         partyJoinRepository.save(partyJoin);
     }
 
     public String decideUser(PartyJoinDto partyJoinDto) {
         log.info("=== decideUser() start ===");
 
-        if (!(partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT || partyJoinDto.getStatus() == PartyJoinStatus.REFUSE)) {
+        if (!(partyJoinDto.status().get() == PartyJoinStatus.ACCEPT || partyJoinDto.status().get() == PartyJoinStatus.REFUSE)) {
             log.error("=== Party Join Status was requested incorrectly ===");
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
 
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(
-                partyJoinDto.getPartyId(),
-                partyJoinDto.getLeaderId(),
-                partyJoinDto.getUserId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+                partyJoinDto.partyId(),
+                partyJoinDto.leaderId(),
+                partyJoinDto.userId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
         partyJoinRepository.delete(findPartyJoin);
 
-        if (partyJoinDto.getStatus() == PartyJoinStatus.ACCEPT) {
+        if (partyJoinDto.status().get() == PartyJoinStatus.ACCEPT) {
             log.info("=== ACCEPT ===");
-            User user = userRepository.findById(partyJoinDto.getUserId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-            Party party = partyRepository.findById(partyJoinDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+            User user = userRepository.findById(partyJoinDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+            Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
             return "Accept Request Completed";
-        } else if (partyJoinDto.getStatus() == PartyJoinStatus.REFUSE) {
+        } else if (partyJoinDto.status().get() == PartyJoinStatus.REFUSE) {
             log.info("=== REFUSE ===");
             return "Refuse Request Completed";
         }
@@ -185,11 +186,11 @@ public class PartyService {
     }
 
     public List<PartyJoin> getJoinList(PartyJoinDto partyJoinDto) {
-        if (partyJoinDto.getPartyId() == null ||
-                partyJoinDto.getLeaderId() == null) {
+        if (partyJoinDto.partyId() == null ||
+                partyJoinDto.leaderId() == null) {
             log.error("GetJoinList:[Request Data is null!!]");
             throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
         }
-        return partyJoinRepository.findByPartyIdAndLeaderId(partyJoinDto.getPartyId(), partyJoinDto.getLeaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        return partyJoinRepository.findByPartyIdAndLeaderId(partyJoinDto.partyId(), partyJoinDto.leaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
     }
 }

@@ -26,11 +26,11 @@ public class SearchService {
     private final PartyRepositoryCustom partyRepositoryCustom;
 
     public Page<Party> getPartyPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
-        if (partySearchCondDto.getTitle() != null) {
-            increaseKeyWordScore(partySearchCondDto.getTitle());
+        if (!partySearchCondDto.title().isEmpty()) {
+            increaseKeyWordScore(partySearchCondDto.title().get());
         }
-        if (partySearchCondDto.getMenu() != null) {
-            increaseKeyWordScore(partySearchCondDto.getMenu());
+        if (!partySearchCondDto.menu().isEmpty()) {
+            increaseKeyWordScore(partySearchCondDto.menu().get());
         }
         return partyRepositoryCustom.searchPage(partySearchCondDto, pageable);
     }

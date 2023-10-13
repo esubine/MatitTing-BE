@@ -2,6 +2,7 @@ package com.kr.matitting.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
@@ -29,9 +30,10 @@ public class UserService {
     private final JwtService jwtService;
     private final RedisUtil redisUtil;
 
-    public String signUp(User user) {
-        User createdUser = userRepository.save(user);
-        return createdUser.getEmail();
+    public User signUp(UserSignUpDto userSignUpDto) {
+        User user = userSignUpDto.toEntity();
+        User save = userRepository.save(user);
+        return save;
     }
 
     @Transactional
