@@ -1,11 +1,13 @@
 package com.kr.matitting.entity;
 
+import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -37,6 +39,9 @@ public class User extends BaseTimeEntity{
 
     @Column(name = "city")
     private String city; //사는 도시
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender; //성별
 
     @Enumerated(EnumType.STRING)
     private Role role; //신규유저 or 기존유저
