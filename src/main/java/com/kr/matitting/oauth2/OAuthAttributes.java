@@ -4,6 +4,7 @@ import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.oauth2.userinfo.KakaoOAuth2UserInfo;
+import com.kr.matitting.oauth2.userinfo.NaverOAuth2UserInfo;
 import com.kr.matitting.oauth2.userinfo.OAuth2UserInfo;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,7 +39,7 @@ public class OAuthAttributes {
     public static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
         return OAuthAttributes.builder()
                 .nameAttributeKey(userNameAttributeName)
-                .oauth2UserInfo(new KakaoOAuth2UserInfo(attributes)) //NaverOAuth2UserInfo
+                .oauth2UserInfo(new NaverOAuth2UserInfo(attributes))
                 .build();
     }
 
