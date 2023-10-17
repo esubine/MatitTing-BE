@@ -63,7 +63,7 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
     }
 
     private BooleanExpression menuLike(String menu) {
-        return StringUtils.hasText(menu) ? party.menu.menu.contains(menu) : null;
+        return StringUtils.hasText(menu) ? party.menu.contains(menu) : null;
     }
 
     private BooleanExpression stateEq(PartyStatus partyStatus) {
