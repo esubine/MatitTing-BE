@@ -1,20 +1,25 @@
 package com.kr.matitting.controller;
 
 import com.kr.matitting.dto.PartyCreateDto;
+import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.service.PartyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import com.kr.matitting.dto.PartyJoinDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.kr.matitting.s3.S3Uploader;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/party")
 public class PartyController {
     private final PartyService partyService;
+    private final S3Uploader s3Uploader;
 
     // 파티 모집 글 생성
     @PostMapping("/")
@@ -23,6 +28,13 @@ public class PartyController {
     ) {
         partyService.createParty(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("파티 글이 생성되었습니다.");
+    }
+
+    @PostMapping("/image")
+    public String uploadImage(
+            @RequestPart(value = "image") MultipartFile multipartFile
+    ) throws IOException {
+        return s3Uploader.upload(multipartFile);
     }
 
     @PatchMapping("/")
