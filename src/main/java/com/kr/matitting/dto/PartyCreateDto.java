@@ -5,6 +5,7 @@ import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.Gender;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -13,7 +14,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class CreatePartyRequest {
+@Builder
+public class PartyCreateDto {
+
+    @NotNull
+    private Long user_id;
     @NotNull
     private String title;
     @NotNull
@@ -39,5 +44,4 @@ public class CreatePartyRequest {
     @NotNull
     private String menu;
     private String thumbnail;
-
 }

@@ -1,12 +1,11 @@
 package com.kr.matitting.service;
 
+import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartySearchCondDto;
 import com.kr.matitting.dto.ResponseRankingDto;
-import com.kr.matitting.entity.Party;
 import com.kr.matitting.repository.PartyRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -25,14 +24,15 @@ public class SearchService {
     private final RedisTemplate<String, String> redisTemplate;
     private final PartyRepositoryCustom partyRepositoryCustom;
 
-    public Page<Party> getPartyPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
-        if (!partySearchCondDto.title().isEmpty()) {
-            increaseKeyWordScore(partySearchCondDto.title().get());
+    public List<PartyCreateDto> getPartyPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
+        if (!(partySearchCondDto.title() == null)) {
+            increaseKeyWordScore(partySearchCondDto.title());
         }
-        if (!partySearchCondDto.menu().isEmpty()) {
-            increaseKeyWordScore(partySearchCondDto.menu().get());
+        if (!(partySearchCondDto.menu() == null)) {
+            increaseKeyWordScore(partySearchCondDto.menu());
         }
-        return partyRepositoryCustom.searchPage(partySearchCondDto, pageable);
+        List<PartyCreateDto> partyList = partyRepositoryCustom.searchPage(partySearchCondDto, pageable).stream().map(party -> party.toDto(party)).toList();
+        return partyList;
     }
     public void increaseKeyWordScore(String keyWord) {
         log.info("=== increaseKeyWordScore() start ===");

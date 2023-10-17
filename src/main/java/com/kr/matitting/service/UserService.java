@@ -1,15 +1,19 @@
 package com.kr.matitting.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.constant.Role;
+import com.kr.matitting.constant.SocialType;
+import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
-import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.team.TeamException;
+import com.kr.matitting.exception.team.TeamExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.repository.PartyRepository;
+import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +32,7 @@ import java.util.Optional;
 public class UserService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
+    private final PartyTeamRepository partyTeamRepository;
     private final JwtService jwtService;
     private final RedisUtil redisUtil;
 
@@ -73,8 +79,23 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public List<Party> getMyPartyList(Long userId, PartyStatus status) {
-        List<Party> myParties = partyRepository.findByUserIdAndStatus(userId, status).orElseThrow();
-        return myParties;
+    public User getMyInfo(SocialType socialType, String socialId) {
+        User user = userRepository.findBySocialTypeAndSocialId(socialType, socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        return user;
+    }
+
+    public List<PartyCreateDto> getMyPartyList(Long userId, Role role) {
+        List<PartyCreateDto> parties;
+        if (role == Role.HOST || role == Role.VOLUNTEER) {
+            parties = partyTeamRepository.findByUserIdAndRole(userId, role)
+                    .orElseThrow(() -> new TeamException(TeamExceptionType.NOT_FOUND_TEAM))
+                    .stream().map(team -> team.getParty()).map(party -> party.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+        }
+        else{
+            parties = partyTeamRepository.findByUserId(userId)
+                    .orElseThrow(() -> new TeamException(TeamExceptionType.NOT_FOUND_TEAM))
+                    .stream().map(team -> team.getParty()).map(party -> party.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+        }
+        return parties;
     }
 }
