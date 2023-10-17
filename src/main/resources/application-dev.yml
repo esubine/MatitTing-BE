@@ -98,3 +98,16 @@ jwt:
 
 kakaoMap:
   key: REST API 키
+
+cloud:
+  aws:
+    s3:
+      url: <url>
+      bucket: <버킷이름>
+    stack:
+      auto: false
+    region:
+      static: ap-northeast-2
+    credentials:
+      accessKey: <발급받은 accessKey>
+      secretKey: <발급받은 secretKey>
