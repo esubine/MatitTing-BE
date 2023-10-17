@@ -7,6 +7,7 @@ import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
+import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.PartyJoin;
 import com.kr.matitting.entity.Team;
@@ -41,8 +42,13 @@ public class PartyService {
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
-
     private final MapService mapService;
+
+    public ResponsePartyDto getPartyInfo(Long partyId) {
+        Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        ResponsePartyDto responsePartyDto = ResponsePartyDto.toDto(party);
+        return responsePartyDto;
+    }
 
     public void createParty(PartyCreateDto request) {
         log.info("=== createParty() start ===");
@@ -117,6 +123,11 @@ public class PartyService {
         if (!partyUpdateDto.gender().isEmpty()) {
             party.setGender(partyUpdateDto.gender().get());
         }
+    }
+
+    public void deleteParty(Long partyId) {
+        Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        partyRepository.delete(party);
     }
 
     // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성

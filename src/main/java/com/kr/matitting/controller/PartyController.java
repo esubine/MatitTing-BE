@@ -3,6 +3,8 @@ package com.kr.matitting.controller;
 import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
+import com.kr.matitting.dto.ResponsePartyDto;
+import com.kr.matitting.entity.Party;
 import com.kr.matitting.service.PartyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,9 +44,21 @@ public class PartyController {
         partyService.partyUpdate(partyUpdateDto);
     }
 
+    @GetMapping("/{partyId}")
+    public ResponseEntity<ResponsePartyDto> partyDetail(@PathVariable Long partyId) {
+        ResponsePartyDto partyInfo = partyService.getPartyInfo(partyId);
+        return ResponseEntity.ok().body(partyInfo);
+    }
+
+    @GetMapping("/{partyId}")
+    public void partyDelete(@PathVariable Long partyId) {
+        partyService.deleteParty(partyId);
+    }
+
     //유저가 파티방에 참가를 요청하는 logic
     @PostMapping("/participation")
     public ResponseEntity<String> JoinParty(PartyJoinDto partyJoinDto) throws Exception {
+
         partyService.joinParty(partyJoinDto);
         return ResponseEntity.ok().body("Success join request!");
     }
