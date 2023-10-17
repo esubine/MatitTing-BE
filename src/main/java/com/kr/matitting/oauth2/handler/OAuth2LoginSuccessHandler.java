@@ -25,33 +25,29 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         log.info("OAuth2 Login 성공!");
-        
         User user = ((CustomOauth2User) authentication.getPrincipal()).getUser();
-        String accessToken = jwtService.createAccessToken(user);
 
-        if (user.getRole().equals(Role.GUEST)) { //신규 유저 -> signUp으로 email, socialType, socialId를 send
-            response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
-            String redirectURL = UriComponentsBuilder.fromUriString("http://localhost:8080/oauth2/signUp")
-                    .queryParam("email", user.getEmail())
-                    .queryParam("socialType", user.getSocialType())
-                    .queryParam("socialId", user.getSocialId())
-                    .build()
-                    .encode(StandardCharsets.UTF_8)
-                    .toUriString();
-            getRedirectStrategy().sendRedirect(request, response, redirectURL);
-        } else { //기존 유저 -> refreshToken을 발급하고 update, response에 accessToken, refreshToken을 담아서 send
+        String redirectURL = "";
+        UriComponentsBuilder redirectURLBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/oauth2/login")
+                .queryParam("email", user.getEmail())
+                .queryParam("socialType", user.getSocialType())
+                .queryParam("socialId", user.getSocialId())
+                .queryParam("role", user.getRole());
+
+        if (user.getRole().equals(Role.GUEST)) {
+            redirectURL = redirectURLBuilder.build().encode(StandardCharsets.UTF_8).toUriString();
+        } else if (user.getRole().equals(Role.USER)) {
+            String accessToken = jwtService.createAccessToken(user);
             String refreshToken = jwtService.createRefreshToken(user);
             jwtService.updateRefreshToken(user.getSocialId(), refreshToken);
 
-            response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
-            response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
-
-            // 최초 로그인이 아닌 경우 로그인 성공 페이지로 이동
-            String redirectURL = UriComponentsBuilder.fromUriString("http://localhost:8080/loginSuccess")
+            redirectURL = redirectURLBuilder
+                    .queryParam("accessToken", "BEARER " + accessToken)
+                    .queryParam("refreshToken", "BEARER " + refreshToken)
                     .build()
                     .encode(StandardCharsets.UTF_8)
                     .toUriString();
-            getRedirectStrategy().sendRedirect(request, response, redirectURL);
         }
+        getRedirectStrategy().sendRedirect(request, response, redirectURL);
     }
 }
