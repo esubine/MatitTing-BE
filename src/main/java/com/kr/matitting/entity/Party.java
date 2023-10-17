@@ -2,7 +2,9 @@ package com.kr.matitting.entity;
 
 import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.PartyAge;
+import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.dto.PartyCreateDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -70,12 +72,32 @@ public class Party extends BaseTimeEntity {
     @Column(name = "thumbnail")
     private String thumbnail;
 
+    @Column(name = "menu")
+    private String menu;
+
+    @Column(name = "category")
+    private PartyCategory category;
+
     @JoinColumn(nullable = false, name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @JoinColumn(nullable = false, name = "menu_id")
-    @OneToOne(fetch = FetchType.LAZY)
-    private Menu menu;
+    public PartyCreateDto toDto(Party party) {
+        return PartyCreateDto.builder()
+                .user_id(party.getId())
+                .title(party.getPartyTitle())
+                .content(party.getPartyContent())
+                .partyTime(party.getPartyTime())
+                .deadline(party.getDeadline())
+                .totalParticipant(party.getTotalParticipant())
+                .longitude(party.getLongitude())
+                .latitude(party.getLatitude())
+                .gender(party.getGender())
+                .category(party.getCategory())
+                .menu(party.getMenu())
+                .age(party.getAge())
+                .thumbnail(party.getThumbnail())
+                .build();
+    }
 
 }

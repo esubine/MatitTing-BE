@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum TokenExceptionType implements BaseExceptionType {
-    INVALID_ACCESS_TOKEN(1000, HttpStatus.BAD_REQUEST, "Access Token이 유효하지 않습니다."),
-    INVALID_REFRESH_TOKEN(1001, HttpStatus.BAD_REQUEST, "Refresh Token이 유효하지 않습니다.");
+    INVALID_ACCESS_TOKEN(1100, HttpStatus.BAD_REQUEST, "Access Token이 유효하지 않습니다."),
+    INVALID_REFRESH_TOKEN(1101, HttpStatus.BAD_REQUEST, "Refresh Token이 유효하지 않습니다.");
 
     private int errorCode;
     private HttpStatus httpStatus;

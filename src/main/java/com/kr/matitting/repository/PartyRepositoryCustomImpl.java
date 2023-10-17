@@ -39,7 +39,7 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
         List<Party> content = queryFactory
                 .select(party)
                 .from(party)
-                .where(titleLike(partySearchCondDto.title().get()), menuLike(partySearchCondDto.menu().get()), stateEq(partySearchCondDto.status().get()))
+                .where(titleLike(partySearchCondDto.title()), menuLike(partySearchCondDto.menu()), stateEq(partySearchCondDto.status()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(partySort(pageable))
@@ -52,7 +52,7 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
                 .select(party.count())
                 .from(party)
                 .where(
-                        titleLike(partySearchCondDto.title().get()), menuLike(partySearchCondDto.menu().get()), stateEq(partySearchCondDto.status().get())
+                        titleLike(partySearchCondDto.title()), menuLike(partySearchCondDto.menu()), stateEq(partySearchCondDto.status())
                 )
                 .fetchOne();
         return count;

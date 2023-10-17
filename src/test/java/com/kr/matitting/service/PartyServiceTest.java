@@ -45,7 +45,6 @@ class PartyServiceTest {
                 .nickname("새싹개발자")
                 .age(26)
                 .imgUrl("https://www.naver.com")
-                .city("전주")
                 .role(Role.USER)
                 .socialType(SocialType.KAKAO)
                 .build();
@@ -57,17 +56,15 @@ class PartyServiceTest {
                 .nickname("안경잡이개발자")
                 .age(26)
                 .imgUrl("https://www.google.com")
-                .city("전주")
                 .role(Role.USER)
                 .socialType(SocialType.KAKAO)
                 .build();
         userRepository.save(guest);
 
-        Menu menu = Menu.builder().id(1L).menu("돈까스").category(PartyCategory.WESTERN).thumbnail("https:www").build();
 
         Party party = Party.builder()
                 .partyTitle("파티Test")
-                .menu(menu)
+                .menu("돈까스")
                 .status(PartyStatus.RECRUIT)
                 .deadline(LocalDateTime.of(2023, 10, 12, 15, 23, 32))
                 .hit(1)

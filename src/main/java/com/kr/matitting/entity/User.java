@@ -19,10 +19,11 @@ public class User extends BaseTimeEntity{
     @Column(name = "user_id")
     private Long id;    //회원 Id
 
-    @Column(length = 30, unique = true, name = "social_id")
+    @Column(nullable = false, length = 30, unique = true)
     private String socialId;   //카카오 or 네이버 인증 Id
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SocialType socialType; // KAKAO, NAVER, GOOGLE
 
     @Column(nullable = false, length = 30, unique = true)
@@ -32,17 +33,17 @@ public class User extends BaseTimeEntity{
     private String nickname; //닉네임
 
     @Column(nullable = false, length = 30)
-    private int age; //나이
+    private Integer age; //나이
 
-    @Column(nullable = true, name = "user_img")
+    @Column(name = "user_img")
     private String imgUrl; //프로필 이미지
 
-    @Column(name = "city")
-    private String city; //사는 도시
-
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Gender gender; //성별
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role; //신규유저 or 기존유저
+
 }

@@ -1,6 +1,6 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.dto.CreatePartyRequest;
+import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.service.PartyService;
 import jakarta.validation.Valid;
@@ -19,13 +19,13 @@ public class PartyController {
     // 파티 모집 글 생성
     @PostMapping("/")
     public ResponseEntity<String> createParty(
-            @RequestBody @Valid CreatePartyRequest request
+            @RequestBody @Valid PartyCreateDto request
     ) {
         partyService.createParty(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("파티 글이 생성되었습니다.");
     }
 
-    @PatchMapping("/update")
+    @PatchMapping("/")
     public void updateParty(PartyUpdateDto partyUpdateDto) {
         partyService.partyUpdate(partyUpdateDto);
     }

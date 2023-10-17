@@ -4,12 +4,13 @@ import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyJoinStatus;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
-import com.kr.matitting.dto.CreatePartyRequest;
+import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
-import com.kr.matitting.entity.*;
-import com.kr.matitting.exception.menu.MenuException;
-import com.kr.matitting.exception.menu.MenuExceptionType;
+import com.kr.matitting.entity.Party;
+import com.kr.matitting.entity.PartyJoin;
+import com.kr.matitting.entity.Team;
+import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
@@ -21,11 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,27 +35,22 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
 
-    private final MenuRepository menuRepository;
     private final MapService mapService;
 
-    public void createParty(CreatePartyRequest request) {
+    public void createParty(PartyCreateDto request) {
         log.info("=== createParty() start ===");
-        Long userId = 1L;
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
-        // 위도, 경도 -> 주소 변환
-        String address = mapService.coordToAddr(request.getLongitude(), request.getLatitude());
+        Long user_id = request.getUser_id();
+        User user = userRepository.findById(user_id).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
-        //모집 기간(선택 사항)을 따로 지정 안 하면 식사 시간(필수 입력 사항) 1시간 전으로
-        LocalDateTime deadline = request.getDeadline();
-        if (deadline == null) {
-            deadline = request.getPartyTime().minusHours(1L);
-        }
+        // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
+        Party party = createBasePartyBuilder(request, user);
 
-        //썸네일 없는 경우 카테고리에 따라 이미지 설정
-        String thumbnail = request.getThumbnail();
+        partyRepository.save(party);
+    }
+
+    private String getThumbnail(PartyCategory category, String thumbnail) {
         if (thumbnail == null) {
-            PartyCategory category = request.getCategory();
             switch (category) {
                 case KOREAN -> thumbnail = "한식.img";
                 case WESTERN -> thumbnail = "양식.img";
@@ -66,21 +59,19 @@ public class PartyService {
                 case ETC -> thumbnail = "기타.img";
             }
         }
+        return thumbnail;
+    }
 
-        Menu menu = createBaseMenuBuilder(request)
-                .thumbnail(thumbnail)
-                .build();
+    private LocalDateTime getDeadline(LocalDateTime deadline, LocalDateTime partyTime) {
+        if (deadline == null) {
+            deadline = partyTime.minusHours(1L);
+        }
+        return deadline;
+    }
 
-        menuRepository.save(menu);
-
-        // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
-        Party party = createBasePartyBuilder(request, user)
-                .address(address)
-                .deadline(deadline)
-                .menu(menu)
-                .build();
-
-        partyRepository.save(party);
+    private String getAddress(String longitude, String latitude) {
+        String address = mapService.coordToAddr(longitude, latitude);
+        return address;
     }
 
     public void partyUpdate(PartyUpdateDto partyUpdateDto) {
@@ -92,8 +83,7 @@ public class PartyService {
             party.setPartyContent(partyUpdateDto.partyContent().get());
         }
         if (!partyUpdateDto.menu().isEmpty()) {
-            Menu menu = menuRepository.findByMenu(partyUpdateDto.menu().get()).orElseThrow(() -> new MenuException(MenuExceptionType.NOT_FOUND_MENU));
-            party.setMenu(menu);
+            party.setMenu(partyUpdateDto.menu().get());
         }
         if (!partyUpdateDto.longitude().isEmpty() && !partyUpdateDto.latitude().isEmpty()) {
             mapService.coordToAddr(partyUpdateDto.longitude().get(), partyUpdateDto.latitude().get());
@@ -122,7 +112,7 @@ public class PartyService {
     }
 
     // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
-    private Party.PartyBuilder createBasePartyBuilder(CreatePartyRequest request, User user) {
+    private Party createBasePartyBuilder(PartyCreateDto request, User user) {
         return Party.builder()
                 .partyTitle(request.getTitle())
                 .partyContent(request.getContent())
@@ -132,16 +122,15 @@ public class PartyService {
                 .totalParticipant(request.getTotalParticipant())
                 .gender(request.getGender())
                 .age(request.getAge())
-                .status(PartyStatus.RECRUIT)
-                .user(user);
-    }
-
-    private Menu.MenuBuilder createBaseMenuBuilder(CreatePartyRequest request) {
-        return Menu.builder()
                 .menu(request.getMenu())
-                .category(request.getCategory());
+                .category(request.getCategory())
+                .status(PartyStatus.RECRUIT)
+                .user(user)
+                .address(getAddress(request.getLongitude(), request.getLatitude()))
+                .deadline(getDeadline(request.getDeadline(), request.getPartyTime()))
+                .thumbnail(getThumbnail(request.getCategory(), request.getThumbnail()))
+                .build();
     }
-
     public void joinParty(PartyJoinDto partyJoinDto){
         log.info("=== joinParty() start ===");
 
@@ -183,14 +172,5 @@ public class PartyService {
             return "Refuse Request Completed";
         }
         return null;
-    }
-
-    public List<PartyJoin> getJoinList(PartyJoinDto partyJoinDto) {
-        if (partyJoinDto.partyId() == null ||
-                partyJoinDto.leaderId() == null) {
-            log.error("GetJoinList:[Request Data is null!!]");
-            throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
-        }
-        return partyJoinRepository.findByPartyIdAndLeaderId(partyJoinDto.partyId(), partyJoinDto.leaderId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
     }
 }

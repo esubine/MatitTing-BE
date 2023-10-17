@@ -1,8 +1,6 @@
 package com.kr.matitting.dto;
 
 import com.kr.matitting.constant.PartyJoinStatus;
-import com.kr.matitting.constant.PartyStatus;
-import com.kr.matitting.entity.PartyJoin;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Optional;
@@ -18,6 +16,6 @@ public record PartyJoinDto(
 
 ) {
     public PartyJoinDto PartyJoinDto(Long partyId, Long leaderId, Long userId, Optional<PartyJoinStatus> status) {
-        return new PartyJoinDto(partyId, leaderId, userId, status);
+        return new PartyJoinDto(partyId, leaderId, userId, status.isEmpty() ? Optional.of(PartyJoinStatus.WAIT) : status);
     }
 }
