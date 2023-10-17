@@ -1,19 +1,17 @@
 package com.kr.matitting.dto;
 
+import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
-import com.kr.matitting.constant.Gender;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @Builder
 public class PartyCreateDto {
 

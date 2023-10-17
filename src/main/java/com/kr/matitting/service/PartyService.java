@@ -17,9 +17,13 @@ import com.kr.matitting.exception.partyjoin.PartyJoinException;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
-import com.kr.matitting.repository.*;
+import com.kr.matitting.repository.PartyJoinRepository;
+import com.kr.matitting.repository.PartyRepository;
+import com.kr.matitting.repository.PartyTeamRepository;
+import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,9 @@ import java.time.LocalDateTime;
 @Transactional
 @RequiredArgsConstructor
 public class PartyService {
+    @Value("${cloud.aws.s3.url}")
+    private String url;
+
     private final PartyJoinRepository partyJoinRepository;
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
@@ -50,13 +57,14 @@ public class PartyService {
     }
 
     private String getThumbnail(PartyCategory category, String thumbnail) {
+
         if (thumbnail == null) {
             switch (category) {
-                case KOREAN -> thumbnail = "한식.img";
-                case WESTERN -> thumbnail = "양식.img";
-                case CHINESE -> thumbnail = "중식.img";
-                case JAPANESE -> thumbnail = "일식.img";
-                case ETC -> thumbnail = "기타.img";
+                case KOREAN -> thumbnail = url + "korean.jpeg";
+                case WESTERN -> thumbnail = url + "western.jpeg";
+                case CHINESE -> thumbnail = url + "chinese.jpeg";
+                case JAPANESE -> thumbnail = url + "japanese.jpeg";
+                case ETC -> thumbnail = url + "etc.jpeg";
             }
         }
         return thumbnail;
@@ -131,7 +139,8 @@ public class PartyService {
                 .thumbnail(getThumbnail(request.getCategory(), request.getThumbnail()))
                 .build();
     }
-    public void joinParty(PartyJoinDto partyJoinDto){
+
+    public void joinParty(PartyJoinDto partyJoinDto) {
         log.info("=== joinParty() start ===");
 
         if (partyJoinDto.partyId() == null ||
