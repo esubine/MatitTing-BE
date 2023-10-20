@@ -18,7 +18,7 @@ public class MapService {
     private String MAP_KEY;
 
     // 좌표로 주소 변환하기
-    public String coordToAddr(String longitude, String latitude) {
+    public String coordToAddr(double longitude, double latitude) {
         String url = "https://dapi.kakao.com/v2/local/geo/coord2address.json?x=" + longitude + "&y=" + latitude;
         String addr = "";
         try {
@@ -77,20 +77,29 @@ public class MapService {
      * JSON형태의 String 데이터에서 주소값(address_name)만 받아오기
      */
     private static String getRegionAddress(String jsonString) {
-        String address = "";
+        String value = "";
         JSONObject jObj = (JSONObject) JSONValue.parse(jsonString);
+        JSONObject meta = (JSONObject) jObj.get("meta");
+        int size = (int) meta.get("total_count");
 
-        JSONArray jArray = (JSONArray) jObj.get("documents");
-        JSONObject subJobj = (JSONObject) jArray.get(0);
-        JSONObject roadAddress = (JSONObject) subJobj.get("road_address");
+        if (size > 0) {
+            JSONArray jArray = (JSONArray) jObj.get("documents");
+            JSONObject subJobj = (JSONObject) jArray.get(0);
+            JSONObject roadAddress = (JSONObject) subJobj.get("road_address");
 
-        address = (String) roadAddress.get("address_name");
+            if (roadAddress == null) {
+                JSONObject subsubJobj = (JSONObject) subJobj.get("address");
+                value = (String) subsubJobj.get("address_name");
+            } else {
+                value = (String) roadAddress.get("address_name");
+            }
 
-        if (address.equals("") || address == null) {
-            subJobj = (JSONObject) jArray.get(1);
-            subJobj = (JSONObject) subJobj.get("address");
-            address = (String) subJobj.get("address_name");
+            if (value.equals("") || value == null) {
+                subJobj = (JSONObject) jArray.get(1);
+                subJobj = (JSONObject) subJobj.get("address");
+                value = (String) subJobj.get("address_name");
+            }
         }
-        return address;
+        return value;
     }
 }

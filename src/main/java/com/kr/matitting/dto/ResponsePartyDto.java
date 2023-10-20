@@ -16,9 +16,9 @@ public record ResponsePartyDto(
         @NotNull
         String address,
         @NotNull
-        String longitude,
+        double longitude,
         @NotNull
-        String latitude,
+        double latitude,
         @NotNull
         PartyStatus status,
         @NotNull

@@ -30,9 +30,9 @@ public class PartyCreateDto {
     @Min(2)
     private int totalParticipant;
     @NotNull
-    private String longitude;
+    private double longitude;
     @NotNull
-    private String latitude;
+    private double latitude;
     @NotNull
     private Gender gender;
     @NotNull
