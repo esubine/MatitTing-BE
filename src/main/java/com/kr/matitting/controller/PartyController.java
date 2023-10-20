@@ -4,10 +4,11 @@ import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.dto.ResponsePartyDto;
-import com.kr.matitting.entity.Party;
+import com.kr.matitting.dto.MainPageDto;
 import com.kr.matitting.service.PartyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kr.matitting.s3.S3Uploader;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,7 +52,7 @@ public class PartyController {
         return ResponseEntity.ok().body(partyInfo);
     }
 
-    @GetMapping("/{partyId}")
+    @DeleteMapping("/{partyId}")
     public void partyDelete(@PathVariable Long partyId) {
         partyService.deleteParty(partyId);
     }
@@ -69,4 +71,13 @@ public class PartyController {
         String result = partyService.decideUser(partyJoinDto);
         return ResponseEntity.ok().body(result);
     }
+
+    @GetMapping("/main-page")
+    public List<ResponsePartyDto> getPartyList(
+            @RequestBody MainPageDto mainPageDto,
+            Pageable pageable
+    ) {
+        return partyService.getPartyList(mainPageDto, pageable);
+    }
+
 }

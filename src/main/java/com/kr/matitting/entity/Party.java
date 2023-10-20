@@ -36,10 +36,10 @@ public class Party extends BaseTimeEntity {
     private String address; // 주소
 
     @Column(name = "longitude")
-    private String longitude;
+    private double longitude;
 
     @Column(name = "latitude")
-    private String latitude;
+    private double latitude;
 
     @Enumerated(EnumType.STRING)
     private PartyStatus status; // 파티 상태
