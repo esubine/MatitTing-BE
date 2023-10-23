@@ -5,6 +5,7 @@ import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.dto.MainPageDto;
+import com.kr.matitting.s3.S3Uploader;
 import com.kr.matitting.service.PartyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.kr.matitting.s3.S3Uploader;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,18 +28,19 @@ public class PartyController {
 
     // 파티 모집 글 생성
     @PostMapping("/")
-    public ResponseEntity<String> createParty(
+    public ResponseEntity<Map<String, Long>> createParty(
             @RequestBody @Valid PartyCreateDto request
     ) {
-        partyService.createParty(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("파티 글이 생성되었습니다.");
+        Map<String, Long> partyId = partyService.createParty(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(partyId);
     }
 
     @PostMapping("/image")
-    public String uploadImage(
+    public ResponseEntity<Map<String, String>> uploadImage(
             @RequestPart(value = "image") MultipartFile multipartFile
     ) throws IOException {
-        return s3Uploader.upload(multipartFile);
+        Map<String, String> imgUrl = s3Uploader.upload(multipartFile);
+        return ResponseEntity.ok().body(imgUrl);
     }
 
     @PatchMapping("/")
@@ -73,11 +75,12 @@ public class PartyController {
     }
 
     @GetMapping("/main-page")
-    public List<ResponsePartyDto> getPartyList(
+    public ResponseEntity<List<ResponsePartyDto>> getPartyList(
             @RequestBody MainPageDto mainPageDto,
             Pageable pageable
     ) {
-        return partyService.getPartyList(mainPageDto, pageable);
+        List<ResponsePartyDto> partyList = partyService.getPartyList(mainPageDto, pageable);
+        return ResponseEntity.ok().body(partyList);
     }
 
 }

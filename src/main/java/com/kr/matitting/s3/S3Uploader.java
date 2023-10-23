@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -25,10 +27,16 @@ public class S3Uploader {
     private String bucket;
 
     // MultipartFile을 전달받아 File로 전환한 후 S3에 업로드
-    public String upload(MultipartFile multipartFile) throws IOException {
+    public Map<String, String> upload(MultipartFile multipartFile) throws IOException {
         File uploadFile = convert(multipartFile)
                 .orElseThrow(() -> new IllegalArgumentException("MultipartFile -> File 전환 실패"));
-        return upload(uploadFile);
+
+        String imgUrl = upload(uploadFile);
+
+        Map<String, String> partyId = new HashMap<>();
+        partyId.put("imgUrl", imgUrl);
+
+        return partyId;
     }
 
     private String upload(File uploadFile) {
