@@ -4,8 +4,6 @@ import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.token.TokenException;
-import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,21 +61,21 @@ public class OAuthController {
 
     @PostMapping("logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
-        String accessToken = jwtService.extractToken(request).get();
+        String accessToken = jwtService.extractToken(request, "accessToken");
         userService.logout(accessToken);
         return ResponseEntity.ok("logout Success");
     }
 
     @DeleteMapping("withdraw")
     public ResponseEntity<String> withdraw(HttpServletRequest request) {
-        String accessToken = jwtService.extractToken(request).get();
+        String accessToken = jwtService.extractToken(request, "accessToken");
         userService.withdraw(accessToken);
         return ResponseEntity.ok("withdraw Success");
     }
 
     @GetMapping("renewToken")
     public ResponseEntity<String> renewToken(HttpServletRequest request) {
-        String refreshToken = jwtService.extractToken(request).orElseThrow(() -> new TokenException(TokenExceptionType.INVALID_REFRESH_TOKEN));
+        String refreshToken = jwtService.extractToken(request, "refreshToken");
         return ResponseEntity.ok("BEARER " + jwtService.renewToken(refreshToken));
     }
 }

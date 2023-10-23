@@ -4,6 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.token.TokenException;
+import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.repository.UserRepository;
@@ -57,7 +59,7 @@ public class JwtService {
         Date now = new Date();
         return JWT.create() //JWT 토큰 생성 빌더 반환
                 .withSubject(ACCESS_TOKEN_SUBJECT) //JWT Subject 지정 -> AccessToken
-                .withClaim("id", user.getSocialId())
+                .withClaim("socialId", user.getSocialId())
                 .withClaim("role", user.getRole().getKey())
                 .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
@@ -70,46 +72,33 @@ public class JwtService {
         Date now = new Date();
         return JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
-                .withClaim("id", user.getSocialId())
+                .withClaim("socialId", user.getSocialId())
                 .withClaim("role", user.getRole().getKey())
                 .withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
     /**
-     * AccessToken header에 실어서 보내기
+     * Request Header token Get
      */
-    public void sendAccessToken(HttpServletResponse response, String accessToken) {
-        response.setStatus(HttpServletResponse.SC_OK);
+    public String extractToken(HttpServletRequest request, String tokenType) {
+        //TODO: null을 허용 X Optional -> throw new TokenException으로 변경
+        Optional<String> token = null;
 
-        setAccessTokenHeader(response, accessToken);
-        log.info("재발급된 Access Token: {}", accessToken);
+        if (tokenType == "accessToken") {
+             token = Optional.ofNullable(request.getHeader(accessHeader))
+                    .filter(refreshToken -> refreshToken.startsWith(BEARER))
+                    .map(refreshToken -> refreshToken.replace(BEARER, ""));
+            token.orElseThrow(() -> new TokenException(TokenExceptionType.NOT_FOUND_ACCESS_TOKEN));
+        } else if (tokenType == "refreshToken") {
+            token = Optional.ofNullable(request.getHeader(refreshHeader))
+                    .filter(refreshToken -> refreshToken.startsWith(BEARER))
+                    .map(refreshToken -> refreshToken.replace(BEARER, ""));
+            token.orElseThrow(() -> new TokenException(TokenExceptionType.NOT_FOUND_REFRESH_TOKEN));
+        }
+        return token.get();
     }
 
-    /**
-     * AccessToken + RefreshToken header에 실어서 보내기
-     */
-    public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
-        response.setStatus(HttpServletResponse.SC_OK);
-
-        setAccessTokenHeader(response, accessToken);
-        setRefreshTokenHeader(response, refreshToken);
-        log.info("Access Token, Refresh Token 헤더 설정 완료");
-    }
-
-    public Optional<String> extractToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader("Authorization"))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""));
-    }
-    // 헤더에 Bearer XXX 형식으로 담겨온 토큰을 추출한다
-    public String getTokenFromHeader(String header) {
-        return header.split(" ")[1];
-    }
-
-    /**
-     * redis에 email:refreshToken을 저장
-     */
     public void updateRefreshToken(String socialId, String refreshToken) {
         // Redis refreshToken
         redisUtil.setDateExpire(socialId, refreshToken, refreshTokenExpirationPeriod);
@@ -127,11 +116,10 @@ public class JwtService {
     public String renewToken(String refreshToken) {
         //request refreshToken -> User SocialId를 get -> redis refreshToken 유효한지 찾아서 검사
         DecodedJWT decodedJWT = isTokenValid(refreshToken);
-        String socialId = decodedJWT.getClaim("id").asString();
-        String role = decodedJWT.getClaim("role").asString();
+        String socialId = decodedJWT.getClaim("socialId").asString();
         String findToken = redisUtil.getData(socialId);
 
-        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new TokenException(TokenExceptionType.INVALID_REFRESH_TOKEN));
         return createAccessToken(user);
     }
 

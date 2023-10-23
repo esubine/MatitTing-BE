@@ -58,7 +58,7 @@ public class UserService {
         log.info("=== logout() start ===");
 
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
-        String socialId = decodedJWT.getClaim("id").asString();
+        String socialId = decodedJWT.getClaim("socialId").asString();
 
         //expired 시간 check
         Long expiration = jwtService.getExpiration(accessToken);
@@ -74,7 +74,7 @@ public class UserService {
         log.info("=== withdraw() start ===");
 
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
-        String socialId = decodedJWT.getClaim("id").asString();
+        String socialId = decodedJWT.getClaim("socialId").asString();
         User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         userRepository.delete(user);
     }
@@ -89,12 +89,12 @@ public class UserService {
         if (role == Role.HOST || role == Role.VOLUNTEER) {
             parties = partyTeamRepository.findByUserIdAndRole(userId, role)
                     .orElseThrow(() -> new TeamException(TeamExceptionType.NOT_FOUND_TEAM))
-                    .stream().map(team -> team.getParty()).map(party -> party.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+                    .stream().map(team -> team.getParty()).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
         }
         else{
             parties = partyTeamRepository.findByUserId(userId)
                     .orElseThrow(() -> new TeamException(TeamExceptionType.NOT_FOUND_TEAM))
-                    .stream().map(team -> team.getParty()).map(party -> party.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+                    .stream().map(team -> team.getParty()).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
         }
         return parties;
     }
