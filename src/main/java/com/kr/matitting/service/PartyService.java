@@ -33,7 +33,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -59,7 +61,7 @@ public class PartyService {
         return responsePartyDto;
     }
 
-    public void createParty(PartyCreateDto request) {
+    public Map<String, Long> createParty(PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
         Long user_id = request.getUser_id();
@@ -67,8 +69,13 @@ public class PartyService {
 
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
         Party party = createBasePartyBuilder(request, user);
+        Party savedParty = partyRepository.save(party);
 
-        partyRepository.save(party);
+        Map<String, Long> partyId = new HashMap<>();
+        partyId.put("partyId", savedParty.getId());
+
+        return partyId;
+
     }
 
     private String getThumbnail(PartyCategory category, String thumbnail) {
