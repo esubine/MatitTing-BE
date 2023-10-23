@@ -3,6 +3,7 @@ package com.kr.matitting.dto;
 import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
+import com.kr.matitting.entity.Party;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -42,4 +43,22 @@ public class PartyCreateDto {
     @NotNull
     private String menu;
     private String thumbnail;
+
+    public static PartyCreateDto toDto(Party party) {
+        return PartyCreateDto.builder()
+                .user_id(party.getId())
+                .title(party.getPartyTitle())
+                .content(party.getPartyContent())
+                .partyTime(party.getPartyTime())
+                .deadline(party.getDeadline())
+                .totalParticipant(party.getTotalParticipant())
+                .longitude(party.getLongitude())
+                .latitude(party.getLatitude())
+                .gender(party.getGender())
+                .category(party.getCategory())
+                .menu(party.getMenu())
+                .age(party.getAge())
+                .thumbnail(party.getThumbnail())
+                .build();
+    }
 }

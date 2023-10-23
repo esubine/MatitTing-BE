@@ -31,7 +31,7 @@ public class SearchService {
         if (!(partySearchCondDto.menu() == null)) {
             increaseKeyWordScore(partySearchCondDto.menu());
         }
-        List<PartyCreateDto> partyList = partyRepositoryCustom.searchPage(partySearchCondDto, pageable).stream().map(party -> party.toDto(party)).toList();
+        List<PartyCreateDto> partyList = partyRepositoryCustom.searchPage(partySearchCondDto, pageable).stream().map(party -> PartyCreateDto.toDto(party)).toList();
         return partyList;
     }
     public void increaseKeyWordScore(String keyWord) {

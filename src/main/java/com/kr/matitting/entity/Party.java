@@ -81,23 +81,4 @@ public class Party extends BaseTimeEntity {
     @JoinColumn(nullable = false, name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
-
-    public PartyCreateDto toDto(Party party) {
-        return PartyCreateDto.builder()
-                .user_id(party.getId())
-                .title(party.getPartyTitle())
-                .content(party.getPartyContent())
-                .partyTime(party.getPartyTime())
-                .deadline(party.getDeadline())
-                .totalParticipant(party.getTotalParticipant())
-                .longitude(party.getLongitude())
-                .latitude(party.getLatitude())
-                .gender(party.getGender())
-                .category(party.getCategory())
-                .menu(party.getMenu())
-                .age(party.getAge())
-                .thumbnail(party.getThumbnail())
-                .build();
-    }
-
 }

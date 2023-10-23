@@ -1,7 +1,8 @@
 package com.kr.matitting.jwt.filter;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kr.matitting.exception.token.TokenException;
+import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.util.RedisUtil;
 import jakarta.servlet.FilterChain;
@@ -20,7 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 @Slf4j
@@ -49,39 +49,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 토큰이 없거나 정상적이지 않은 경우
         if (header == null || !header.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType(APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("utf-8");
-            new ObjectMapper().writeValue(response.getWriter(), "Token 이 존재하지 않습니다");
-            return;
+            throw new TokenException(TokenExceptionType.NOT_FOUND_ACCESS_TOKEN);
         }
 
         try {
             // 토큰 검증
-            String token = jwtService.getTokenFromHeader(header);
+            String token = header.replace("BEARER ", "");
             if (redisUtil.getData(token) == null) { //redis blacklist check
                 DecodedJWT decodedJWT = jwtService.isTokenValid(token);
 
-                String socialId = decodedJWT.getClaim("id").asString();
+                String socialId = decodedJWT.getClaim("socialId").asString();
                 String role = decodedJWT.getClaim("role").asString();
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(socialId, null, Collections.singleton(new SimpleGrantedAuthority(role)));
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 doFilter(request, response, filterChain);
             } else {
-                log.info("유효한 JWT 토큰이 없습니다.");
+                throw new TokenException(TokenExceptionType.BLACK_LIST_ACCESS_TOKEN);
             }
         } catch (TokenExpiredException e) {
-            // 토큰 만료 시 발생하는 예외
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType(APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("utf-8");
-            new ObjectMapper().writeValue(response.getWriter(), "Access Token 이 만료되었습니다.");
+            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType(APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("utf-8");
-            new ObjectMapper().writeValue(response.getWriter(), "올바르지 않은 Token 입니다.");
+            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
         }
     }
 }
