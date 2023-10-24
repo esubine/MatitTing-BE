@@ -1,14 +1,13 @@
 package com.kr.matitting.controller;
 
 import com.kr.matitting.dto.*;
-import com.kr.matitting.exception.party.PartyException;
+import com.kr.matitting.exception.Map.MapExceptionType;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.s3.S3Uploader;
 import com.kr.matitting.service.PartyService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,7 +18,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +41,10 @@ public class PartyController {
             @ApiResponse(responseCode = "201", description = "Created",
                     content = @Content(schemaProperties = {
                             @SchemaProperty(name = "partyId", schema = @Schema(type = "long", description = "파티 아이디"))})),
-            @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
+            @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class))),
+            @ApiResponse(responseCode = "1300", description = "카카오 맵 Authorization이 실패했습니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
+            @ApiResponse(responseCode = "1301", description = "카카오 맵에서 데이터를 받아오지 못했습니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
+            @ApiResponse(responseCode = "1302", description = "카카오 맵 서버 오류입니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class)))
     })
 
     @PostMapping("/")

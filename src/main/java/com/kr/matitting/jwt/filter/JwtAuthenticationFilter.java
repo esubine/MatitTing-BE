@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String secretKey;
 
     private static final String[] whitelist = {"/", "/index.html", "/home", "/login", "/oauth2/**",
-            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**"};
+            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/", "/api-docs/"};
 
     // 필터를 거치지 않을 URL 을 설정하고, true 를 return 하면 바로 다음 필터를 진행하게 됨
     @Override

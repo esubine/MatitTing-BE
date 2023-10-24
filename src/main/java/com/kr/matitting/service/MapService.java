@@ -1,5 +1,8 @@
 package com.kr.matitting.service;
 
+import com.kr.matitting.exception.Map.MapException;
+import com.kr.matitting.exception.Map.MapExceptionType;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
@@ -13,6 +16,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 @Service
+@Slf4j
 public class MapService {
     @Value("${kakaoMap.key}")
     private String MAP_KEY;
@@ -55,13 +59,15 @@ public class MapService {
         //보내고 결과값 받기
         int responseCode = conn.getResponseCode();
         if (responseCode == 400) {
-            System.out.println("400:: 해당 명령을 실행할 수 없음");
+            log.info("카카오 맵에서 데이터를 받아오지 못했습니다.");
+            throw new MapException(MapExceptionType.FAILED_GET_DATA);
         } else if (responseCode == 401) {
-            System.out.println("401:: Authorization가 잘못됨");
+            log.info("카카오 맵 Authorization가 잘못됨");
+            throw new MapException(MapExceptionType.FAILED_AUTHORIZATION);
         } else if (responseCode == 500) {
-            System.out.println("500:: 서버 에러, 문의 필요");
+            log.info("서버 에러, 문의 필요");
+            throw new MapException(MapExceptionType.KAKAO_MAP_SERVER_ERROR);
         } else { // 성공 후 응답 JSON 데이터받기
-
             Charset charset = Charset.forName("UTF-8");
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), charset));
 
