@@ -6,7 +6,7 @@ import com.kr.matitting.exception.BaseExceptionType;
 public class MapException extends BaseException {
     private BaseExceptionType exceptionType;
 
-    public MapException(MapExceptionType baseException){
+    public MapException(BaseExceptionType exceptionType){
         this.exceptionType = exceptionType;
     }
 
