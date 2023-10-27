@@ -1,14 +1,18 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.dto.*;
+import com.kr.matitting.constant.Role;
+import com.kr.matitting.dto.PartyCreateDto;
+import com.kr.matitting.dto.PartyJoinDto;
+import com.kr.matitting.dto.PartyUpdateDto;
+import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.exception.Map.MapExceptionType;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
+import com.kr.matitting.exception.team.TeamExceptionType;
 import com.kr.matitting.exception.user.UserExceptionType;
-import com.kr.matitting.s3.S3Uploader;
 import com.kr.matitting.service.PartyService;
+import com.kr.matitting.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.SchemaProperty;
@@ -16,15 +20,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +32,7 @@ import java.util.Map;
 @RequestMapping("/api/party")
 public class PartyController {
     private final PartyService partyService;
-    private final S3Uploader s3Uploader;
+    private final UserService userService;
 
     // 파티 모집 글 생성
     @Operation(summary = "파티 글 생성", description = "파티 글 생성 API 입니다.")
@@ -55,24 +54,13 @@ public class PartyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(partyId);
     }
 
-    @Operation(summary = "이미지 s3 업로드", description = "이미지 s3 업로드 API 입니다.")
-    @ApiResponse(responseCode = "200", description = "OK",
-                    content = @Content(schemaProperties = {
-                                @SchemaProperty(name = "imgUrl", schema = @Schema(type = "string", description = "imgUrl"))}))
-    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> uploadImage(
-            @RequestPart(value = "image") MultipartFile multipartFile
-    ) throws IOException {
-        Map<String, String> imgUrl = s3Uploader.upload(multipartFile);
-        return ResponseEntity.ok().body(imgUrl);
-    }
     @Operation(summary = "파티 업데이트", description = "파티 정보 업데이트 API 입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "업데이트 성공"),
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
     @PatchMapping("/")
-    public void updateParty(PartyUpdateDto partyUpdateDto) {
+    public void updateParty(@RequestBody PartyUpdateDto partyUpdateDto) {
         partyService.partyUpdate(partyUpdateDto);
     }
 
@@ -103,7 +91,7 @@ public class PartyController {
             @ApiResponse(responseCode = "700", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class)))
     })
     @PostMapping("/participation")
-    public ResponseEntity<String> JoinParty(PartyJoinDto partyJoinDto) {
+    public ResponseEntity<String> JoinParty(@RequestBody PartyJoinDto partyJoinDto) {
         partyService.joinParty(partyJoinDto);
         return ResponseEntity.ok().body("Success join request!");
     }
@@ -117,26 +105,21 @@ public class PartyController {
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
     @PostMapping("/decision")
-    public ResponseEntity<String> AcceptRefuseParty(PartyJoinDto partyJoinDto) {
+    public ResponseEntity<String> AcceptRefuseParty(@RequestBody PartyJoinDto partyJoinDto) {
         String result = partyService.decideUser(partyJoinDto);
         return ResponseEntity.ok().body(result);
     }
 
-    @Operation(summary = "메인 페이지", description = "메인 페이지 API 입니다.")
+
+    @Operation(summary = "파티 현황", description = "내 파티 현황을 불러오는 메소드")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK",
-                    content = {
-                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponsePartyDto.class)))})
+            @ApiResponse(responseCode = "200", description = "파티 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = PartyCreateDto.class))),
+            @ApiResponse(responseCode = "1000", description = "파티 팀 정보가 없습니다.", content = @Content(schema = @Schema(implementation = TeamExceptionType.class)))
     })
-    @GetMapping("/main-page")
-    public ResponseEntity<List<ResponsePartyDto>> getPartyList(
-            @ModelAttribute MainPageDto mainPageDto,
-            @RequestParam(value = "offset") Integer offset,
-            @RequestParam(value = "limit") Integer limit
-    ) {
-        Pageable pageable = PageRequest.of(offset, limit);
-        List<ResponsePartyDto> partyList = partyService.getPartyList(mainPageDto, pageable);
-        return ResponseEntity.ok().body(partyList);
+    @GetMapping("/{userId}/partyStatus")
+    public ResponseEntity<List<PartyCreateDto>> myPartyList(@PathVariable Long userId, @RequestParam Role role) {
+        List<PartyCreateDto> myPartyList = userService.getMyPartyList(userId, role);
+        return ResponseEntity.ok().body(myPartyList);
     }
 
 }
