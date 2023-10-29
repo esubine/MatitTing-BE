@@ -14,6 +14,8 @@ import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.PartyJoin;
 import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.Map.MapException;
+import com.kr.matitting.exception.Map.MapExceptionType;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.geom.Point2D;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +50,8 @@ public class PartyService {
     private String url;
 
     private final int MAX_DISTANCE = 20;
-
+    private final double DEFAULT_LATITUDE = 37.566828706631135;
+    private final double DEFAULT_LONGITUDE = 126.978646598009;
     private final PartyJoinRepository partyJoinRepository;
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
@@ -78,6 +82,12 @@ public class PartyService {
 
     }
 
+    public Point2D.Double setLocationFunc(double latitude, double longitude) {
+        Point2D.Double now = new Point2D.Double();
+        now.setLocation(latitude, longitude);
+        return now;
+    }
+
     private String getThumbnail(PartyCategory category, String thumbnail) {
 
         if (thumbnail == null) {
@@ -101,6 +111,9 @@ public class PartyService {
 
     private String getAddress(double longitude, double latitude) {
         String address = mapService.coordToAddr(longitude, latitude);
+        if (address.equals("")) {
+            throw new MapException(MapExceptionType.NOT_FOUND_ADDRESS);
+        }
         return address;
     }
 
@@ -151,8 +164,8 @@ public class PartyService {
         return Party.builder()
                 .partyTitle(request.getTitle())
                 .partyContent(request.getContent())
-                .longitude(request.getLongitude())
-                .latitude(request.getLatitude())
+                .latitude(setLocationFunc(request.getLatitude(), request.getLongitude()).x)
+                .longitude(setLocationFunc(request.getLatitude(), request.getLongitude()).y)
                 .partyTime(request.getPartyTime())
                 .totalParticipant(request.getTotalParticipant())
                 .gender(request.getGender())
@@ -212,8 +225,13 @@ public class PartyService {
 
     public List<ResponsePartyDto> getPartyList(MainPageDto mainPageDto, Pageable pageable) {
         List<Party> partyList;
+        CalculateDto calculateDto;
 
-        CalculateDto calculateDto = calculate(mainPageDto.getLongitude(), mainPageDto.getLatitude());
+        if (mainPageDto.getLatitude() == null | mainPageDto.getLongitude() == null) {
+            calculateDto = calculate(DEFAULT_LONGITUDE, DEFAULT_LATITUDE);
+        } else {
+            calculateDto = calculate(mainPageDto.getLongitude(), mainPageDto.getLatitude());
+        }
         partyList = partyRepositoryImpl.getPartyList(calculateDto.getMinLatitude(), calculateDto.getMaxLatitude(), calculateDto.getMinLongitude(), calculateDto.getMaxLongitude(), pageable);
 
         List<ResponsePartyDto> responsePartyList = partyList.stream()
@@ -231,6 +249,7 @@ public class PartyService {
         double maxLat = userLatitude + (MAX_DISTANCE / earthRadius) * (180.0 / Math.PI);
         double minLon = userLongitude - (MAX_DISTANCE / earthRadius) * (180.0 / Math.PI);
         double maxLon = userLongitude + (MAX_DISTANCE / earthRadius) * (180.0 / Math.PI);
+
         CalculateDto calculateDto = new CalculateDto(minLat, maxLat, minLon, maxLon);
 
         return calculateDto;
