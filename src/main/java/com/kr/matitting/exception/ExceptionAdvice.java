@@ -19,20 +19,20 @@ public class ExceptionAdvice {
         log.error("BaseException errorMessage(): {}", exception.getExceptionType().getErrorMessage());
         log.error("BaseException errorCode(): {}", exception.getExceptionType().getErrorCode());
 
-        return new ResponseEntity(new ExceptionDto(exception.getExceptionType().getErrorCode()), exception.getExceptionType().getHttpStatus());
+        return new ResponseEntity(new ExceptionDto(exception.getExceptionType().getErrorCode(), exception.getExceptionType().getErrorMessage()), exception.getExceptionType().getHttpStatus());
     }
 
     //@Valid Exception
     @ExceptionHandler(BindException.class)
     public ResponseEntity handleValidEx(BindException exception) {
         log.error("@ValidException 발생!!", exception.getMessage());
-        return new ResponseEntity(new ExceptionDto(2000), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(new ExceptionDto(2000, "필수 값이 입력되지 않았습니다."), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity methodValidException(MethodArgumentNotValidException e){
         log.error("MethodArgumentNotValidException 발생!!!", e.getMessage());
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(new ExceptionDto(2001, "필수 값이 입력되지 않았습니다."), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
@@ -45,6 +45,7 @@ public class ExceptionAdvice {
     @AllArgsConstructor
     static class ExceptionDto {
         private Integer errorCode;
+        private String errorMessage;
     }
 
 }

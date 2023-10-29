@@ -7,14 +7,18 @@ import com.kr.matitting.entity.Party;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "파티 생성 DTO")
 public class PartyCreateDto {
     @Schema(description = "사용자 ID", nullable = false, example = "1")
@@ -53,7 +57,6 @@ public class PartyCreateDto {
     @NotNull
     private PartyAge age;
     @Schema(description = "메뉴", nullable = true, example = "붕어빵")
-    @NotNull
     private String menu;
     @Schema(description = "썸네일", nullable = true, example = " https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
     private String thumbnail;

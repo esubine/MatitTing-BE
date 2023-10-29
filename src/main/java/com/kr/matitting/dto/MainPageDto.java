@@ -3,9 +3,11 @@ package com.kr.matitting.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.Setter;
 
 @Schema(description = "Main Page DTO")
 @Getter
+@Setter
 public class MainPageDto {
     @Schema(description = "경도", nullable = false, example = "126.88453591058602")
     @NotNull
