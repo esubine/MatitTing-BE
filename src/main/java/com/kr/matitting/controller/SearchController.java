@@ -1,8 +1,10 @@
 package com.kr.matitting.controller;
 
+import com.kr.matitting.constant.Orders;
 import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartySearchCondDto;
 import com.kr.matitting.dto.ResponseRankingDto;
+import com.kr.matitting.dto.ResponseSearchDto;
 import com.kr.matitting.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -32,14 +33,12 @@ public class SearchController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "파티방 검색 리스트 반환", content = @Content(schema = @Schema(implementation = PartyCreateDto.class)))
     })
-    @GetMapping({"/", "/{page}"})
-    public ResponseEntity<List<PartyCreateDto>> partySearch(@ModelAttribute @Valid PartySearchCondDto partySearchCondDto,
+    @GetMapping({"", "/{page}"})
+    public ResponseEntity<List<ResponseSearchDto>> partySearch(@ModelAttribute @Valid PartySearchCondDto partySearchCondDto,
                                                             @PathVariable(name = "page") Optional<Integer> page) {
-        Map<String, String> orders = partySearchCondDto.checkOrder();
-
         PageRequest pageable = PageRequest.of(!page.isPresent() ? 0 : page.get(), partySearchCondDto.limit(),
-                orders.get("type") == "desc" ? Sort.by(orders.get("column")).descending() : Sort.by(orders.get("column")).ascending());
-        List<PartyCreateDto> partyPage = searchService.getPartyPage(partySearchCondDto, pageable);
+                partySearchCondDto.sortDto().getOrders() == Orders.DESC ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending() : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending());
+        List<ResponseSearchDto> partyPage = searchService.getPartyPage(partySearchCondDto, pageable);
         return ResponseEntity.ok().body(partyPage);
     }
 

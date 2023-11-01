@@ -46,6 +46,8 @@ public record ResponsePartyDto(
         @Schema(description = "현재 참가 인원", nullable = false, example = "2")
         @NotNull
         Integer participate,
+        @Schema(description = "파티 메뉴", nullable = true, example = "돈까스")
+        String menu,
         @Schema(description = "썸네일", nullable = true, example = " https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
         @NotNull
         String thumbnail
@@ -64,6 +66,7 @@ public record ResponsePartyDto(
                 party.getPartyTime(),
                 party.getTotalParticipant(),
                 party.getParticipantCount(),
+                party.getMenu(),
                 party.getThumbnail());
     }
 }

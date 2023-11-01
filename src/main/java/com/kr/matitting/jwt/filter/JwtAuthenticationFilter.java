@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+
+import static com.kr.matitting.exception.token.TokenExceptionType.*;
 
 
 @Component
@@ -48,8 +51,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         // 토큰이 없거나 정상적이지 않은 경우
-        if (header == null || !header.startsWith("Bearer ")) {
-            throw new TokenException(TokenExceptionType.NOT_FOUND_ACCESS_TOKEN);
+        if (header == null || !header.startsWith("BEARER ")) {
+            log.error(NOT_FOUND_ACCESS_TOKEN.getErrorMessage());
+            throw new TokenException(NOT_FOUND_ACCESS_TOKEN);
         }
 
         try {
@@ -65,12 +69,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 doFilter(request, response, filterChain);
             } else {
-                throw new TokenException(TokenExceptionType.BLACK_LIST_ACCESS_TOKEN);
+                log.error(BLACK_LIST_ACCESS_TOKEN.getErrorMessage());
+                throw new TokenException(BLACK_LIST_ACCESS_TOKEN);
             }
         } catch (TokenExpiredException e) {
-            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
+            log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
+            throw new TokenException(INVALID_ACCESS_TOKEN);
         } catch (Exception e) {
-            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
+            log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
+            throw new TokenException(INVALID_ACCESS_TOKEN);
         }
     }
 }

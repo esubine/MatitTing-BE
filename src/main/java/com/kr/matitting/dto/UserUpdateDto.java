@@ -9,9 +9,9 @@ public record UserUpdateDto (
     @NotNull
     Long userId,
     @Schema(description = "사용자 닉네임", nullable = true, example = "새싹개발자")
-    Optional<String> nickname,
+    String nickname,
     @Schema(description = "사용자 프로필 사진", nullable = true, example = "www.증명사진.jpg")
-    Optional<String> imgUrl){
+    String imgUrl){
 
 }
 

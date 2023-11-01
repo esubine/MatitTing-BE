@@ -12,10 +12,11 @@ public record PartyJoinDto(
         Long leaderId,
         @NotNull
         Long userId,
-        Optional<PartyJoinStatus> status
+        @NotNull
+        PartyJoinStatus status
 
 ) {
-    public PartyJoinDto PartyJoinDto(Long partyId, Long leaderId, Long userId, Optional<PartyJoinStatus> status) {
-        return new PartyJoinDto(partyId, leaderId, userId, status.isEmpty() ? Optional.of(PartyJoinStatus.WAIT) : status);
+    public PartyJoinDto PartyJoinDto(Long partyId, Long leaderId, Long userId, PartyJoinStatus status) {
+        return new PartyJoinDto(partyId, leaderId, userId, (status == null) ? PartyJoinStatus.WAIT : status);
     }
 }

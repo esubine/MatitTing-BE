@@ -19,9 +19,7 @@ public record UserSignUpDto(
         String nickname,
         @NotNull
         Integer age,
-        Optional<String> imgUrl,
-        @NotNull
-        String city,
+        String imgUrl,
         @NotNull
         Gender gender
 ) {
@@ -32,7 +30,7 @@ public record UserSignUpDto(
                 .email(email)
                 .nickname(nickname)
                 .age(age)
-                .imgUrl(imgUrl.get())
+                .imgUrl(imgUrl)
                 .gender(gender)
                 .role(Role.USER)
                 .build();

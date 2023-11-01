@@ -19,8 +19,8 @@ public class PartyJoin extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "party_id")
     private Party party;
-    @Column(name = "leader_id")
+    @Column(name = "leader_id", nullable = false)
     private Long leaderId;
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 }

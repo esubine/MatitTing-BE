@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.InvalidTimeoutException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.geom.Point2D;
@@ -68,7 +69,7 @@ public class PartyService {
     public Map<String, Long> createParty(PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
-        Long user_id = request.getUser_id();
+        Long user_id = request.getUserId();
         User user = userRepository.findById(user_id).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
@@ -119,38 +120,58 @@ public class PartyService {
 
     public void partyUpdate(PartyUpdateDto partyUpdateDto) {
         Party party = partyRepository.findById(partyUpdateDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
-        if (!partyUpdateDto.partyTitle().isEmpty()) {
-            party.setPartyTitle(partyUpdateDto.partyTitle().get());
+        if (partyUpdateDto.partyTitle() != null) {
+            party.setPartyTitle(partyUpdateDto.partyTitle());
         }
-        if (!partyUpdateDto.partyContent().isEmpty()) {
-            party.setPartyContent(partyUpdateDto.partyContent().get());
+        if (partyUpdateDto.partyContent() != null) {
+            party.setPartyContent(partyUpdateDto.partyContent());
         }
-        if (!partyUpdateDto.menu().isEmpty()) {
-            party.setMenu(partyUpdateDto.menu().get());
+        if (partyUpdateDto.menu() != null) {
+            party.setMenu(partyUpdateDto.menu());
         }
-        if (!partyUpdateDto.longitude().isEmpty() && !partyUpdateDto.latitude().isEmpty()) {
-            mapService.coordToAddr(partyUpdateDto.longitude().get(), partyUpdateDto.latitude().get());
+        if (partyUpdateDto.longitude() != null && partyUpdateDto.latitude() != null) {
+            party.setLatitude(partyUpdateDto.latitude());
+            party.setLongitude(partyUpdateDto.longitude());
+            String address = mapService.coordToAddr(partyUpdateDto.longitude(), partyUpdateDto.latitude());
+            party.setAddress(address);
         }
-        if (!partyUpdateDto.status().isEmpty()) {
-            party.setStatus(partyUpdateDto.status().get());
+        if (partyUpdateDto.status() != null) {
+            party.setStatus(partyUpdateDto.status());
         }
-        if (!partyUpdateDto.thumbnail().isEmpty()) {
-            party.setThumbnail(partyUpdateDto.thumbnail().get());
+        if (partyUpdateDto.thumbnail() != null) {
+            party.setThumbnail(partyUpdateDto.thumbnail());
         }
-        if (!partyUpdateDto.deadline().isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime deadlineTime = partyUpdateDto.deadline().get();
-            if (now.isBefore(deadlineTime) && party.getPartyTime().isBefore(deadlineTime)) {
-                party.setDeadline(deadlineTime);
+        if (partyUpdateDto.deadline() != null) {
+            if (timeValidCheck(partyUpdateDto.deadline(), party.getPartyTime())) {
+                party.setDeadline(partyUpdateDto.deadline());
             }
         }
-        if (!partyUpdateDto.totalParticipant().isEmpty()) {
-            if (party.getParticipantCount() <= partyUpdateDto.totalParticipant().get()) {
-                party.setTotalParticipant(partyUpdateDto.totalParticipant().get());
+        if (partyUpdateDto.partyTime() != null) {
+            if (timeValidCheck(party.getDeadline(), partyUpdateDto.partyTime())) {
+                party.setPartyTime(partyUpdateDto.partyTime());
             }
         }
-        if (!partyUpdateDto.gender().isEmpty()) {
-            party.setGender(partyUpdateDto.gender().get());
+        if (partyUpdateDto.totalParticipant() != null) {
+            if (party.getParticipantCount() <= partyUpdateDto.totalParticipant()) {
+                party.setTotalParticipant(partyUpdateDto.totalParticipant());
+            } else {
+                throw new PartyException(PartyExceptionType.INVALID_UPDATE_VALUE);
+            }
+        }
+        if (partyUpdateDto.gender() != null) {
+            party.setGender(partyUpdateDto.gender());
+        }
+        if (partyUpdateDto.age() != null) {
+            party.setAge(partyUpdateDto.age());
+        }
+    }
+
+    private boolean timeValidCheck(LocalDateTime deadlineTime, LocalDateTime partyTime) {
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(deadlineTime) && deadlineTime.isBefore(partyTime)) {
+            return true;
+        } else {
+            throw new PartyException(PartyExceptionType.INVALID_UPDATE_VALUE);
         }
     }
 
@@ -183,14 +204,10 @@ public class PartyService {
     public void joinParty(PartyJoinDto partyJoinDto) {
         log.info("=== joinParty() start ===");
 
-        if (partyJoinDto.partyId() == null ||
-                partyJoinDto.leaderId() == null ||
-                partyJoinDto.userId() == null) {
-            log.error("=== JoinParty:Request Data is null ===");
-            throw new PartyJoinException(PartyJoinExceptionType.NULL_POINT_PARTY_JOIN);
-        }
-
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        if (party.getUser().getId() != partyJoinDto.leaderId()) {
+            throw new UserException(UserExceptionType.NOT_FOUND_USER);
+        }
         PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(partyJoinDto.userId()).build();
         partyJoinRepository.save(partyJoin);
     }
@@ -198,7 +215,7 @@ public class PartyService {
     public String decideUser(PartyJoinDto partyJoinDto) {
         log.info("=== decideUser() start ===");
 
-        if (!(partyJoinDto.status().get() == PartyJoinStatus.ACCEPT || partyJoinDto.status().get() == PartyJoinStatus.REFUSE)) {
+        if (!(partyJoinDto.status() == PartyJoinStatus.ACCEPT || partyJoinDto.status() == PartyJoinStatus.REFUSE)) {
             log.error("=== Party Join Status was requested incorrectly ===");
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
@@ -209,14 +226,15 @@ public class PartyService {
                 partyJoinDto.userId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
         partyJoinRepository.delete(findPartyJoin);
 
-        if (partyJoinDto.status().get() == PartyJoinStatus.ACCEPT) {
+        if (partyJoinDto.status() == PartyJoinStatus.ACCEPT) {
             log.info("=== ACCEPT ===");
             User user = userRepository.findById(partyJoinDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
             Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+            party.increaseUser();
             Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
             return "Accept Request Completed";
-        } else if (partyJoinDto.status().get() == PartyJoinStatus.REFUSE) {
+        } else if (partyJoinDto.status() == PartyJoinStatus.REFUSE) {
             log.info("=== REFUSE ===");
             return "Refuse Request Completed";
         }

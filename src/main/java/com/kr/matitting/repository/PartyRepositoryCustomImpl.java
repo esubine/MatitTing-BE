@@ -79,11 +79,11 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
                 Order direction = order.getDirection().isAscending() ? Order.ASC : Order.DESC;
 
                 switch (order.getProperty()) {
-                    case "hit": //조회순
+                    case "HIT": //조회순
                         return new OrderSpecifier(direction, party.hit);
-                    case "latest": //최신순(생성순)
+                    case "LATEST": //최신순(생성순)
                         return new OrderSpecifier(direction, party.createDate);
-                    case "deadline": //마감순
+                    case "DEADLINE": //마감순
                         return new OrderSpecifier(direction, party.deadline);
                 }
             }

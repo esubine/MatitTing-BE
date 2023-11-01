@@ -59,9 +59,10 @@ public class PartyController {
             @ApiResponse(responseCode = "200", description = "업데이트 성공"),
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
-    @PatchMapping("/")
-    public void updateParty(@RequestBody PartyUpdateDto partyUpdateDto) {
+    @PatchMapping
+    public ResponseEntity<String> updateParty(@RequestBody @Valid PartyUpdateDto partyUpdateDto) {
         partyService.partyUpdate(partyUpdateDto);
+        return ResponseEntity.ok().body("Success Party update");
     }
 
     @Operation(summary = "파티 세부정보", description = "파티의 세부정로 API 입니다.")
@@ -81,8 +82,9 @@ public class PartyController {
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
 })
     @DeleteMapping("/{partyId}")
-    public void partyDelete(@PathVariable Long partyId) {
+    public ResponseEntity<String> partyDelete(@PathVariable Long partyId) {
         partyService.deleteParty(partyId);
+        return ResponseEntity.ok().body("Success Party Delete");
     }
 
     @Operation(summary = "파티 참가 신청", description = "사용자가 파티를 참가하겠다고 신청하는 API 입니다.")
@@ -91,7 +93,7 @@ public class PartyController {
             @ApiResponse(responseCode = "700", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class)))
     })
     @PostMapping("/participation")
-    public ResponseEntity<String> JoinParty(@RequestBody PartyJoinDto partyJoinDto) {
+    public ResponseEntity<String> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto) {
         partyService.joinParty(partyJoinDto);
         return ResponseEntity.ok().body("Success join request!");
     }
@@ -105,7 +107,7 @@ public class PartyController {
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
     @PostMapping("/decision")
-    public ResponseEntity<String> AcceptRefuseParty(@RequestBody PartyJoinDto partyJoinDto) {
+    public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyJoinDto partyJoinDto) {
         String result = partyService.decideUser(partyJoinDto);
         return ResponseEntity.ok().body(result);
     }
@@ -116,7 +118,7 @@ public class PartyController {
             @ApiResponse(responseCode = "200", description = "파티 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = PartyCreateDto.class))),
             @ApiResponse(responseCode = "1000", description = "파티 팀 정보가 없습니다.", content = @Content(schema = @Schema(implementation = TeamExceptionType.class)))
     })
-    @GetMapping("/{userId}/partyStatus")
+    @GetMapping("/{userId}/party-status")
     public ResponseEntity<List<PartyCreateDto>> myPartyList(@PathVariable Long userId, @RequestParam Role role) {
         List<PartyCreateDto> myPartyList = userService.getMyPartyList(userId, role);
         return ResponseEntity.ok().body(myPartyList);

@@ -3,6 +3,7 @@ package com.kr.matitting.service;
 import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartySearchCondDto;
 import com.kr.matitting.dto.ResponseRankingDto;
+import com.kr.matitting.dto.ResponseSearchDto;
 import com.kr.matitting.repository.PartyRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +25,14 @@ public class SearchService {
     private final RedisTemplate<String, String> redisTemplate;
     private final PartyRepositoryCustom partyRepositoryCustom;
 
-    public List<PartyCreateDto> getPartyPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
+    public List<ResponseSearchDto> getPartyPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
         if (!(partySearchCondDto.title() == null)) {
             increaseKeyWordScore(partySearchCondDto.title());
         }
         if (!(partySearchCondDto.menu() == null)) {
             increaseKeyWordScore(partySearchCondDto.menu());
         }
-        List<PartyCreateDto> partyList = partyRepositoryCustom.searchPage(partySearchCondDto, pageable).stream().map(party -> PartyCreateDto.toDto(party)).toList();
+        List<ResponseSearchDto> partyList = partyRepositoryCustom.searchPage(partySearchCondDto, pageable).stream().map(party -> ResponseSearchDto.toDto(party)).toList();
         return partyList;
     }
     public void increaseKeyWordScore(String keyWord) {
