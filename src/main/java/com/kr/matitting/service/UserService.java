@@ -1,14 +1,14 @@
 package com.kr.matitting.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
+import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.team.TeamException;
-import com.kr.matitting.exception.team.TeamExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,16 +42,14 @@ public class UserService {
         User save = userRepository.save(user);
         return save;
     }
-
-    @Transactional
     public void update(UserUpdateDto userUpdateDto) {
-        Optional<User> user = userRepository.findById(userUpdateDto.userId());
-        String answer = "";
-        if (!userUpdateDto.nickname().isEmpty()) {
-            user.get().setNickname(userUpdateDto.nickname().get());
+        User user = userRepository.findById(userUpdateDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+
+        if (userUpdateDto.nickname() != null) {
+            user.setNickname(userUpdateDto.nickname());
         }
-        if (!userUpdateDto.imgUrl().isEmpty()) {
-            user.get().setImgUrl(userUpdateDto.imgUrl().get());
+        if (userUpdateDto.imgUrl() != null) {
+            user.setImgUrl(userUpdateDto.imgUrl());
         }
     }
 
@@ -86,16 +85,24 @@ public class UserService {
 
     public List<PartyCreateDto> getMyPartyList(Long userId, Role role) {
         List<PartyCreateDto> parties;
+        List<Team> teams;
+
+        if (userId == null) {
+            throw new NullPointerException("UserId is Null");
+        } else if (role == null) {
+            throw new NullPointerException("Role is Null");
+        }
+
         if (role == Role.HOST || role == Role.VOLUNTEER) {
-            parties = partyTeamRepository.findByUserIdAndRole(userId, role)
-                    .orElseThrow(() -> new TeamException(TeamExceptionType.NOT_FOUND_TEAM))
-                    .stream().map(team -> team.getParty()).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+            teams = partyTeamRepository.findByUserIdAndRole(userId, role);
+            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() != PartyStatus.FINISH).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+            return parties;
         }
-        else{
-            parties = partyTeamRepository.findByUserId(userId)
-                    .orElseThrow(() -> new TeamException(TeamExceptionType.NOT_FOUND_TEAM))
-                    .stream().map(team -> team.getParty()).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
-        }
-        return parties;
+        else if(role == Role.USER){
+            teams = partyTeamRepository.findByUserId(userId);
+            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.FINISH).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+            return parties;
+            }
+        return new LinkedList<PartyCreateDto>();
     }
 }

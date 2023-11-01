@@ -10,9 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface PartyTeamRepository extends JpaRepository<Team, Long> {
-    Optional<List<Team>> findByPartyId(Long partyId);
+    List<Team> findByPartyId(Long partyId);
 
-    Optional<List<Team>> findByUserId(Long userId);
+    List<Team> findByUserId(Long userId);
 
-    Optional<List<Team>> findByUserIdAndRole(Long userId, Role role);
+    List<Team> findByUserIdAndRole(Long userId, Role role);
 }

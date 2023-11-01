@@ -12,5 +12,5 @@ import java.util.Optional;
 public interface PartyRepository extends JpaRepository<Party, Long> {
     Optional<Party> findByPartyTitle(String partyTitle);
 
-    Optional<List<Party>> findByUserIdAndStatus(Long userId, PartyStatus status);
+    List<Party> findByUserIdAndStatus(Long userId, PartyStatus status);
 }

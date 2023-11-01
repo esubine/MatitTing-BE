@@ -48,7 +48,7 @@ public class JwtService {
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String EMAIL_CLAIM = "email";
-    private static final String BEARER = "Bearer ";
+    private static final String BEARER = "BEARER ";
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
 
@@ -82,7 +82,6 @@ public class JwtService {
      * Request Header token Get
      */
     public String extractToken(HttpServletRequest request, String tokenType) {
-        //TODO: null을 허용 X Optional -> throw new TokenException으로 변경
         Optional<String> token = null;
 
         if (tokenType == "accessToken") {
@@ -118,6 +117,12 @@ public class JwtService {
         DecodedJWT decodedJWT = isTokenValid(refreshToken);
         String socialId = decodedJWT.getClaim("socialId").asString();
         String findToken = redisUtil.getData(socialId);
+
+        if (findToken == null) {
+            throw new TokenException(TokenExceptionType.NOT_FOUND_REFRESH_TOKEN);
+        } else if (!findToken.equals(refreshToken)) {
+            throw new TokenException(TokenExceptionType.INVALID_REFRESH_TOKEN);
+        }
 
         User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new TokenException(TokenExceptionType.INVALID_REFRESH_TOKEN));
         return createAccessToken(user);

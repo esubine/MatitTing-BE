@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,16 +31,8 @@ public class UserController {
             @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
     })
     @PatchMapping("/api/profile")
-    public void myProfileUpdate(@RequestBody UserUpdateDto userUpdateDto) {
+    public ResponseEntity<String> myProfileUpdate(@RequestBody @Valid UserUpdateDto userUpdateDto) {
         userService.update(userUpdateDto);
-    }
-
-    @Operation(summary = "회원탈퇴", description = "회원탈퇴 성공 API 입니다.")
-    @ApiResponse(responseCode = "200", description = "회원탈퇴 성공")
-    @DeleteMapping("/api/withdraw")
-    public ResponseEntity<String> withdraw(HttpServletRequest request) {
-        String accessToken = jwtService.extractToken(request, "accessToken");
-        userService.withdraw(accessToken);
-        return ResponseEntity.ok("withdraw Success");
+        return ResponseEntity.ok("Success Profile Update");
     }
 }

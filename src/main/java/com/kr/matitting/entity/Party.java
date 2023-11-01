@@ -4,7 +4,6 @@ import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyStatus;
-import com.kr.matitting.dto.PartyCreateDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -81,4 +80,8 @@ public class Party extends BaseTimeEntity {
     @JoinColumn(nullable = false, name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    public void increaseUser() {
+        this.participantCount++;
+    }
 }
