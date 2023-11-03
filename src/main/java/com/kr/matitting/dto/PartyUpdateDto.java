@@ -9,8 +9,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public record PartyUpdateDto(
-        @NotNull
-        Long partyId, //파티아이디
         String partyTitle, //파티제목
         String partyContent, //파티 모집 글
         String menu, //메뉴

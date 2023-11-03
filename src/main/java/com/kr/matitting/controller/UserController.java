@@ -30,9 +30,9 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "업데이트 성공"),
             @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
     })
-    @PatchMapping("/api/profile")
-    public ResponseEntity<String> myProfileUpdate(@RequestBody @Valid UserUpdateDto userUpdateDto) {
-        userService.update(userUpdateDto);
+    @PatchMapping("/api/profile/{userId}")
+    public ResponseEntity<String> myProfileUpdate(@RequestBody UserUpdateDto userUpdateDto, @PathVariable Long userId) {
+        userService.update(userId, userUpdateDto);
         return ResponseEntity.ok("Success Profile Update");
     }
 }

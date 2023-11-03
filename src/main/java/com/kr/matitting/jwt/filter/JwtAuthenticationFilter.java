@@ -51,14 +51,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         // 토큰이 없거나 정상적이지 않은 경우
-        if (header == null || !header.startsWith("BEARER ")) {
+        if (header == null || !header.startsWith("Bearer ")) {
             log.error(NOT_FOUND_ACCESS_TOKEN.getErrorMessage());
             throw new TokenException(NOT_FOUND_ACCESS_TOKEN);
         }
 
         try {
             // 토큰 검증
-            String token = header.replace("BEARER ", "");
+            String token = header.replace("Bearer ", "");
             if (redisUtil.getData(token) == null) { //redis blacklist check
                 DecodedJWT decodedJWT = jwtService.isTokenValid(token);
 

@@ -32,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.InvalidTimeoutException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.geom.Point2D;
@@ -118,8 +117,8 @@ public class PartyService {
         return address;
     }
 
-    public void partyUpdate(PartyUpdateDto partyUpdateDto) {
-        Party party = partyRepository.findById(partyUpdateDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+    public void partyUpdate(PartyUpdateDto partyUpdateDto, Long partyId) {
+        Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         if (partyUpdateDto.partyTitle() != null) {
             party.setPartyTitle(partyUpdateDto.partyTitle());
         }
@@ -176,6 +175,10 @@ public class PartyService {
     }
 
     public void deleteParty(Long partyId) {
+        List<PartyJoin> partyJoinList = partyJoinRepository.findByPartyId(partyId);
+        partyJoinList.stream().forEach(partyJoin -> partyJoinRepository.delete(partyJoin));
+        List<Team> teamList = teamRepository.findByPartyId(partyId);
+        teamList.stream().forEach(team -> teamRepository.delete(team));
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         partyRepository.delete(party);
     }
