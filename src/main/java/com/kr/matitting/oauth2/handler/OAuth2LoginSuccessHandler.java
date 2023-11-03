@@ -42,8 +42,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             jwtService.updateRefreshToken(user.getSocialId(), refreshToken);
 
             redirectURL = redirectURLBuilder
-                    .queryParam("accessToken", "BEARER " + accessToken)
-                    .queryParam("refreshToken", "BEARER " + refreshToken)
+                    .queryParam("accessToken", "Bearer " + accessToken)
+                    .queryParam("refreshToken", "Bearer " + refreshToken)
                     .build()
                     .encode(StandardCharsets.UTF_8)
                     .toUriString();

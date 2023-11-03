@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,8 @@ public class SearchService {
         if (!(partySearchCondDto.menu() == null)) {
             increaseKeyWordScore(partySearchCondDto.menu());
         }
-        List<ResponseSearchDto> partyList = partyRepositoryCustom.searchPage(partySearchCondDto, pageable).stream().map(party -> ResponseSearchDto.toDto(party)).toList();
+        List<ResponseSearchDto> partyList = partyRepositoryCustom.searchPage(partySearchCondDto, pageable).stream()
+                .map(party -> ResponseSearchDto.toDto(party)).sorted(Comparator.comparing(ResponseSearchDto::getHit)).toList();
         return partyList;
     }
     public void increaseKeyWordScore(String keyWord) {

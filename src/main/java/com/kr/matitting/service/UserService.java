@@ -5,6 +5,7 @@ import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.dto.PartyCreateDto;
+import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.Team;
@@ -42,8 +43,8 @@ public class UserService {
         User save = userRepository.save(user);
         return save;
     }
-    public void update(UserUpdateDto userUpdateDto) {
-        User user = userRepository.findById(userUpdateDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+    public void update(Long userId, UserUpdateDto userUpdateDto) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
         if (userUpdateDto.nickname() != null) {
             user.setNickname(userUpdateDto.nickname());
@@ -83,8 +84,8 @@ public class UserService {
         return user;
     }
 
-    public List<PartyCreateDto> getMyPartyList(Long userId, Role role) {
-        List<PartyCreateDto> parties;
+    public List<ResponsePartyDto> getMyPartyList(Long userId, Role role) {
+        List<ResponsePartyDto> parties;
         List<Team> teams;
 
         if (userId == null) {
@@ -95,14 +96,14 @@ public class UserService {
 
         if (role == Role.HOST || role == Role.VOLUNTEER) {
             teams = partyTeamRepository.findByUserIdAndRole(userId, role);
-            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() != PartyStatus.FINISH).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() != PartyStatus.FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
             return parties;
         }
         else if(role == Role.USER){
             teams = partyTeamRepository.findByUserId(userId);
-            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.FINISH).map(party -> PartyCreateDto.toDto(party)).sorted(Comparator.comparing(PartyCreateDto::getPartyTime)).toList();
+            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
             return parties;
             }
-        return new LinkedList<PartyCreateDto>();
+        return new LinkedList<ResponsePartyDto>();
     }
 }

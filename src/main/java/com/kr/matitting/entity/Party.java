@@ -77,8 +77,8 @@ public class Party extends BaseTimeEntity {
     @Column(name = "category")
     private PartyCategory category;
 
-    @JoinColumn(nullable = false, name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
     public void increaseUser() {

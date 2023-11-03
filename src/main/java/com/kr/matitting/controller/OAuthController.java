@@ -97,7 +97,7 @@ public class OAuthController {
     public ResponseEntity<String> renewToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtService.extractToken(request, "refreshToken");
         String accessToken = jwtService.renewToken(refreshToken);
-        response.setHeader(jwtService.getRefreshHeader(), "BEARER "+accessToken);
+        response.setHeader(jwtService.getAccessHeader(), "Bearer "+accessToken);
         return ResponseEntity.status(HttpStatus.CREATED).body("Success");
     }
 

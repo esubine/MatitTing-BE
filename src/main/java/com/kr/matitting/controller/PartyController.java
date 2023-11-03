@@ -59,9 +59,9 @@ public class PartyController {
             @ApiResponse(responseCode = "200", description = "업데이트 성공"),
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
-    @PatchMapping
-    public ResponseEntity<String> updateParty(@RequestBody @Valid PartyUpdateDto partyUpdateDto) {
-        partyService.partyUpdate(partyUpdateDto);
+    @PatchMapping("{partyId}")
+    public ResponseEntity<String> updateParty(@RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
+        partyService.partyUpdate(partyUpdateDto, partyId);
         return ResponseEntity.ok().body("Success Party update");
     }
 
@@ -119,8 +119,8 @@ public class PartyController {
             @ApiResponse(responseCode = "1000", description = "파티 팀 정보가 없습니다.", content = @Content(schema = @Schema(implementation = TeamExceptionType.class)))
     })
     @GetMapping("/{userId}/party-status")
-    public ResponseEntity<List<PartyCreateDto>> myPartyList(@PathVariable Long userId, @RequestParam Role role) {
-        List<PartyCreateDto> myPartyList = userService.getMyPartyList(userId, role);
+    public ResponseEntity<List<ResponsePartyDto>> myPartyList(@PathVariable Long userId, @RequestParam Role role) {
+        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(userId, role);
         return ResponseEntity.ok().body(myPartyList);
     }
 
