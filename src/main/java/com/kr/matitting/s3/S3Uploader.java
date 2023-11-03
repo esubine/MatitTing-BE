@@ -3,6 +3,8 @@ package com.kr.matitting.s3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.kr.matitting.exception.Image.ImageException;
+import com.kr.matitting.exception.Image.ImageExceptionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor    // final 멤버변수가 있으면 생성자 항목에 포함시킴
@@ -27,20 +30,20 @@ public class S3Uploader {
     private String bucket;
 
     // MultipartFile을 전달받아 File로 전환한 후 S3에 업로드
-    public Map<String, String> upload(MultipartFile multipartFile) throws IOException {
-        File uploadFile = convert(multipartFile)
-                .orElseThrow(() -> new IllegalArgumentException("MultipartFile -> File 전환 실패"));
-
-        String imgUrl = upload(uploadFile);
-
+    public Map<String, String> upload(MultipartFile multipartFile){
         Map<String, String> partyId = new HashMap<>();
-        partyId.put("imgUrl", imgUrl);
-
+        try{
+            Optional<File> uploadFile = convert(multipartFile);
+            String imgUrl = upload(uploadFile.get());
+            partyId.put("imgUrl", imgUrl);
+        } catch (IOException e){
+            throw new ImageException(ImageExceptionType.FAILED_CONVERT_FILE);
+        }
         return partyId;
     }
 
     private String upload(File uploadFile) {
-        String fileName = uploadFile.getName();
+        String fileName = UUID.randomUUID().toString();
         String uploadImageUrl = putS3(uploadFile, fileName);
 
         removeNewFile(uploadFile);  // 로컬에 생성된 File 삭제 (MulFtipartFile -> File 전환 하며 로컬에 파일 생성됨)

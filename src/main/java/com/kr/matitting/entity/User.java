@@ -22,7 +22,7 @@ public class User extends BaseTimeEntity{
     private Long id;    //회원 Id
 
     @Schema(description = "소셜 id", nullable = false, example = "3311311")
-    @Column(nullable = false, length = 30, unique = true)
+    @Column(nullable = false, length = 50, unique = true)
     private String socialId;   //카카오 or 네이버 인증 Id
 
     @Schema(description = "소셜 Type", nullable = false, example = "KAKAO")

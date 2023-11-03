@@ -1,12 +1,14 @@
 package com.kr.matitting.service;
 
 import com.kr.matitting.constant.*;
+import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.entity.*;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
+
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
@@ -25,12 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.data.crossstore.ChangeSetPersister.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 
 @Slf4j
 @Transactional
@@ -46,6 +49,8 @@ class PartyServiceTest {
     private PartyTeamRepository teamRepository;
     @Autowired
     private PartyService partyService;
+    @Autowired
+    private MapService mapService;
 
     public static Long partyId;
     public static List<Long> partyId_list = new ArrayList<>();
@@ -788,7 +793,7 @@ class PartyServiceTest {
     }
 
     @Test
-    void 파티요청_거절_성공(){
+    void 파티요청_거절_성공() {
         //given
         Optional<Party> findParty = partyRepository.findById(partyId_list.get(0));
         User user = findParty.get().getUser();
@@ -805,4 +810,70 @@ class PartyServiceTest {
         assertThat(result).isEqualTo("Refuse Request Completed");
         assertThat(findTeams.size()).isEqualTo(0);
     }
+
+    @Test
+    public void 파티_글_생성_성공() {
+        //given
+        PartyCreateDto partyCreateDto = createPartyCreateDto();
+
+        assertThat(userRepository.findById(partyCreateDto.getUserId())).isPresent();
+        assertThat(partyCreateDto.getTotalParticipant()).isGreaterThanOrEqualTo(2);
+        assertThat(partyCreateDto.getDeadline()).isBefore(partyCreateDto.getPartyTime());
+
+        //when
+        Map<String, Long> partyId = partyService.createParty(partyCreateDto);
+
+        assertThat(partyId.get("partyId").longValue()).isEqualTo(2L);
+    }
+
+    @Test
+    public void 파티_글_생성_실패_유저없을때() {
+        //given
+        PartyCreateDto partyCreateDto = createPartyCreateDto();
+        partyCreateDto.setUserId(1234567L);
+        //when
+        assertThat(userRepository.findById(partyCreateDto.getUserId())).isEqualTo(Optional.empty());
+        //Then
+        assertThrows(UserException.class, () -> partyService.createParty(partyCreateDto));
+    }
+
+    @Test
+    public void 파티_글_생성_실패_파티모집인원이_2미만일때() {
+        //given
+        PartyCreateDto partyCreateDto = createPartyCreateDto();
+        partyCreateDto.setTotalParticipant(1);
+        //when
+        assertThat(partyCreateDto.getTotalParticipant()).isLessThan(2);
+        //Then
+        assertThrows(PartyException.class, () -> partyService.createParty(partyCreateDto));
+    }
+
+    @Test
+    public void 파티_글_생성_실패_마감시간이_파티시간보다_늦을때() {
+        //given
+        PartyCreateDto partyCreateDto = createPartyCreateDto();
+        partyCreateDto.setDeadline(LocalDateTime.now().plusHours(12));
+        //when
+        assertThat(partyCreateDto.getDeadline()).isAfter(partyCreateDto.getPartyTime());
+        //Then
+        assertThrows(PartyException.class, () -> partyService.createParty(partyCreateDto));
+    }
+
+    private PartyCreateDto createPartyCreateDto() {
+        PartyCreateDto request = new PartyCreateDto();
+        request.setUserId(1L);
+        request.setTitle("테스트 파티 생성 DTO");
+        request.setContent("파티 생성 테스트");
+        request.setLatitude(37.566828706631135);
+        request.setLongitude(126.978646598009);
+        request.setPartyTime(LocalDateTime.now());
+        request.setDeadline(LocalDateTime.now().minusHours(1));
+        request.setTotalParticipant(5);
+        request.setGender(Gender.ALL);
+        request.setAge(PartyAge.AGE2030);
+        request.setMenu("TEST");
+        request.setCategory(PartyCategory.WESTERN);
+        return request;
+    }
+
 }

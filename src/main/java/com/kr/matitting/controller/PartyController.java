@@ -46,7 +46,7 @@ public class PartyController {
             @ApiResponse(responseCode = "1302", description = "카카오 맵 서버 오류입니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class)))
     })
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Map<String, Long>> createParty(
             @RequestBody @Valid PartyCreateDto request
     ) {
