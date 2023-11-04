@@ -5,18 +5,15 @@ import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.entity.Party;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "파티 생성 DTO")
@@ -39,7 +36,6 @@ public class PartyCreateDto {
     private LocalDateTime deadline;
     @Schema(description = "모집 인원", nullable = false, example = "4")
     @NotNull
-    @Min(2)
     private int totalParticipant;
     @Schema(description = "경도", nullable = false, example = "126.88453591058602")
     @NotNull

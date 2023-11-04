@@ -16,6 +16,7 @@ import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.Map.MapException;
 import com.kr.matitting.exception.Map.MapExceptionType;
+import com.kr.matitting.exception.main.MainExceptionType;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
@@ -49,14 +50,10 @@ public class PartyService {
     @Value("${cloud.aws.s3.url}")
     private String url;
 
-    private final int MAX_DISTANCE = 20;
-    private final double DEFAULT_LATITUDE = 37.566828706631135;
-    private final double DEFAULT_LONGITUDE = 126.978646598009;
     private final PartyJoinRepository partyJoinRepository;
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
-    private final PartyRepositoryImpl partyRepositoryImpl;
     private final MapService mapService;
 
     public ResponsePartyDto getPartyInfo(Long partyId) {
@@ -68,12 +65,26 @@ public class PartyService {
     public Map<String, Long> createParty(PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
-        Long user_id = request.getUserId();
-        User user = userRepository.findById(user_id).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        Long userId = request.getUserId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+
+        checkParticipant(request.getTotalParticipant());
+
+        if (request.getDeadline() != null) {
+            checkTime(request.getPartyTime(), request.getDeadline());
+        }
 
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
         Party party = createBasePartyBuilder(request, user);
         Party savedParty = partyRepository.save(party);
+
+        Team team = Team.builder()
+                .user(user)
+                .party(savedParty)
+                .role(Role.HOST)
+                .build();
+
+        teamRepository.save(team);
 
         Map<String, Long> partyId = new HashMap<>();
         partyId.put("partyId", savedParty.getId());
@@ -82,10 +93,22 @@ public class PartyService {
 
     }
 
-    public Point2D.Double setLocationFunc(double latitude, double longitude) {
+    private Point2D.Double setLocationFunc(double latitude, double longitude) {
         Point2D.Double now = new Point2D.Double();
         now.setLocation(latitude, longitude);
         return now;
+    }
+
+    private void checkParticipant(int totalParticipant) {
+        if (totalParticipant < 2) {
+            throw new PartyException(PartyExceptionType.NOT_MINIMUM_PARTICIPANT);
+        }
+    }
+
+    private void checkTime(LocalDateTime partyTime, LocalDateTime deadline) {
+        if (partyTime.isBefore(deadline)) {
+            throw new PartyException(PartyExceptionType.WRONG_TIME);
+        }
     }
 
     private String getThumbnail(PartyCategory category, String thumbnail) {
@@ -242,37 +265,5 @@ public class PartyService {
             return "Refuse Request Completed";
         }
         return null;
-    }
-
-    public List<ResponsePartyDto> getPartyList(MainPageDto mainPageDto, Pageable pageable) {
-        List<Party> partyList;
-        CalculateDto calculateDto;
-
-        if (mainPageDto.getLatitude() == null | mainPageDto.getLongitude() == null) {
-            calculateDto = calculate(DEFAULT_LONGITUDE, DEFAULT_LATITUDE);
-        } else {
-            calculateDto = calculate(mainPageDto.getLongitude(), mainPageDto.getLatitude());
-        }
-        partyList = partyRepositoryImpl.getPartyList(calculateDto.getMinLatitude(), calculateDto.getMaxLatitude(), calculateDto.getMinLongitude(), calculateDto.getMaxLongitude(), pageable);
-
-        List<ResponsePartyDto> responsePartyList = partyList.stream()
-                .map(ResponsePartyDto::toDto)
-                .collect(Collectors.toList());
-
-        return responsePartyList;
-    }
-
-    // 유저의 위도, 경도를 바탕으로 반경 10km 위도, 경도값 계산
-    private CalculateDto calculate(double userLongitude, double userLatitude) {
-        double earthRadius = 6371; // 지구 반지름 (단위: km)
-
-        double minLat = userLatitude - (MAX_DISTANCE / earthRadius) * (180.0 / Math.PI);
-        double maxLat = userLatitude + (MAX_DISTANCE / earthRadius) * (180.0 / Math.PI);
-        double minLon = userLongitude - (MAX_DISTANCE / earthRadius) * (180.0 / Math.PI);
-        double maxLon = userLongitude + (MAX_DISTANCE / earthRadius) * (180.0 / Math.PI);
-
-        CalculateDto calculateDto = new CalculateDto(minLat, maxLat, minLon, maxLon);
-
-        return calculateDto;
     }
 }

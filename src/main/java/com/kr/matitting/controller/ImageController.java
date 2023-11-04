@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -31,7 +30,7 @@ public class ImageController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> uploadImage(
             @RequestPart(value = "image") MultipartFile multipartFile
-    ) throws IOException {
+    ) {
         Map<String, String> imgUrl = s3Uploader.upload(multipartFile);
         return ResponseEntity.ok().body(imgUrl);
     }

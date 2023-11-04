@@ -1,7 +1,10 @@
 package com.kr.matitting.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kr.matitting.constant.*;
+import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
 import com.kr.matitting.dto.UserSignUpDto;
@@ -20,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -588,4 +592,37 @@ class PartyControllerTest {
                 .andExpect(status().isBadRequest())
                 .andDo(print());
     }
+
+    @Test
+    public void 파티_생성_성공() throws Exception {
+        PartyCreateDto partyCreateDto = createPartyCreateDto();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        String requestBody = objectMapper.writeValueAsString(partyCreateDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/party")
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.partyId").exists());
+    }
+    private PartyCreateDto createPartyCreateDto() {
+        PartyCreateDto request = new PartyCreateDto();
+        request.setUserId(1L);
+        request.setTitle("테스트 파티 생성 DTO");
+        request.setContent("파티 생성 테스트");
+        request.setLatitude(37.566828706631135);
+        request.setLongitude(126.978646598009);
+        request.setPartyTime(LocalDateTime.now());
+        request.setTotalParticipant(5);
+        request.setGender(Gender.ALL);
+        request.setAge(PartyAge.AGE2030);
+        request.setMenu("TEST");
+        request.setCategory(PartyCategory.WESTERN);
+        return request;
+    }
+
 }
