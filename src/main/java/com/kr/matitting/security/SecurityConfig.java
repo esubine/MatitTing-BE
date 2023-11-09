@@ -14,6 +14,8 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 @Configuration
 @EnableWebSecurity
@@ -24,7 +26,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
         http
                 //http default 인증 관련
                 .httpBasic(hb -> hb.disable())
@@ -37,9 +39,8 @@ public class SecurityConfig {
         http
                 //인증 허용 관련 설정
                 .authorizeHttpRequests((request) ->
-                        request.requestMatchers("/", "/home").permitAll() //default path
-                                .requestMatchers("/member/signupForm", "/oauth2/**").permitAll() //oauth2 path
-                                .requestMatchers("/resources/**","/demo-ui.html", "/swagger-ui/", "/api-docs/").permitAll() //resource path
+                        request.requestMatchers(new MvcRequestMatcher(introspector, "/**")).permitAll()
+
                                 .anyRequest().authenticated())
                 .formLogin((form) -> form
                         .loginPage("/")

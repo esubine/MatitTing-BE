@@ -1,4 +1,5 @@
 package com.kr.matitting.jwt.filter;
+
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.exception.token.TokenException;
@@ -36,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String secretKey;
 
     private static final String[] whitelist = {"/", "/index.html", "/home", "/login", "/oauth2/**",
-            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/", "/api-docs/"};
+            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**", "/demo-ui.html", "/swagger-ui/", "/api-docs/", "/chat/**", "/chat", "/webjars/**", "/api/**", "/room/**", "/ws/**", "/**"};
 
     // 필터를 거치지 않을 URL 을 설정하고, true 를 return 하면 바로 다음 필터를 진행하게 됨
     @Override
@@ -47,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
-
+        String requestURI = request.getRequestURI();
         String header = request.getHeader("Authorization");
 
         // 토큰이 없거나 정상적이지 않은 경우
