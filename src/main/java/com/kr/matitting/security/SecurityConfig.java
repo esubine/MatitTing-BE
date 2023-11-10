@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((request) ->
                         request.requestMatchers("/", "/home").permitAll() //default path
                                 .requestMatchers("/member/signupForm", "/oauth2/**").permitAll() //oauth2 path
-                                .requestMatchers("/resources/**","/demo-ui.html", "/swagger-ui/", "/api-docs/").permitAll() //resource path
+                                .requestMatchers("/resources/**","/demo-ui.html", "/swagger-ui/**", "/api-docs/**").permitAll() //resource path
                                 .anyRequest().authenticated())
                 .formLogin((form) -> form
                         .loginPage("/")
