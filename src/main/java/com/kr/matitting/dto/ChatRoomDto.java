@@ -1,36 +1,60 @@
 package com.kr.matitting.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.kr.matitting.entity.ChatRoom;
-import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
+import com.kr.matitting.entity.ChatUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
 public interface ChatRoomDto {
-
     @Getter
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    class ChatRoomResponseDto {
-        private Long roomId;
-        private String title;
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    class ChatResponse<T> {
+        private Integer count;
+        private T data;
 
-        public static ChatRoomResponseDto of(ChatRoom chatRoom) {
-            return new ChatRoomResponseDto(chatRoom.getId(), chatRoom.getTitle());
+        public ChatResponse(T data) {
+            this.data = data;
+            setCount(data);
+        }
+
+        public void setCount(Object data) {
+            if(data instanceof List) {
+                count = ((List) data).size();;
+            }
         }
     }
 
     @Getter
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    class ChatRoomRequestDto {
-        @NotNull
-        @JsonProperty(value = "userId")
-        private Long userId;
+    class ChatRoomItem {
+        private Long roomId;
+        private String title;
+        private LocalDateTime lastUpdate;
 
-        public static ChatRoomResponseDto of(ChatRoom chatRoom) {
-            return new ChatRoomResponseDto(chatRoom.getId(), chatRoom.getTitle());
+        public ChatRoomItem(ChatUser chatUser) {
+            this.roomId = chatUser.getChatRoom().getId();
+            this.title = chatUser.getChatRoom().getTitle();
+            this.lastUpdate = chatUser.getChatRoom().getModifiedDate();
         }
+
+        public ChatRoomItem(ChatRoom chatRoom) {
+            this.roomId = chatRoom.getId();
+            this.title = chatRoom.getTitle();
+            this.lastUpdate = chatRoom.getModifiedDate();
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class CreateRoomEvent {
+        private Long partyId;
+        private Long userId;
     }
 }

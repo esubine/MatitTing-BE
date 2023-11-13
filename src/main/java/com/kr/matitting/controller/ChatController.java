@@ -1,15 +1,12 @@
 package com.kr.matitting.controller;
 
+import com.kr.matitting.annotaiton.RoomType;
 import com.kr.matitting.constant.ChatRoomType;
-import com.kr.matitting.dto.ChatDto;
-import com.kr.matitting.dto.ChatHistoryDto;
+import com.kr.matitting.dto.ChatUserDto;
 import com.kr.matitting.entity.ChatRoom;
-import com.kr.matitting.repository.ChatRoomRepository;
 import com.kr.matitting.service.ChatService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -18,76 +15,66 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.kr.matitting.dto.ChatDto.*;
-import static com.kr.matitting.dto.ChatDto.ChatMessage.MessageType.*;
 import static com.kr.matitting.dto.ChatHistoryDto.*;
 import static com.kr.matitting.dto.ChatRoomDto.*;
-import static org.springframework.http.ResponseEntity.*;
+import static com.kr.matitting.dto.ChatUserDto.*;
 
 @RestController
 @RequestMapping("/api/chat-rooms")
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
-    private final SimpMessageSendingOperations messagingTemplate;
-    private final ChatRoomRepository chatRoomRepository; // TODO: 삭제
 
-    @GetMapping(value = {"/1on1", "/group"})
-    public ResponseEntity<List<ChatRoomResponseDto>> getRooms(
-            HttpServletRequest request,
-            @RequestBody ChatRoomRequestDto chatRoomRequestDto,
-            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-            @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit) {
+    private Long userId = 1L; // TODO: 임시, 이부분은 시큐리티 수정후 반영 필요
 
-        Pageable descPageable = createDescPageable(offset, limit);
-
-        return ok().body(chatService.getRooms(chatRoomRequestDto.getUserId(), resolveChatRoomType(request), descPageable));
+    @GetMapping(value = {"/group", "/1on1"})
+    public ResponseEntity<ChatResponse> getAllRooms(@RoomType ChatRoomType roomType,
+                                                    @RequestParam(value = "offset", defaultValue = "1", required = false) Integer offset,
+                                                    @RequestParam(value = "limit", defaultValue = "5", required = false) Integer limit) {
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.Direction.DESC, "createDate");
+        return ResponseEntity.ok(new ChatResponse(chatService.getChatRooms(userId, roomType, pageRequest)));
     }
 
-    @GetMapping
-    public ResponseEntity<List<ChatRoomResponseDto>> searchRooms(
-            @RequestParam String title,
-            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-            @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit) {
-
-        Pageable descPageable = createDescPageable(offset, limit);
-
-        return ok().body(chatService.searchChatRooms(title, descPageable));
+    @GetMapping("/history/{roomId}")
+    private ResponseEntity<ChatResponse> getHistories(@PathVariable Long roomId,
+                                                      @RequestParam(value = "offset", defaultValue = "1", required = false) Integer offset,
+                                                      @RequestParam(value = "limit", defaultValue = "5", required = false) Integer limit) {
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.Direction.DESC, "createDate");
+        return ResponseEntity.ok(new ChatResponse(chatService.getHistories(userId, roomId, pageRequest)));
     }
 
-    @GetMapping("/{chatRoomId}")
-    public ResponseEntity<List<ChatHistoryResponseDto>> getHistories(
-            @PathVariable Long chatRoomId,
-            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-            @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit) {
+    @PostMapping
+    public void requestOneOnOne(Long partyId) {
+        chatService.requestOneOnOne(userId, partyId);
+    }
 
-        Pageable descPageable = createDescPageable(offset, limit);
+    @PostMapping("/search")
+    public ResponseEntity<ChatResponse> searchRooms(@RequestParam(name = "name") String title) {
+        List<ChatRoomItem> chatRoomItems = chatService.searchChatRoom(userId, title);
 
-        return ok().body(chatService.getHistories(null, chatRoomId, descPageable));
+        return ResponseEntity.ok(new ChatResponse(chatRoomItems));
+    }
+
+    @DeleteMapping("/{roomId}")
+    public void evictUser(@PathVariable Long roomId, @RequestBody ChatEvict evict) { // TODO : targetId DTO로 받아야함
+        chatService.evictUser(userId, evict.getTargetId(), roomId);
+    }
+
+    @GetMapping("/{roomId}")
+    public ResponseEntity<ChatUserInfoResponse> getUserInfos(@PathVariable Long roomId) {
+        return ResponseEntity.ok(chatService.getRoomUsers(roomId, userId));
     }
 
     @MessageMapping("/chat/message")
     public void message(ChatMessage chatMessage) {
-        if(chatMessage.getType().equals(ENTER)) {
-            chatMessage.setMessage(chatMessage.getSender() + "님이 입장 하셨습니다.");
-        } else if(chatMessage.getType().equals(OUT)) {
-            chatMessage.setMessage(chatMessage.getSender() + "님이 퇴장 하셨습니다.");
-        }
-        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
+        chatService.sendMessage(userId, chatMessage);
     }
 
-    @GetMapping("/chat/rooms")
-    public List<ChatRoom> getAllRooms() {
-        List<ChatRoom> all = chatRoomRepository.findAll();
-        return all;
-    }
-
-    // TODO : Argument Resolve
-    private ChatRoomType resolveChatRoomType(HttpServletRequest request) {
-        return request.getRequestURI().contains("1on1") ? ChatRoomType.PRIVATE : ChatRoomType.GROUP;
-    }
-
-    private Pageable createDescPageable(Integer offset, Integer limit) {
-        return PageRequest.of(offset, limit, Sort.by("createdAt").descending());
+    @GetMapping("/rooms") // TODO : 임시 테스트용
+    public List<ChatRoomItem> getAllRooms() {
+        List<ChatRoom> all = chatService.findAll();
+        return all.stream()
+                .map(ChatRoomItem::new)
+                .toList();
     }
 }

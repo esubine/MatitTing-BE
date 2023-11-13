@@ -2,123 +2,140 @@ package com.kr.matitting.service;
 
 import com.kr.matitting.constant.ChatRoomType;
 import com.kr.matitting.entity.*;
-import com.kr.matitting.repository.ChatHistoryRepository;
-import com.kr.matitting.repository.ChatRoomRepository;
-import com.kr.matitting.repository.ChatUserRepository;
+import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 import static com.kr.matitting.constant.ChatRoomType.*;
-import static com.kr.matitting.dto.ChatDto.*;
+import static com.kr.matitting.constant.ChatUserRole.*;
 import static com.kr.matitting.dto.ChatHistoryDto.*;
 import static com.kr.matitting.dto.ChatRoomDto.*;
+import static com.kr.matitting.dto.ChatUserDto.*;
+import static com.kr.matitting.entity.ChatRoom.*;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
     private final ChatUserRepository chatUserRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatHistoryRepository chatHistoryRepository;
-
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void createRoomEvent(CreateRoomEvent event) {
-        ChatRoom room = createPartyChat(event);
-//        chatRoomRepository.findByPartyId(event.getParty().getId()).ifPresent(
-//                party -> {
-//                    throw new RuntimeException();
-//                }
-//        );
-        chatRoomRepository.save(room);
-    }
-
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void createRoomEvent(CreatePrivateRoomEvent event) {
-        ChatRoom room = createPartyChat(event);
-        chatRoomRepository.findByPartyId(event.getParty().getId()).ifPresent(
-                party -> {
-                    throw new RuntimeException();
-                }
-        );
-        chatRoomRepository.save(room);
-    }
+    private final PartyRepository partyRepository;
+    private final UserRepository userRepository;
+    private final SimpMessageSendingOperations messagingTemplate;
 
     @Transactional(readOnly = true)
-    public List<ChatRoomResponseDto> searchChatRooms(String title, Pageable pageable) {
-        List<ChatRoom> rooms = chatRoomRepository.findByTitleStartsWithAndChatRoomTypeOrderByCreateDateDesc(title, GROUP, pageable);
+    public List<ChatRoomItem> getChatRooms(Long userId, ChatRoomType roomType, Pageable pageable) {
+        List<ChatUser> chatUsers = chatUserRepository.findByUserIdAndRoomTypeFJRoom(userId, roomType, pageable);
 
-        return convertRoomToDto(rooms);
-    }
+        if (chatUsers == null) return null;
 
-    @Transactional(readOnly = true)
-    public List<ChatRoomResponseDto> getRooms(Long userId, ChatRoomType chatRoomType, Pageable pageable) {
-        List<ChatUser> chatUsers = chatUserRepository.findByUserId(userId)
-                .orElse(null);
-
-        if (chatUsers == null) {
-            return null;
-        }
-
-        List<ChatRoom> rooms = chatRoomRepository.findByOwnerInAndChatRoomTypeOrderByCreateDateDesc(chatUsers, chatRoomType, pageable);
-
-        return convertRoomToDto(rooms);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ChatHistoryResponseDto> getHistories(User user, Long roomId, Pageable pageable) {
-        // TODO: Exception Handling
-        ChatUser chatUser = chatUserRepository.findByUserIdAndAndChatRoomId(user.getId(), roomId).orElseThrow();
-        List<ChatHistory> chatHistories = chatHistoryRepository.findByTargetRoomIdOrderByCreateDateDesc(roomId, pageable);
-
-        return convertChatHistoriesToDto(chatHistories);
-    }
-
-    @Transactional
-    public void deleteRoom(Long roomId) {
-        chatRoomRepository.deleteById(roomId);
-    }
-
-    @Transactional
-    public void saveRoomHistory() {
-        throw new RuntimeException();
-    }
-
-    private List<ChatRoomResponseDto> convertRoomToDto(List<ChatRoom> rooms) {
-        if (rooms == null) {
-            return null;
-        }
-
-        return rooms.stream()
-                .map(ChatRoomResponseDto::of)
+        return chatUsers.stream()
+                .map(ChatRoomItem::new)
                 .toList();
     }
 
-    private List<ChatHistoryResponseDto> convertChatHistoriesToDto(List<ChatHistory> histories) {
-        if (histories == null) {
-            return null;
-        }
+    @Transactional(readOnly = true)
+    public List<ChatHistoryResponse> getHistories(Long userId, Long roomId, Pageable pageable) {
+        ChatUser chatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
 
-        return histories
-                .stream()
-                .map(ChatHistoryResponseDto::of)
+        List<ChatHistory> chatHistories = chatHistoryRepository.findByChatUserIdFJChatUser(chatUser.getId(), pageable);
+
+        if (chatHistories == null) return null;
+
+        return chatHistories.stream()
+                .map(ChatHistoryResponse::new)
                 .toList();
     }
 
-    private ChatRoom createPartyChat(CreateRoomEvent event) {
-//        return null;
-        return ChatRoom.createRoom(UUID.randomUUID().toString(), event.getParty(), GROUP, null);
+    @Transactional
+    public void requestOneOnOne(Long userId, Long partyId) {
+        Optional<ChatUser> chatRoomOptional = chatUserRepository.findByPartyIdFJChatRoom(partyId);
+        Party party = partyRepository.findByIdFJUser(partyId).orElseThrow();
+        User user = userRepository.findById(userId).orElseThrow();
+
+        if (chatRoomOptional.isPresent()) {
+            throw new RuntimeException();
+        }
+
+        ChatRoom room = createRoom(party, user, PRIVATE, party.getPartyTitle());
+        chatRoomRepository.save(room);
+
+        ChatUser chatOwner = ChatUser.createChatUser(room, party.getUser(), ADMIN, PRIVATE);
+        ChatUser chatParticipant = ChatUser.createChatUser(room, party.getUser(), PARTICIPANT, PRIVATE);
+
+        chatUserRepository.save(chatOwner);
+        chatUserRepository.save(chatParticipant);
     }
 
-    private ChatRoom createPartyChat(CreatePrivateRoomEvent event) {
-        return null;
-//        return ChatRoom.createRoom(event.getParty().getPartyTitle(), event.getParty(), GROUP, event.getOwner());
+    @Transactional(readOnly = true)
+    public List<ChatRoomItem> searchChatRoom(Long userId, String name) {
+        List<ChatRoom> chatRooms = chatRoomRepository.findByUserIdAndTitleLike(userId, name);
+
+        return chatRooms.stream()
+                .map(ChatRoomItem::new)
+                .toList();
+    }
+
+    @Transactional
+    public void evictUser(Long userId, Long targetId, Long roomId) {
+        ChatUser owner = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
+
+        if (owner.getUserRole().equals(ADMIN)) {
+            ChatUser participant = chatUserRepository.findByUserIdAndChatRoomId(targetId, roomId).orElseThrow();
+            chatUserRepository.delete(participant);
+        } else {
+            throw new RuntimeException();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ChatUserInfoResponse getRoomUsers(Long roomId, Long userId) {
+        List<ChatUser> chatUsers = chatUserRepository.findByChatRoomId(roomId);
+
+        ChatUser chatUser = chatUsers.stream()
+                .filter(cu -> cu.getUser().getId().equals(userId))
+                .findAny()
+                .orElseThrow();
+
+        boolean isRemoved = chatUsers.removeIf(a -> a.getUser().getId().equals(userId));
+
+        if(isRemoved) {
+            return new ChatUserInfoResponse(chatUser, chatUsers);
+        } else {
+            throw new RuntimeException();
+        }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void createChatRoom(CreateRoomEvent createRoomEvent) {
+        Party party = partyRepository.findById(createRoomEvent.getPartyId()).orElseThrow();
+        User user = userRepository.findById(createRoomEvent.getUserId()).orElseThrow();
+        ChatRoom room = createRoom(party, user, GROUP, party.getPartyTitle());
+        chatRoomRepository.save(room);
+
+        ChatUser chatUser = ChatUser.createChatUser(room, user, ADMIN, GROUP);
+        chatUserRepository.save(chatUser);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatRoom> findAll() {
+        return chatRoomRepository.findAll();
+    }
+
+    @Transactional
+    public void sendMessage(Long userId, ChatMessage chatMessage) {
+
+        ChatUser chatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, chatMessage.getRoomId()).orElseThrow();
+        ChatHistory history = ChatHistory.createHistory(chatUser, chatMessage.getMessage());
+        chatHistoryRepository.save(history);
+        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
     }
 }

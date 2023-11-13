@@ -8,28 +8,31 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
 @Table(name = "chat_history")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "chat_history_id")
+    @Column(name = "chat_history")
     private Long id;
 
-    @Column(length = 200, nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_user_id")
+    private ChatUser chatUser;
+
+    @Column(nullable = false, length = 100)
     private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true) // 수정필요
-    private User sender;
-
-    @ManyToOne
-    @JoinColumn(name = "chat_room_id", nullable = true) // nullable 수정필요
-    private ChatRoom targetRoom;
-
     @CreatedDate
-    @Column(name = "create_date")
     private LocalDateTime createDate;
+
+    public static ChatHistory createHistory(ChatUser chatUser, String content) {
+        ChatHistory chatHistory = new ChatHistory();
+        chatHistory.chatUser = chatUser;
+        chatHistory.content = content;
+
+        return chatHistory;
+    }
 }

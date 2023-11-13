@@ -1,22 +1,34 @@
 package com.kr.matitting.dto;
 
 import com.kr.matitting.entity.ChatHistory;
-import com.kr.matitting.entity.User;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 public interface ChatHistoryDto {
-
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    class ChatHistoryResponseDto {
-        private Long senderId;
+    @Getter
+    class ChatHistoryResponse {
+        private Long chatUserId;
+        private String nickname;
         private String content;
-        private LocalDateTime sendTime;
+        private LocalDateTime createAt;
 
-        public static ChatHistoryResponseDto of(ChatHistory chatHistory) {
-            return new ChatHistoryResponseDto(chatHistory.getSender().getId(), chatHistory.getContent(), chatHistory.getCreateDate());
+        public ChatHistoryResponse(ChatHistory chatHistory) {
+            this.chatUserId = chatHistory.getChatUser().getId();
+            this.nickname = chatHistory.getChatUser().getNickname();
+            this.content = chatHistory.getContent();
+            this.createAt = chatHistory.getCreateDate();
+        }
+    }
+
+    @Getter
+    class ChatMessage {
+        private Long roomId;
+        private Long chatUserId;
+        private String message;
+
+        public void setMessage(String message) {
+            this.message = message;
         }
     }
 }

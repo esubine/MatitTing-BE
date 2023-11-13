@@ -30,7 +30,7 @@
     </div>
     <ul class="list-group">
         <li class="list-group-item list-group-item-action" v-for="item in chatrooms" v-bind:key="item.id"
-            v-on:click="enterRoom(item.id)">
+            v-on:click="enterRoom(item.roomId)">
             {{item.title}}
         </li>
     </ul>
@@ -50,7 +50,7 @@
         },
         methods: {
             findAllRoom: function () {
-                axios.get('/api/chat-rooms/chat/rooms').then(response => {
+                axios.get('/api/chat-rooms/rooms').then(response => {
                     this.chatrooms = response.data;
                 });
             },
