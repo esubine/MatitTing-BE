@@ -245,7 +245,6 @@ class PartyServiceTest {
     void 파티_업데이트_성공_모두() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                partyId,
                 "맛있팅 참여안하실래요?",
                 "저는 피자를 좋아합니다",
                 "피자",
@@ -260,7 +259,7 @@ class PartyServiceTest {
                 LocalDateTime.now().plusDays(5));
 
         //when
-        partyService.partyUpdate(partyUpdateDto);
+        partyService.partyUpdate(partyUpdateDto, partyId);
         Party party = partyRepository.findById(partyId).get();
 
         //then
@@ -282,7 +281,6 @@ class PartyServiceTest {
     void 파티_업데이트_성공_제목() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                partyId,
                 "맛있팅 참여안하실래요?",
                 null,
                 null,
@@ -297,7 +295,7 @@ class PartyServiceTest {
                 null);
 
         //when
-        partyService.partyUpdate(partyUpdateDto);
+        partyService.partyUpdate(partyUpdateDto, partyId);
         Party party = partyRepository.findById(partyId).get();
 
         //then
@@ -319,7 +317,6 @@ class PartyServiceTest {
     void 파티_업데이트_성공_소개글() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                partyId,
                 null,
                 "저는 피자를 좋아합니다",
                 null,
@@ -334,7 +331,7 @@ class PartyServiceTest {
                 null);
 
         //when
-        partyService.partyUpdate(partyUpdateDto);
+        partyService.partyUpdate(partyUpdateDto, partyId);
         Party party = partyRepository.findById(partyId).get();
 
         //then
@@ -356,7 +353,6 @@ class PartyServiceTest {
     void 파티_업데이트_성공_메뉴() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 "파스타",
@@ -371,7 +367,7 @@ class PartyServiceTest {
                 null);
 
         //when
-        partyService.partyUpdate(partyUpdateDto);
+        partyService.partyUpdate(partyUpdateDto, partyId);
         Party party = partyRepository.findById(partyId).get();
 
         //then
@@ -393,7 +389,6 @@ class PartyServiceTest {
     void 파티_업데이트_성공_위경도() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 null,
@@ -408,7 +403,7 @@ class PartyServiceTest {
                 null);
 
         //when
-        partyService.partyUpdate(partyUpdateDto);
+        partyService.partyUpdate(partyUpdateDto, partyId);
         Party party = partyRepository.findById(partyId).get();
 
         //then
@@ -430,7 +425,6 @@ class PartyServiceTest {
     void 파티_업데이트_성공_마감시간() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 null,
@@ -445,7 +439,7 @@ class PartyServiceTest {
                 null);
 
         //when
-        partyService.partyUpdate(partyUpdateDto);
+        partyService.partyUpdate(partyUpdateDto, partyId);
         Party party = partyRepository.findById(partyId).get();
 
         //then
@@ -467,7 +461,6 @@ class PartyServiceTest {
     void 파티_업데이트_성공_파티시간() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 null,
@@ -482,7 +475,7 @@ class PartyServiceTest {
                 LocalDateTime.now().plusDays(5));
 
         //when
-        partyService.partyUpdate(partyUpdateDto);
+        partyService.partyUpdate(partyUpdateDto, partyId);
         Party party = partyRepository.findById(partyId).get();
 
         //then
@@ -504,7 +497,6 @@ class PartyServiceTest {
     void 파티_업데이트_실패_ID_없음() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                1000L,
                 "맛있팅 참여안하실래요?",
                 "저는 피자를 좋아합니다",
                 "피자",
@@ -519,14 +511,13 @@ class PartyServiceTest {
                 LocalDateTime.now().plusDays(5));
 
         //when, then
-        assertThrows(PartyException.class, () -> partyService.partyUpdate(partyUpdateDto));
+        assertThrows(PartyException.class, () -> partyService.partyUpdate(partyUpdateDto, 1000L));
     }
 
     @Test
     void 파티_업데이트_실패_상태_잘못됨() {
         //given, then
         assertThrows(IllegalArgumentException.class, () -> new PartyUpdateDto(
-                partyId,
                 "맛있팅 참여안하실래요?",
                 "저는 피자를 좋아합니다",
                 "피자",
@@ -545,7 +536,6 @@ class PartyServiceTest {
     void 파티_업데이트_실패_성별_잘못됨() {
         //given, then
         assertThrows(IllegalArgumentException.class, () -> new PartyUpdateDto(
-                partyId,
                 "맛있팅 참여안하실래요?",
                 "저는 피자를 좋아합니다",
                 "피자",
@@ -564,7 +554,6 @@ class PartyServiceTest {
     void 파티_업데이트_실패_연령대_잘못됨() {
         //given, then
         assertThrows(IllegalArgumentException.class, () -> new PartyUpdateDto(
-                partyId,
                 "맛있팅 참여안하실래요?",
                 "저는 피자를 좋아합니다",
                 "피자",
@@ -582,7 +571,6 @@ class PartyServiceTest {
     void 파티_업데이트_실패_마감시간_잘못됨() {
         //given
         PartyUpdateDto partyUpdateDto = new PartyUpdateDto(
-                1000L,
                 "맛있팅 참여안하실래요?",
                 "저는 피자를 좋아합니다",
                 "피자",
@@ -597,7 +585,7 @@ class PartyServiceTest {
                 LocalDateTime.now().plusDays(3));
 
         //when, then
-        assertThrows(PartyException.class, () -> partyService.partyUpdate(partyUpdateDto));
+        assertThrows(PartyException.class, () -> partyService.partyUpdate(partyUpdateDto, 1000L));
     }
 
     @Test
@@ -657,14 +645,14 @@ class PartyServiceTest {
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
 
         //when
-        PartyJoinDto partyJoinDto_01 = new PartyJoinDto(findParty_01.get().getId(), user_01.getId(), guest.get().getId(), PartyJoinStatus.WAIT);
-        PartyJoinDto partyJoinDto_02 = new PartyJoinDto(findParty_02.get().getId(), user_02.getId(), guest.get().getId(), PartyJoinStatus.WAIT);
-        PartyJoinDto partyJoinDto_03 = new PartyJoinDto(findParty_03.get().getId(), user_03.getId(), guest.get().getId(), PartyJoinStatus.WAIT);
-        PartyJoinDto partyJoinDto_04 = new PartyJoinDto(findParty_01.get().getId(), user_04.getId(), guest.get().getId(), PartyJoinStatus.WAIT);
-        partyService.joinParty(partyJoinDto_01);
-        partyService.joinParty(partyJoinDto_02);
-        partyService.joinParty(partyJoinDto_03);
-        partyService.joinParty(partyJoinDto_04);
+        PartyJoinDto partyJoinDto_01 = new PartyJoinDto(findParty_01.get().getId(), user_01.getId(), PartyJoinStatus.WAIT);
+        PartyJoinDto partyJoinDto_02 = new PartyJoinDto(findParty_02.get().getId(), user_02.getId(), PartyJoinStatus.WAIT);
+        PartyJoinDto partyJoinDto_03 = new PartyJoinDto(findParty_03.get().getId(), user_03.getId(), PartyJoinStatus.WAIT);
+        PartyJoinDto partyJoinDto_04 = new PartyJoinDto(findParty_01.get().getId(), user_04.getId(), PartyJoinStatus.WAIT);
+        partyService.joinParty(partyJoinDto_01, guest.get());
+        partyService.joinParty(partyJoinDto_02, guest.get());
+        partyService.joinParty(partyJoinDto_03, guest.get());
+        partyService.joinParty(partyJoinDto_04, guest.get());
 
         List<PartyJoin> partyJoinList_01 = partyJoinRepository.findByLeaderId(user_01.getId());
         List<PartyJoin> partyJoinList_02 = partyJoinRepository.findByPartyIdAndLeaderId(findParty_02.get().getId(), user_02.getId());
@@ -687,11 +675,11 @@ class PartyServiceTest {
         Optional<Party> findParty = partyRepository.findById(partyId_list.get(0));
         User user = findParty.get().getUser();
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
-        PartyJoinDto partyJoinDto = new PartyJoinDto(null, user.getId(), guest.get().getId(), PartyJoinStatus.WAIT);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(null, user.getId(), PartyJoinStatus.WAIT);
 
         //when, then
         assertThrows(InvalidDataAccessApiUsageException.class, () -> { //Null 값으로 DB에서 Select를 시도해서 발생
-            partyService.joinParty(partyJoinDto);
+            partyService.joinParty(partyJoinDto, guest.get());
         });
     }
 
@@ -702,11 +690,11 @@ class PartyServiceTest {
         Optional<Party> findParty = partyRepository.findById(partyId_list.get(0));
         User user = findParty.get().getUser();
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
-        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), null, guest.get().getId(), PartyJoinStatus.WAIT);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), null, PartyJoinStatus.WAIT);
 
         //when, then
         assertThrows(UserException.class, () -> { //Null 값으로 DB에 Insert를 시도해서 발생
-            partyService.joinParty(partyJoinDto);
+            partyService.joinParty(partyJoinDto, guest.get());
         });
     }
 
@@ -716,11 +704,11 @@ class PartyServiceTest {
         Optional<Party> findParty = partyRepository.findById(partyId_list.get(0));
         User user = findParty.get().getUser();
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
-        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), null, PartyJoinStatus.WAIT);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), null, PartyJoinStatus.WAIT);
 
         //when, then
         assertThrows(DataIntegrityViolationException.class, () -> {//Null 값으로 DB에 Insert를 시도해서 발생
-            partyService.joinParty(partyJoinDto);
+            partyService.joinParty(partyJoinDto, guest.get());
         });
     }
 
@@ -731,11 +719,11 @@ class PartyServiceTest {
         User user = findParty.get().getUser();
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
 
-        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), guest.get().getId(), PartyJoinStatus.ACCEPT);
-        partyService.joinParty(partyJoinDto);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), PartyJoinStatus.ACCEPT);
+        partyService.joinParty(partyJoinDto, guest.get());
 
         //when
-        String result = partyService.decideUser(partyJoinDto);
+        String result = partyService.decideUser(partyJoinDto, user);
         List<Team> findTeams = teamRepository.findByPartyId(findParty.get().getId());
 
         //then
@@ -751,11 +739,11 @@ class PartyServiceTest {
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
 
         //when
-        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), guest.get().getId(), PartyJoinStatus.WAIT);
-        partyService.joinParty(partyJoinDto);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), PartyJoinStatus.WAIT);
+        partyService.joinParty(partyJoinDto, guest.get());
 
         //then
-        assertThrows(PartyJoinException.class, () -> partyService.decideUser(partyJoinDto));
+        assertThrows(PartyJoinException.class, () -> partyService.decideUser(partyJoinDto, user));
     }
 
     @Test
@@ -766,12 +754,12 @@ class PartyServiceTest {
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
 
         //when
-        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), guest.get().getId(), PartyJoinStatus.ACCEPT);
-        partyService.joinParty(partyJoinDto);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), PartyJoinStatus.ACCEPT);
+        partyService.joinParty(partyJoinDto, guest.get());
         partyRepository.delete(findParty.get());
 
         //then
-        assertThrows(PartyException.class, () -> partyService.decideUser(partyJoinDto));
+        assertThrows(PartyException.class, () -> partyService.decideUser(partyJoinDto, user));
     }
 
     @Test
@@ -783,13 +771,13 @@ class PartyServiceTest {
 
 
         //when
-        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), guest.get().getId(), PartyJoinStatus.ACCEPT);
-        partyService.joinParty(partyJoinDto);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), PartyJoinStatus.ACCEPT);
+        partyService.joinParty(partyJoinDto, guest.get());
         userRepository.delete(user);
         userRepository.delete(guest.get());
 
         //then
-        assertThrows(UserException.class, () -> partyService.decideUser(partyJoinDto));
+        assertThrows(UserException.class, () -> partyService.decideUser(partyJoinDto, user));
     }
 
     @Test
@@ -799,11 +787,11 @@ class PartyServiceTest {
         User user = findParty.get().getUser();
         Optional<User> guest = userRepository.findBySocialId(guestSocialId);
 
-        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), guest.get().getId(), PartyJoinStatus.REFUSE);
-        partyService.joinParty(partyJoinDto);
+        PartyJoinDto partyJoinDto = new PartyJoinDto(findParty.get().getId(), user.getId(), PartyJoinStatus.REFUSE);
+        partyService.joinParty(partyJoinDto, guest.get());
 
         //when
-        String result = partyService.decideUser(partyJoinDto);
+        String result = partyService.decideUser(partyJoinDto, user);
         List<Team> findTeams = teamRepository.findByPartyId(findParty.get().getId());
 
         //then

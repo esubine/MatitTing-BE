@@ -6,8 +6,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.token.TokenExceptionType;
-import com.kr.matitting.exception.user.UserException;
-import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.util.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,12 +14,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -112,6 +108,11 @@ public class JwtService {
     public DecodedJWT isTokenValid(String token) {
             return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
     }
+
+    public String getSocialId(DecodedJWT decodedJWT) {
+        return decodedJWT.getClaim("socialId").asString();
+    }
+
     public String renewToken(String refreshToken) {
         //request refreshToken -> User SocialId를 get -> redis refreshToken 유효한지 찾아서 검사
         DecodedJWT decodedJWT = isTokenValid(refreshToken);

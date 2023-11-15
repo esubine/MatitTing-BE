@@ -1,9 +1,14 @@
 package com.kr.matitting.jwt.filter;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.token.TokenExceptionType;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
+import com.kr.matitting.oauth2.CustomOauth2User;
+import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.util.RedisUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -29,7 +35,7 @@ import static com.kr.matitting.exception.token.TokenExceptionType.*;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
+    private final UserRepository userRepository;
     private final JwtService jwtService;
     private final RedisUtil redisUtil;
     @Value("${jwt.secret}")
@@ -61,12 +67,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.replace("Bearer ", "");
             if (redisUtil.getData(token) == null) { //redis blacklist check
                 DecodedJWT decodedJWT = jwtService.isTokenValid(token);
+                String socialId = jwtService.getSocialId(decodedJWT);
+                User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+                Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, Collections.singleton(new SimpleGrantedAuthority(user.getRole().getKey())));
 
-                String socialId = decodedJWT.getClaim("socialId").asString();
-                String role = decodedJWT.getClaim("role").asString();
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(socialId, null, Collections.singleton(new SimpleGrantedAuthority(role)));
-
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
                 doFilter(request, response, filterChain);
             } else {
                 log.error(BLACK_LIST_ACCESS_TOKEN.getErrorMessage());

@@ -4,7 +4,6 @@ import com.kr.matitting.constant.Orders;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Sorts;
 import jakarta.validation.constraints.NotNull;
-import lombok.Setter;
 
 public record PartySearchCondDto(
         String title,

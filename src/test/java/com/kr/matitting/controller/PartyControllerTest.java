@@ -102,7 +102,6 @@ class PartyControllerTest {
     void 파티_업데이트_성공_모두() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 "맛있팅 참여안하실래요?",
                 "저는 피자를 좋아합니다",
                 "피자",
@@ -131,7 +130,6 @@ class PartyControllerTest {
     void 파티_업데이트_성공_제목() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 "저랑 놀사람!",
                 null,
                 null,
@@ -159,7 +157,6 @@ class PartyControllerTest {
     void 파티_업데이트_성공_소개글() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 null,
                 "저는 피자를 좋아합니다",
                 null,
@@ -187,7 +184,6 @@ class PartyControllerTest {
     void 파티_업데이트_성공_메뉴() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 "파스타",
@@ -215,7 +211,6 @@ class PartyControllerTest {
     void 파티_업데이트_성공_위경도() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 null,
@@ -243,7 +238,6 @@ class PartyControllerTest {
     void 파티_업데이트_성공_마감시간() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 null,
@@ -271,7 +265,6 @@ class PartyControllerTest {
     void 파티_업데이트_성공_파티시간() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 null,
@@ -299,7 +292,6 @@ class PartyControllerTest {
     void 파티_업데이트_실패_ID_없음() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                1000L,
                 null,
                 null,
                 null,
@@ -326,7 +318,6 @@ class PartyControllerTest {
     void 파티_업데이트_실패_마감시간_잘못됨() throws Exception {
         //given
         String partyUpdateDto = objectMapper.writeValueAsString(new PartyUpdateDto(
-                partyId,
                 null,
                 null,
                 null,
@@ -396,7 +387,7 @@ class PartyControllerTest {
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         String newAccessToken = jwtService.createAccessToken(newUser);
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT));
 
         //when, then
         mockMvc.perform(post("/api/party/participation")
@@ -414,7 +405,7 @@ class PartyControllerTest {
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         String newAccessToken = jwtService.createAccessToken(newUser);
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, 213321321L, newUser.getId(), PartyJoinStatus.WAIT));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, 213321321L, PartyJoinStatus.WAIT));
 
         //when, then
         mockMvc.perform(post("/api/party/participation")
@@ -432,7 +423,7 @@ class PartyControllerTest {
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         String newAccessToken = jwtService.createAccessToken(newUser);
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(123312L, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(123312L, user.getId(), PartyJoinStatus.WAIT));
 
         //when, then
         mockMvc.perform(post("/api/party/participation")
@@ -449,9 +440,9 @@ class PartyControllerTest {
         //given
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
-        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.ACCEPT));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.ACCEPT));
 
         //when, then
         mockMvc.perform(post("/api/party/decision")
@@ -468,9 +459,9 @@ class PartyControllerTest {
         //given
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
-        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT));
 
         //when, then
         mockMvc.perform(post("/api/party/decision")
@@ -487,9 +478,9 @@ class PartyControllerTest {
         //given
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
-        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(32113L, user.getId(), newUser.getId(), PartyJoinStatus.ACCEPT));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(32113L, user.getId(), PartyJoinStatus.ACCEPT));
 
         //when, then
         mockMvc.perform(post("/api/party/decision")
@@ -506,9 +497,9 @@ class PartyControllerTest {
         //given
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
-        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), 213321L, PartyJoinStatus.ACCEPT));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId,213321L, PartyJoinStatus.ACCEPT));
 
         //when, then
         mockMvc.perform(post("/api/party/decision")
@@ -525,9 +516,9 @@ class PartyControllerTest {
         //given
         UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
-        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.WAIT));
+        partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
-        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), newUser.getId(), PartyJoinStatus.REFUSE));
+        String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.REFUSE));
 
         //when, then
         mockMvc.perform(post("/api/party/decision")
