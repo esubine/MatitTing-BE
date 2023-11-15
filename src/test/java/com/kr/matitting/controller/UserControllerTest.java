@@ -74,7 +74,7 @@ class UserControllerTest {
     @Test
     void 프로필_업데이트_성공_사진() throws Exception {
         //given
-        String userUpdateDto = objectMapper.writeValueAsString(new UserUpdateDto(user.getId(), null, "새로운_증명_사진.jpg"));
+        String userUpdateDto = objectMapper.writeValueAsString(new UserUpdateDto(null, "새로운_증명_사진.jpg"));
 
         //when, then
         mockMvc.perform(patch("/api/profile")
@@ -88,7 +88,7 @@ class UserControllerTest {
     @Test
     void 프로필_업데이트_성공_닉네임() throws Exception {
         //given
-        String userUpdateDto = objectMapper.writeValueAsString(new UserUpdateDto(user.getId(), "취업 뿌시자", null));
+        String userUpdateDto = objectMapper.writeValueAsString(new UserUpdateDto("취업 뿌시자", null));
 
         //when, then
         mockMvc.perform(patch("/api/profile")

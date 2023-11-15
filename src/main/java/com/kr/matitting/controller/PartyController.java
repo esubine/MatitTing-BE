@@ -1,6 +1,7 @@
 package com.kr.matitting.controller;
 
 import com.kr.matitting.constant.Role;
+import com.kr.matitting.entity.User;
 import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
 import com.kr.matitting.dto.PartyUpdateDto;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -93,8 +95,8 @@ public class PartyController {
             @ApiResponse(responseCode = "700", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class)))
     })
     @PostMapping("/participation")
-    public ResponseEntity<String> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto) {
-        partyService.joinParty(partyJoinDto);
+    public ResponseEntity<String> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
+        partyService.joinParty(partyJoinDto, user);
         return ResponseEntity.ok().body("Success join request!");
     }
 
@@ -107,8 +109,8 @@ public class PartyController {
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
     @PostMapping("/decision")
-    public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyJoinDto partyJoinDto) {
-        String result = partyService.decideUser(partyJoinDto);
+    public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
+        String result = partyService.decideUser(partyJoinDto, user);
         return ResponseEntity.ok().body(result);
     }
 

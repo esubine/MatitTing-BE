@@ -2,6 +2,7 @@ package com.kr.matitting.service;
 
 import com.kr.matitting.constant.*;
 import com.kr.matitting.dto.PartyCreateDto;
+import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.Party;
@@ -339,8 +340,8 @@ class UserServiceTest {
         User user = userService.signUp(userSignUpDto);
 
         //when
-        UserUpdateDto userUpdateDto = new UserUpdateDto(user.getId(), null, imgUrl);
-        userService.update(userUpdateDto);
+        UserUpdateDto userUpdateDto = new UserUpdateDto(null, imgUrl);
+        userService.update(user.getId(), userUpdateDto);
 
         //then
         User finduser = userRepository.findById(user.getId()).get();
@@ -355,8 +356,8 @@ class UserServiceTest {
         User user = userService.signUp(userSignUpDto);
 
         //when
-        UserUpdateDto userUpdateDto = new UserUpdateDto(user.getId(), updateNickname, null);
-        userService.update(userUpdateDto);
+        UserUpdateDto userUpdateDto = new UserUpdateDto(updateNickname, null);
+        userService.update(user.getId(), userUpdateDto);
 
         //then
         User finduser = userRepository.findById(user.getId()).get();
@@ -371,15 +372,15 @@ class UserServiceTest {
         User user = userService.signUp(userSignUpDto);
 
         //when, then
-        UserUpdateDto userUpdateDto = new UserUpdateDto(1000L, updateNickname, null);
-        assertThrows(UserException.class, () -> userService.update(userUpdateDto));
+        UserUpdateDto userUpdateDto = new UserUpdateDto(updateNickname, null);
+        assertThrows(UserException.class, () -> userService.update(10000L, userUpdateDto));
 
     }
 
     @Test
     void 파티현황_성공_방장_모집중() {
         //when
-        List<PartyCreateDto> myPartyList = userService.getMyPartyList(userId, Role.HOST);
+        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(userId, Role.HOST);
 
         //then
         assertThat(myPartyList.size()).isEqualTo(4);
@@ -397,7 +398,7 @@ class UserServiceTest {
         teamRepository.save(team_02);
 
         //when
-        List<PartyCreateDto> myPartyList = userService.getMyPartyList(userId, Role.VOLUNTEER);
+        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(userId, Role.VOLUNTEER);
 
         //then
         assertThat(myPartyList.size()).isEqualTo(1);
@@ -406,7 +407,7 @@ class UserServiceTest {
     @Test
     void 파티현황_성공_마감() {
         //when
-        List<PartyCreateDto> myPartyList = userService.getMyPartyList(userId, Role.USER);
+        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(userId, Role.USER);
 
         //then
         assertThat(myPartyList.size()).isEqualTo(3);
@@ -415,7 +416,7 @@ class UserServiceTest {
     @Test
     void 파티현황_실패_ID_없음() {
         //when
-        List<PartyCreateDto> myPartyList = userService.getMyPartyList(100L, Role.USER);
+        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(100L, Role.USER);
 
         //then
         assertThat(myPartyList.size()).isEqualTo(0);

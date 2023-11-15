@@ -227,18 +227,18 @@ public class PartyService {
                 .build();
     }
 
-    public void joinParty(PartyJoinDto partyJoinDto) {
+    public void joinParty(PartyJoinDto partyJoinDto, User user) {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
         if (party.getUser().getId() != partyJoinDto.leaderId()) {
             throw new UserException(UserExceptionType.NOT_FOUND_USER);
         }
-        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(partyJoinDto.userId()).build();
+        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(user.getId()).build();
         partyJoinRepository.save(partyJoin);
     }
 
-    public String decideUser(PartyJoinDto partyJoinDto) {
+    public String decideUser(PartyJoinDto partyJoinDto, User user) {
         log.info("=== decideUser() start ===");
 
         if (!(partyJoinDto.status() == PartyJoinStatus.ACCEPT || partyJoinDto.status() == PartyJoinStatus.REFUSE)) {
@@ -249,12 +249,11 @@ public class PartyService {
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(
                 partyJoinDto.partyId(),
                 partyJoinDto.leaderId(),
-                partyJoinDto.userId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+                user.getId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
         partyJoinRepository.delete(findPartyJoin);
 
         if (partyJoinDto.status() == PartyJoinStatus.ACCEPT) {
             log.info("=== ACCEPT ===");
-            User user = userRepository.findById(partyJoinDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
             Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             party.increaseUser();
             Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
