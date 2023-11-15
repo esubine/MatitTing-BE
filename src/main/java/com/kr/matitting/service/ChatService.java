@@ -133,9 +133,11 @@ public class ChatService {
     @Transactional
     public void sendMessage(Long userId, ChatMessage chatMessage) {
 
-        ChatUser chatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, chatMessage.getRoomId()).orElseThrow();
-        ChatHistory history = ChatHistory.createHistory(chatUser, chatMessage.getMessage());
-        chatHistoryRepository.save(history);
+
+        // 이부분 토큰이 필요
+//        ChatUser chatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, chatMessage.getRoomId()).orElseThrow();
+//        ChatHistory history = ChatHistory.createHistory(chatUser, chatMessage.getMessage());
+//        chatHistoryRepository.save(history);
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
     }
 }

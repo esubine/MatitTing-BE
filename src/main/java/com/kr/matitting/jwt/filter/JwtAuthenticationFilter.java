@@ -28,6 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Enumeration;
 
 import static com.kr.matitting.exception.token.TokenExceptionType.*;
 
@@ -43,20 +44,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String secretKey;
 
     private static final String[] whitelist = {"/", "/index.html", "/home", "/login", "/oauth2/**",
-            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/**", "/api-docs/**"};
+            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/**", "/api-docs/**",
+            "/api/chat-rooms/**", "/chat/**", "/room/**", "/webjars/**", "/favicon.ico", "/ws-stomp/**"};
 
 
     // 필터를 거치지 않을 URL 을 설정하고, true 를 return 하면 바로 다음 필터를 진행하게 됨
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        return PatternMatchUtils.simpleMatch(whitelist, requestURI);
+        return PatternMatchUtils.simpleMatch(whitelist, request.getRequestURI());
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
-        String header = request.getHeader("Authorization");
-
+        String header = request.getRequestURI();
         // 토큰이 없거나 정상적이지 않은 경우
         if (header == null || !header.startsWith("Bearer ")) {
             log.error(NOT_FOUND_ACCESS_TOKEN.getErrorMessage());
