@@ -12,7 +12,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "USER")
+@Table(name = "USERS")
 @Entity
 public class User extends BaseTimeEntity{
     @Schema(description = "사용자 id", nullable = false, example = "1")
