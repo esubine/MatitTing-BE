@@ -50,9 +50,10 @@ public class PartyController {
 
     @PostMapping
     public ResponseEntity<Map<String, Long>> createParty(
+            @AuthenticationPrincipal User user,
             @RequestBody @Valid PartyCreateDto request
     ) {
-        Map<String, Long> partyId = partyService.createParty(request);
+        Map<String, Long> partyId = partyService.createParty(user, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(partyId);
     }
 

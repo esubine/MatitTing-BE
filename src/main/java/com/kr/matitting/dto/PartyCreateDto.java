@@ -18,9 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Schema(description = "파티 생성 DTO")
 public class PartyCreateDto {
-    @Schema(description = "사용자 ID", nullable = false, example = "1")
-    @NotNull
-    private Long userId;
+
     @Schema(description = "파티 제목", nullable = false, example = "붕어빵 먹을 사람")
     @NotNull
     private String title;
@@ -59,7 +57,6 @@ public class PartyCreateDto {
 
     public static PartyCreateDto toDto(Party party) {
         return PartyCreateDto.builder()
-                .userId(party.getUser().getId())
                 .title(party.getPartyTitle())
                 .content(party.getPartyContent())
                 .partyTime(party.getPartyTime())
