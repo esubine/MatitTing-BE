@@ -168,12 +168,16 @@ public class PartyService {
         if (partyUpdateDto.thumbnail() != null) {
             party.setThumbnail(partyUpdateDto.thumbnail());
         }
-        if (partyUpdateDto.deadline() != null) {
+        if (partyUpdateDto.deadline() != null && partyUpdateDto.partyTime() != null) {
+            if (timeValidCheck(partyUpdateDto.deadline(), partyUpdateDto.partyTime())) {
+                party.setDeadline(partyUpdateDto.deadline());
+                party.setPartyTime(partyUpdateDto.partyTime());
+            }
+        }else if (partyUpdateDto.deadline() != null) {
             if (timeValidCheck(partyUpdateDto.deadline(), party.getPartyTime())) {
                 party.setDeadline(partyUpdateDto.deadline());
             }
-        }
-        if (partyUpdateDto.partyTime() != null) {
+        }else if (partyUpdateDto.partyTime() != null) {
             if (timeValidCheck(party.getDeadline(), partyUpdateDto.partyTime())) {
                 party.setPartyTime(partyUpdateDto.partyTime());
             }
@@ -203,10 +207,6 @@ public class PartyService {
     }
 
     public void deleteParty(Long partyId) {
-        List<PartyJoin> partyJoinList = partyJoinRepository.findByPartyId(partyId);
-        partyJoinList.stream().forEach(partyJoin -> partyJoinRepository.delete(partyJoin));
-        List<Team> teamList = teamRepository.findByPartyId(partyId);
-        teamList.stream().forEach(team -> teamRepository.delete(team));
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         partyRepository.delete(party);
     }
