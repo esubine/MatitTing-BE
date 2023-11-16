@@ -55,18 +55,23 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final MapService mapService;
-
     public ResponsePartyDto getPartyInfo(Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        increaseHit(partyId);
         ResponsePartyDto responsePartyDto = ResponsePartyDto.toDto(party);
         return responsePartyDto;
     }
 
-    public Map<String, Long> createParty(PartyCreateDto request) {
+    @Transactional
+    public void increaseHit(Long partyId){
+        partyRepository.increaseHit(partyId);
+    }
+
+    public Map<String, Long> createParty(User user, PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
-        Long userId = request.getUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        Long userId = user.getId();
+        User findUser = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
         checkParticipant(request.getTotalParticipant());
 
@@ -75,11 +80,11 @@ public class PartyService {
         }
 
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
-        Party party = createBasePartyBuilder(request, user);
+        Party party = createBasePartyBuilder(request, findUser);
         Party savedParty = partyRepository.save(party);
 
         Team team = Team.builder()
-                .user(user)
+                .user(findUser)
                 .party(savedParty)
                 .role(Role.HOST)
                 .build();

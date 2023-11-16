@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+
 @Schema(description = "파티 Response")
 public record ResponsePartyDto(
         @Schema(description = "파티 제목", nullable = false, example = "붕어빵 드실 분")
@@ -50,7 +51,11 @@ public record ResponsePartyDto(
         String menu,
         @Schema(description = "썸네일", nullable = true, example = " https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
         @NotNull
-        String thumbnail
+        String thumbnail,
+
+        @Schema(description = "조회수", nullable = false, example = "7")
+        @NotNull
+        int hit
 ) {
     public static ResponsePartyDto toDto(Party party) {
         return new ResponsePartyDto(
@@ -67,6 +72,7 @@ public record ResponsePartyDto(
                 party.getTotalParticipant(),
                 party.getParticipantCount(),
                 party.getMenu(),
-                party.getThumbnail());
+                party.getThumbnail(),
+                party.getHit());
     }
 }
