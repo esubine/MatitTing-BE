@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -150,6 +151,10 @@ public class ChatService {
         Long roomId = chatMessage.getRoomId();
         chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(
                 () -> new ChatException(NO_PRINCIPAL)
+        );
+
+        chatRoomRepository.findById(roomId).ifPresent(
+                room -> room.setModifiedDate(LocalDateTime.now())
         );
 
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
