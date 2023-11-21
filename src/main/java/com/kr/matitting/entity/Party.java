@@ -10,6 +10,8 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -81,7 +83,14 @@ public class Party extends BaseTimeEntity {
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Team> teamList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PartyJoin> partyJoinList = new ArrayList<>();
+
     public void increaseUser() {
         this.participantCount++;
     }
+
 }
