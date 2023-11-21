@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         getCustomizer(introspector,
                                 "/", "/home", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html", "/swagger-ui/**", "/api-docs/**",
-                                "/api/chat-rooms/**", "/chat/**", "/room/**", "/webjars/**", "/favicon.ico", "/ws-stomp/**")
+                                "/api/chat-rooms/**", "/webjars/**", "/favicon.ico")
                 )
                 .formLogin((form) -> form
                         .loginPage("/")
