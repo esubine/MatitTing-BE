@@ -2,6 +2,12 @@ package com.kr.matitting.service;
 
 import com.kr.matitting.constant.ChatRoomType;
 import com.kr.matitting.entity.*;
+import com.kr.matitting.exception.chat.ChatException;
+import com.kr.matitting.exception.chat.ChatExceptionType;
+import com.kr.matitting.exception.party.PartyException;
+import com.kr.matitting.exception.party.PartyExceptionType;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +26,9 @@ import static com.kr.matitting.dto.ChatHistoryDto.*;
 import static com.kr.matitting.dto.ChatRoomDto.*;
 import static com.kr.matitting.dto.ChatUserDto.*;
 import static com.kr.matitting.entity.ChatRoom.*;
+import static com.kr.matitting.exception.chat.ChatExceptionType.*;
+import static com.kr.matitting.exception.party.PartyExceptionType.*;
+import static com.kr.matitting.exception.user.UserExceptionType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -58,11 +67,15 @@ public class ChatService {
     @Transactional
     public void requestOneOnOne(Long userId, Long partyId) {
         Optional<ChatUser> chatRoomOptional = chatUserRepository.findByPartyIdFJChatRoom(partyId);
-        Party party = partyRepository.findByIdFJUser(partyId).orElseThrow();
-        User user = userRepository.findById(userId).orElseThrow();
+        Party party = partyRepository.findByIdFJUser(partyId).orElseThrow(
+                () -> new PartyException(NOT_FOUND_PARTY)
+        );
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserException(NOT_FOUND_USER)
+        );
 
         if (chatRoomOptional.isPresent()) {
-            throw new RuntimeException();
+            throw new ChatException(NOT_FOUND_CHAT_ROOM);
         }
 
         ChatRoom room = createRoom(party, user, PRIVATE, party.getPartyTitle());
@@ -89,10 +102,12 @@ public class ChatService {
         ChatUser owner = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
 
         if (owner.getUserRole().equals(ADMIN)) {
-            ChatUser participant = chatUserRepository.findByUserIdAndChatRoomId(targetId, roomId).orElseThrow();
+            ChatUser participant = chatUserRepository.findByUserIdAndChatRoomId(targetId, roomId).orElseThrow(
+                    () -> new ChatException(NOT_FOUND_CHAT_USER_INFO)
+            );
             chatUserRepository.delete(participant);
         } else {
-            throw new RuntimeException();
+            throw new ChatException(NO_PRINCIPAL);
         }
     }
 
@@ -103,21 +118,21 @@ public class ChatService {
         ChatUser chatUser = chatUsers.stream()
                 .filter(cu -> cu.getUser().getId().equals(userId))
                 .findAny()
-                .orElseThrow();
+                .orElseThrow(() -> new ChatException(NO_PRINCIPAL));
 
-        boolean isRemoved = chatUsers.removeIf(a -> a.getUser().getId().equals(userId));
+        chatUsers.removeIf(a -> a.getUser().getId().equals(userId));
 
-        if(isRemoved) {
-            return new ChatUserInfoResponse(chatUser, chatUsers);
-        } else {
-            throw new RuntimeException();
-        }
+        return new ChatUserInfoResponse(chatUser, chatUsers);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void createChatRoom(CreateRoomEvent createRoomEvent) {
-        Party party = partyRepository.findById(createRoomEvent.getPartyId()).orElseThrow();
-        User user = userRepository.findById(createRoomEvent.getUserId()).orElseThrow();
+        Party party = partyRepository.findById(createRoomEvent.getPartyId()).orElseThrow(
+                () -> new PartyException(NOT_FOUND_PARTY)
+        );
+        User user = userRepository.findById(createRoomEvent.getUserId()).orElseThrow(
+                () -> new UserException(NOT_FOUND_USER)
+        );
         ChatRoom room = createRoom(party, user, GROUP, party.getPartyTitle());
         chatRoomRepository.save(room);
 
@@ -132,12 +147,11 @@ public class ChatService {
 
     @Transactional
     public void sendMessage(Long userId, ChatMessage chatMessage) {
+        Long roomId = chatMessage.getRoomId();
+        chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(
+                () -> new ChatException(NO_PRINCIPAL)
+        );
 
-
-        // 이부분 토큰이 필요
-//        ChatUser chatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, chatMessage.getRoomId()).orElseThrow();
-//        ChatHistory history = ChatHistory.createHistory(chatUser, chatMessage.getMessage());
-//        chatHistoryRepository.save(history);
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
     }
 }
