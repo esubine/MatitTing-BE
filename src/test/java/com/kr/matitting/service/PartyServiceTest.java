@@ -863,5 +863,4 @@ class PartyServiceTest {
         request.setCategory(PartyCategory.WESTERN);
         return request;
     }
-
 }

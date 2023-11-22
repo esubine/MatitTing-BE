@@ -4,12 +4,7 @@ import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyJoinStatus;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
-import com.kr.matitting.dto.PartyCreateDto;
-import com.kr.matitting.dto.PartyJoinDto;
-import com.kr.matitting.dto.PartyUpdateDto;
-import com.kr.matitting.dto.ResponsePartyDto;
-import com.kr.matitting.dto.MainPageDto;
-import com.kr.matitting.dto.CalculateDto;
+import com.kr.matitting.dto.*;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.PartyJoin;
 import com.kr.matitting.entity.Team;
@@ -31,6 +26,7 @@ import com.kr.matitting.repository.PartyRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.kr.matitting.dto.ChatRoomDto.*;
+
 @Slf4j
 @Service
 @Transactional
@@ -49,7 +47,7 @@ import java.util.stream.Collectors;
 public class PartyService {
     @Value("${cloud.aws.s3.url}")
     private String url;
-
+    private final ApplicationEventPublisher eventPublisher;
     private final PartyJoinRepository partyJoinRepository;
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
@@ -93,6 +91,8 @@ public class PartyService {
 
         Map<String, Long> partyId = new HashMap<>();
         partyId.put("partyId", savedParty.getId());
+
+        eventPublisher.publishEvent(new CreateRoomEvent(savedParty.getId(), user.getId()));
 
         return partyId;
 

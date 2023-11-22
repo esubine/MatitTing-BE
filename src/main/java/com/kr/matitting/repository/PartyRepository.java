@@ -17,6 +17,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
     List<Party> findByUserIdAndStatus(Long userId, PartyStatus status);
 
+    @Query("select p from Party p " +
+            "join fetch p.user " +
+            "where p.id = :partyId")
+    Optional<Party> findByIdFJUser(@Param("partyId") Long partyId);
+  
     List<Party> findByStatus(PartyStatus status);
 
     @Query("UPDATE Party p " +
@@ -24,5 +29,4 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             "WHERE p.id=:partyId ")
     @Modifying
     void increaseHit(@Param("partyId") Long partyId);
-
 }
