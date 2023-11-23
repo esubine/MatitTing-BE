@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "USERS")
+@Table(name = "USER")
 @Entity
 public class User extends BaseTimeEntity{
     @Schema(description = "사용자 id", nullable = false, example = "1")
@@ -59,7 +59,7 @@ public class User extends BaseTimeEntity{
     @Column(nullable = false)
     private Role role; //신규유저 or 기존유저
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Party> partyList = new ArrayList<>();
 
 }

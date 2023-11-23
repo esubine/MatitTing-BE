@@ -1,7 +1,7 @@
 package com.kr.matitting.controller;
 
 import com.kr.matitting.dto.MainPageDto;
-import com.kr.matitting.dto.ResponsePartyDto;
+import com.kr.matitting.dto.ResponseMainPageDto;
 import com.kr.matitting.service.MainService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,8 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/main")
@@ -27,16 +25,16 @@ public class MainController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
                     content = {
-                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponsePartyDto.class)))})
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseMainPageDto.class)))})
     })
     @GetMapping
-    public ResponseEntity<List<ResponsePartyDto>> getPartyList(
+    public ResponseEntity<ResponseMainPageDto> getPartyList(
             @ModelAttribute MainPageDto mainPageDto,
-            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-            @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit
+            @RequestParam(value = "size", required = false, defaultValue = "5") int size,
+            @RequestParam(value = "lastPartyId", required = false) Long lastPartyId
     ) {
-        Pageable pageable = PageRequest.of(offset, limit);
-        List<ResponsePartyDto> partyList = mainService.getPartyList(mainPageDto, pageable);
-        return ResponseEntity.ok().body(partyList);
+        Pageable pageable = PageRequest.of(0, size);
+        ResponseMainPageDto mainPageList = mainService.getPartyList(mainPageDto, pageable, lastPartyId);
+        return ResponseEntity.ok().body(mainPageList);
     }
 }
