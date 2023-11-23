@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 
 @Schema(description = "파티 Response")
 public record ResponsePartyDto(
+        @Schema(description = "파티 id", nullable = false, example = "1")
+        @NotNull
+        Long partyId,
         @Schema(description = "파티 제목", nullable = false, example = "붕어빵 드실 분")
         @NotNull
         String partyTitle,
@@ -53,12 +56,13 @@ public record ResponsePartyDto(
         @NotNull
         String thumbnail,
 
-        @Schema(description = "조회수", nullable = false, example = "7")
+        @Schema(description = "조회수", nullable = false, example = "1")
         @NotNull
         int hit
 ) {
     public static ResponsePartyDto toDto(Party party) {
         return new ResponsePartyDto(
+                party.getId(),
                 party.getPartyTitle(),
                 party.getPartyContent(),
                 party.getAddress(),
