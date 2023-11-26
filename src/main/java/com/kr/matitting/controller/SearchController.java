@@ -24,7 +24,7 @@ public class SearchController {
 
     @Operation(summary = "파티 검색", description = "파티방을 검색하는 메소드")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파티방 검색 리스트 반환", content = @Content(schema = @Schema(implementation = PartyCreateDto.class)))
+            @ApiResponse(responseCode = "200", description = "파티방 검색 리스트 반환", content = @Content(schema = @Schema(implementation = ResponseSearchPageDto.class)))
     })
     @GetMapping
     public ResponseEntity<ResponseSearchPageDto> partySearch(

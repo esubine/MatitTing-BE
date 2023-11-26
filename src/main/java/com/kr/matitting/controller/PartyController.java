@@ -115,10 +115,9 @@ public class PartyController {
         return ResponseEntity.ok().body(result);
     }
 
-
     @Operation(summary = "파티 현황", description = "내 파티 현황을 불러오는 메소드")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파티 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = PartyCreateDto.class))),
+            @ApiResponse(responseCode = "200", description = "파티 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class))),
             @ApiResponse(responseCode = "1000", description = "파티 팀 정보가 없습니다.", content = @Content(schema = @Schema(implementation = TeamExceptionType.class)))
     })
     @GetMapping("/{userId}/party-status")
