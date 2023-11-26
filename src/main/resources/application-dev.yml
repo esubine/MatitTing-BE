@@ -17,9 +17,9 @@ spring:
     port: 6379
 
   datasource:
-    url: # h2 url ex_): jdbc:h2:tcp://localhost/~/test
+    url: jdbc:h2:tcp://localhost/~/test # h2 url ex_): jdbc:h2:tcp://localhost/~/test
     driver-class-name: org.h2.Driver
-    username: # h2 id
+    username: sa # h2 id
     password: # h2 password
 
   security:
