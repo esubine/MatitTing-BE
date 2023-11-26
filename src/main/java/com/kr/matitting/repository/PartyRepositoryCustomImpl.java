@@ -9,10 +9,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -28,34 +25,25 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Party> searchPage(PartySearchCondDto partySearchCondDto, Pageable pageable) {
-        List<Party> content = getPartyList(partySearchCondDto, pageable);
-        Long count = getCount(partySearchCondDto);
-
-        return new PageImpl<>(content, pageable, count);
+    public Slice<Party> searchPage(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId) {
+        Slice<Party> partySlice = getPartyList(partySearchCondDto, pageable, lastPartyId);
+        return partySlice;
     }
 
-    private List<Party> getPartyList(PartySearchCondDto partySearchCondDto, Pageable pageable) {
-        List<Party> content = queryFactory
+    private Slice<Party> getPartyList(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId) {
+        List<Party> partyList = queryFactory
                 .select(party)
                 .from(party)
-                .where(titleLike(partySearchCondDto.title()), menuLike(partySearchCondDto.menu()), stateEq(partySearchCondDto.status()))
+                .where(
+                        titleLike(partySearchCondDto.title()),
+                        menuLike(partySearchCondDto.menu()),
+                        stateEq(partySearchCondDto.status()),
+                        ltPartyId(lastPartyId))
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .limit(pageable.getPageSize()+1)
                 .orderBy(partySort(pageable))
                 .fetch();
-        return content;
-    }
-
-    private Long getCount(PartySearchCondDto partySearchCondDto) {
-        Long count = queryFactory
-                .select(party.count())
-                .from(party)
-                .where(
-                        titleLike(partySearchCondDto.title()), menuLike(partySearchCondDto.menu()), stateEq(partySearchCondDto.status())
-                )
-                .fetchOne();
-        return count;
+        return checkLastPage(partyList, pageable);
     }
 
     private BooleanExpression titleLike(String title) {
@@ -71,6 +59,20 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
             return null;
         }
         return party.status.eq(partyStatus);
+    }
+
+    private BooleanExpression ltPartyId(Long lastPartyId) {
+        return lastPartyId == null ? null : party.id.lt(lastPartyId);
+    }
+
+    private Slice<Party> checkLastPage(List<Party> partyList, Pageable pageable) {
+        boolean hasNext = false;
+        if (partyList.size() > pageable.getPageSize()) {
+            hasNext = true;
+            partyList.remove(pageable.getPageSize());
+        }
+
+        return new SliceImpl<>(partyList, pageable, hasNext);
     }
 
     private OrderSpecifier<?> partySort(Pageable pageable) {
