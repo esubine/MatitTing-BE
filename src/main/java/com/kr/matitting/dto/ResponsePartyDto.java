@@ -58,7 +58,7 @@ public record ResponsePartyDto(
 
         @Schema(description = "조회수", nullable = false, example = "1")
         @NotNull
-        int hit
+        Integer hit
 ) {
     public static ResponsePartyDto toDto(Party party) {
         return new ResponsePartyDto(

@@ -28,7 +28,7 @@ public class SearchController {
     })
     @GetMapping
     public ResponseEntity<ResponseSearchPageDto> partySearch(
-            @ModelAttribute @Valid PartySearchCondDto partySearchCondDto,
+            @ModelAttribute PartySearchCondDto partySearchCondDto,
             @RequestParam(value = "size", required = false, defaultValue = "5") Integer size,
             @RequestParam(value = "lastPartyId", required = false) Long lastPartyId
     ) {
