@@ -40,7 +40,7 @@ public class PartyRepositoryImpl {
 
     private BooleanExpression ltPartyId(Long lastPartyId) {
 
-        if (lastPartyId == null) {
+        if (lastPartyId == 0L) {
             return null;
         }
 

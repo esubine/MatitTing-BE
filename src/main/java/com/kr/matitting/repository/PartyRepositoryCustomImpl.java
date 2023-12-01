@@ -62,7 +62,7 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
     }
 
     private BooleanExpression ltPartyId(Long lastPartyId) {
-        return lastPartyId == null ? null : party.id.lt(lastPartyId);
+        return lastPartyId == 0L ? null : party.id.lt(lastPartyId);
     }
 
     private Slice<Party> checkLastPage(List<Party> partyList, Pageable pageable) {
