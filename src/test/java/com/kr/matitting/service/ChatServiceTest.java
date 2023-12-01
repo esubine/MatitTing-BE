@@ -24,7 +24,6 @@ import java.util.Random;
 import java.util.UUID;
 
 import static com.kr.matitting.constant.ChatUserRole.*;
-import static com.kr.matitting.dto.ChatDto.*;
 import static com.kr.matitting.dto.ChatRoomDto.*;
 import static org.assertj.core.api.Assertions.*;
 

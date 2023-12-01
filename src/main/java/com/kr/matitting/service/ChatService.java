@@ -40,9 +40,10 @@ public class ChatService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final SimpMessageSendingOperations messagingTemplate;
+    private final ChatRepositoryCustom chatRepositoryCustom;
 
     @Transactional(readOnly = true)
-    public List<ChatRoomItem> getChatRooms(Long userId, ChatRoomType roomType, Pageable pageable) {
+    public List<ChatRoomItem> getChatRooms(Long userId, ChatRoomType roomType, Long lastId, Pageable pageable) {
         List<ChatUser> chatUsers = chatUserRepository.findByUserIdAndRoomTypeFJRoom(userId, roomType, pageable);
 
         if (chatUsers == null) return null;
@@ -53,10 +54,9 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatHistoryResponse> getHistories(Long userId, Long roomId, Pageable pageable) {
+    public List<ChatHistoryResponse> getHistories(Long userId, Long roomId, Long lastHistoryId, Pageable pageable) {
         ChatUser chatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
-
-        List<ChatHistory> chatHistories = chatHistoryRepository.findByChatUserIdFJChatUser(chatUser.getId(), pageable);
+        List<ChatHistory> chatHistories = chatRepositoryCustom.getHistories(chatUser.getId(), roomId, lastHistoryId, pageable);
 
         if (chatHistories == null) return null;
 
