@@ -58,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
-        String header = request.getRequestURI();
+        String header = request.getHeader(jwtService.getAccessHeader());
         // 토큰이 없거나 정상적이지 않은 경우
         if (header == null || !header.startsWith("Bearer ")) {
             log.error(NOT_FOUND_ACCESS_TOKEN.getErrorMessage());
