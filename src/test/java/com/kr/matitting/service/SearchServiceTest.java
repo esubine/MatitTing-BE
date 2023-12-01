@@ -3,6 +3,7 @@ package com.kr.matitting.service;
 import com.kr.matitting.constant.*;
 import com.kr.matitting.dto.PartySearchCondDto;
 import com.kr.matitting.dto.ResponseSearchDto;
+import com.kr.matitting.dto.ResponseSearchPageDto;
 import com.kr.matitting.dto.SortDto;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -255,21 +257,22 @@ class SearchServiceTest {
     @Test
     @DisplayName("인기 검색어")
     void 인기검색어_성공_TOP10() {
+        Integer size = 5;
         //given
-        PartySearchCondDto partySearchCondDto_01 = new PartySearchCondDto("돈까스", null, null, null, 3);
-        PartySearchCondDto partySearchCondDto_02 = new PartySearchCondDto("돈까스", null, null, null, 3);
-        PartySearchCondDto partySearchCondDto_03 = new PartySearchCondDto("피자", null, null, null, 3);
-        PartySearchCondDto partySearchCondDto_04 = new PartySearchCondDto("파스타", null, null, null, 3);
-        PageRequest pageable_01 = createPageable(partySearchCondDto_01);
-        PageRequest pageable_02 = createPageable(partySearchCondDto_02);
-        PageRequest pageable_03 = createPageable(partySearchCondDto_03);
-        PageRequest pageable_04 = createPageable(partySearchCondDto_04);
+        PartySearchCondDto partySearchCondDto_01 = new PartySearchCondDto("돈까스", null, null, null);
+        PartySearchCondDto partySearchCondDto_02 = new PartySearchCondDto("돈까스", null, null, null);
+        PartySearchCondDto partySearchCondDto_03 = new PartySearchCondDto("피자", null, null, null);
+        PartySearchCondDto partySearchCondDto_04 = new PartySearchCondDto("파스타", null, null, null);
+        PageRequest pageable_01 = createPageable(partySearchCondDto_01, size);
+        PageRequest pageable_02 = createPageable(partySearchCondDto_02, size);
+        PageRequest pageable_03 = createPageable(partySearchCondDto_03, size);
+        PageRequest pageable_04 = createPageable(partySearchCondDto_04, size);
 
         //when
-        searchService.getPartyPage(partySearchCondDto_01, pageable_01);
-        searchService.getPartyPage(partySearchCondDto_02, pageable_02);
-        searchService.getPartyPage(partySearchCondDto_03, pageable_03);
-        searchService.getPartyPage(partySearchCondDto_04, pageable_04);
+        searchService.getPartyPage(partySearchCondDto_01, size, 0L);
+        searchService.getPartyPage(partySearchCondDto_02, size, 0L);
+        searchService.getPartyPage(partySearchCondDto_03, size, 0L);
+        searchService.getPartyPage(partySearchCondDto_04, size, 0L);
 
         String key = "ranking";
         ZSetOperations<String, String> ZSetOperations = redisTemplate.opsForZSet();
@@ -281,9 +284,9 @@ class SearchServiceTest {
         assertThat(searchRankDtoList.size()).isEqualTo(3);
     }
 
-    private PageRequest createPageable(PartySearchCondDto partySearchCondDto) {
+    private PageRequest createPageable(PartySearchCondDto partySearchCondDto, Integer size) {
         SortDto sortDto = partySearchCondDto.sortDto();
-        PageRequest pageable = PageRequest.of(0, partySearchCondDto.limit(),
+        PageRequest pageable = PageRequest.of(0, size,
                 sortDto.getOrders() == Orders.DESC ? Sort.by(sortDto.getSorts().getKey()).descending() : Sort.by(sortDto.getSorts().getKey()).ascending());
         return pageable;
     }
@@ -291,36 +294,36 @@ class SearchServiceTest {
     @Test
     void 파티방검색_성공_제목() {
         //given
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("전주에서", null, null, null, 10);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("전주에서", null, null, null);
         //when
-        List<ResponseSearchDto> parties = searchService.getPartyPage(partySearchCondDto, PageRequest.of(0, partySearchCondDto.limit()));
+        ResponseSearchPageDto partyPage = searchService.getPartyPage(partySearchCondDto, 5, 0L);
 
         //then
-        assertThat(parties.size()).isEqualTo(4);
+        assertThat(partyPage.getPartyList().size()).isEqualTo(4);
     }
 
     @Test
     void 파티방검색_성공_메뉴() {
         //given
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto(null, "뇨끼", null, null, 10);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto(null, "뇨끼", null, null);
 
         //when
-        List<ResponseSearchDto> parties = searchService.getPartyPage(partySearchCondDto, PageRequest.of(0, partySearchCondDto.limit()));
+        ResponseSearchPageDto partyPage = searchService.getPartyPage(partySearchCondDto, 5, 0L);
 
         //then
-        assertThat(parties.size()).isEqualTo(3);
+        assertThat(partyPage.getPartyList().size()).isEqualTo(3);
     }
 
     @Test
     void 파티방검색_성공_상태() {
         //given
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto(null, null, PartyStatus.RECRUIT, null, 15);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto(null, null, PartyStatus.RECRUIT, null);
 
         //when
-        List<ResponseSearchDto> parties = searchService.getPartyPage(partySearchCondDto, PageRequest.of(0, partySearchCondDto.limit()));
+        ResponseSearchPageDto partyPage = searchService.getPartyPage(partySearchCondDto, 5, 0L);;
 
         //then
-        assertThat(parties.size()).isEqualTo(12);
+        assertThat(partyPage.getPartyList().size()).isEqualTo(12);
     }
 
     @Test
@@ -328,69 +331,69 @@ class SearchServiceTest {
         //given
         SortDto sortDto = new SortDto(Sorts.HIT, Orders.DESC);
 
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("전주", null, null, sortDto, 10);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("전주", null, null, sortDto);
         
         //when
-        PageRequest pageable = createPageable(partySearchCondDto);
-        List<ResponseSearchDto> parties = searchService.getPartyPage(partySearchCondDto, pageable);
+        PageRequest pageable = createPageable(partySearchCondDto, 5);
+        ResponseSearchPageDto partyPage = searchService.getPartyPage(partySearchCondDto, 5, 0L);
 
         //then
-        assertThat(parties.size()).isEqualTo(4);
-        assertThat(parties.get(0).getHit() >= parties.get(1).getHit()).isTrue();
-        assertThat(parties.get(1).getHit() >= parties.get(2).getHit()).isTrue();
-        assertThat(parties.get(2).getHit() >= parties.get(3).getHit()).isTrue();
+        assertThat(partyPage.getPartyList().size()).isEqualTo(4);
+        assertThat(partyPage.getPartyList().get(0).hit() >= partyPage.getPartyList().get(1).hit()).isTrue();
+        assertThat(partyPage.getPartyList().get(1).hit() >= partyPage.getPartyList().get(2).hit()).isTrue();
+        assertThat(partyPage.getPartyList().get(2).hit() >= partyPage.getPartyList().get(3).hit()).isTrue();
     }
 
     @Test
     void 파티방검색_성공_제목_정렬_최신순() {
         //given
         SortDto sortDto = new SortDto(Sorts.LATEST, Orders.DESC);
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("수원", null, null, sortDto, 10);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("수원", null, null, sortDto);
 
         //when
-        PageRequest pageable = createPageable(partySearchCondDto);
-        Page<Party> parties = partyRepositoryCustom.searchPage(partySearchCondDto, pageable);
+        PageRequest pageable = createPageable(partySearchCondDto, 5);
+        Slice<Party> partySlice = partyRepositoryCustom.searchPage(partySearchCondDto, pageable, 0L);
 
         //then
-        assertThat(parties.getTotalElements()).isEqualTo(4);
-        assertThat(parties.getContent().get(0).getPartyTitle()).isEqualTo("수원에서 만나요16");
+        assertThat(partySlice.getContent().size()).isEqualTo(4);
+        assertThat(partySlice.getContent().get(0).getPartyTitle()).isEqualTo("수원에서 만나요16");
     }
 
     @Test
     void 파티방검색_성공_제목_정렬_마감순() {
         //given
         SortDto sortDto = new SortDto(Sorts.LATEST, Orders.ASC);
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("서울", null, null, sortDto, 10);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("서울", null, null, sortDto);
 
         //when
-        PageRequest pageable = createPageable(partySearchCondDto);
-        List<ResponseSearchDto> parties = searchService.getPartyPage(partySearchCondDto, pageable);
+        PageRequest pageable = createPageable(partySearchCondDto, 5);
+        ResponseSearchPageDto partyPage = searchService.getPartyPage(partySearchCondDto, 5, 0L);
 
         //then
-        assertThat(parties.size()).isEqualTo(4);
-        assertThat(parties.get(0).getTitle()).isEqualTo("서울에서 만나요0");
+        assertThat(partyPage.getPartyList().size()).isEqualTo(4);
+        assertThat(partyPage.getPartyList().get(0).partyTitle()).isEqualTo("서울에서 만나요0");
     }
 
     @Test
     void 파티검색_실패_limit_없음() {
         //given
         SortDto sortDto = new SortDto(Sorts.DEADLINE, Orders.ASC);
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("서울", null, null, sortDto, null);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("서울", null, null, sortDto);
 
         //when
-        assertThrows(NullPointerException.class, () -> createPageable(partySearchCondDto));
+        assertThrows(NullPointerException.class, () -> createPageable(partySearchCondDto, 5));
         }
 
     @Test
     void 파티검색_실패_Pageable_없음() {
         //given
         SortDto sortDto = new SortDto(Sorts.DEADLINE, Orders.ASC);
-        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("서울", null, null, sortDto, null);
+        PartySearchCondDto partySearchCondDto = new PartySearchCondDto("서울", null, null, sortDto);
 
         //when
         PageRequest pageRequest = null;
 
         //then
-        assertThrows(NullPointerException.class, () ->searchService.getPartyPage(partySearchCondDto, pageRequest));
+        assertThrows(NullPointerException.class, () ->searchService.getPartyPage(partySearchCondDto, null, 0L));
     }
 }
