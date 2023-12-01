@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final String[] whitelist = {"/", "/index.html", "/home", "/login", "/oauth2/**", "/api/main", "/api/search/**",
+    private static final String[] whitelist = {"/", "/index.html", "/home", "/matitting", "/login", "/oauth2/**", "/api/main**", "/api/search**",
             "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/**", "/api-docs/**",
             "/api/chat-rooms/**", "/chat/**", "/room/**", "/webjars/**", "/favicon.ico", "/ws-stomp/**"};
 
@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 필터를 거치지 않을 URL 을 설정하고, true 를 return 하면 바로 다음 필터를 진행하게 됨
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        if (PatternMatchUtils.simpleMatch("/api/party/*", request.getRequestURI())
+        if (PatternMatchUtils.simpleMatch("/api/party/**", request.getRequestURI())
                 && !request.getRequestURI().contains("-")
                 && request.getMethod().equals(HttpMethod.GET.toString())) {
             return true;
