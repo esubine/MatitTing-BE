@@ -35,7 +35,8 @@ public class SecurityConfig {
         http
                 //http default 인증 관련
                 .httpBasic(hb -> hb.disable())
-                .csrf(cr -> cr.disable());
+                .csrf(cr -> cr.disable())
+                .cors(cs -> cs.disable());
 
         http
                 //token 기반 무상태성 설정
