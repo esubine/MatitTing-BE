@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final String[] whitelist = {"/", "/index.html", "/home", "/login", "/oauth2/**", "/api/main", "/api/search/**",
+    private static final String[] whitelist = {"/", "/index.html", "/home", "/matitting", "/login", "/oauth2/**", "/api/main", "/api/search/**",
             "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/**", "/api-docs/**",
             "/api/chat-rooms/**", "/chat/**", "/room/**", "/webjars/**", "/favicon.ico", "/ws-stomp/**"};
 
@@ -58,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
-        String header = request.getRequestURI();
+        String header = request.getHeader(jwtService.getAccessHeader());
         // 토큰이 없거나 정상적이지 않은 경우
         if (header == null || !header.startsWith("Bearer ")) {
             log.error(NOT_FOUND_ACCESS_TOKEN.getErrorMessage());

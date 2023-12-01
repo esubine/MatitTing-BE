@@ -46,7 +46,7 @@ public class SecurityConfig {
                 //인증 허용 관련 설정
                 .authorizeHttpRequests(
                         getCustomizer(introspector,
-                                "/", "/home", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html", "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search/**",
+                                "/", "/home", "/matitting", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html", "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search/**",
                                 "/api/chat-rooms/**", "/webjars/**", "/favicon.ico")
                 )
                 .formLogin((form) -> form
