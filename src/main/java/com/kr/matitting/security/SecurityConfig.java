@@ -38,7 +38,7 @@ public class SecurityConfig {
                 //http default 인증 관련
                 .httpBasic(hb -> hb.disable())
                 .csrf(cr -> cr.disable())
-                .cors(cs -> cs.disable());
+                .cors();
 
         http
                 //token 기반 무상태성 설정
@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                             getCustomizer(introspector,
                                     "/", "/home", "/matitting", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html",
-                                    "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search", "/api/search/**",
+                                    "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search", "/api/search/**", "api/party/{userId}",
                                     "/api/chat-rooms/**", "/webjars/**", "/favicon.ico")
                 )
                 .formLogin((form) -> form
