@@ -32,24 +32,24 @@ public class ChatController {
     @GetMapping(value = {"/group", "/1on1"})
     public ResponseEntity<ChatResponse> getAllRooms(@RoomType ChatRoomType roomType,
                                                     @AuthenticationPrincipal User user,
-                                                    @RequestParam(value = "offset", defaultValue = "1", required = false) Integer offset,
-                                                    @RequestParam(value = "limit", defaultValue = "5", required = false) Integer limit) {
-        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.Direction.DESC, "createDate");
-        return ResponseEntity.ok(new ChatResponse(chatService.getChatRooms(user.getId(), roomType, pageRequest)));
+                                                    @RequestParam(value = "size", defaultValue = "5", required = false) Integer size,
+                                                    @RequestParam(value = "lastChatRoomId") Long lastChatRoomId) {
+        PageRequest pageRequest = PageRequest.of(0, size, Sort.Direction.DESC, "createDate");
+        return ResponseEntity.ok(new ChatResponse(chatService.getChatRooms(user.getId(), roomType, lastChatRoomId, pageRequest)));
     }
 
     @Operation(summary = "채팅 기록 가져오기")
     @GetMapping("/history/{roomId}")
     private ResponseEntity<ChatResponse> getHistories(@PathVariable Long roomId,
                                                       @AuthenticationPrincipal User user,
-                                                      @RequestParam(value = "offset", defaultValue = "1", required = false) Integer offset,
-                                                      @RequestParam(value = "limit", defaultValue = "5", required = false) Integer limit) {
-        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.Direction.DESC, "createDate");
-        return ResponseEntity.ok(new ChatResponse(chatService.getHistories(user.getId(), roomId, pageRequest)));
+                                                      @RequestParam(value = "size", defaultValue = "5", required = false) Integer size,
+                                                      @RequestParam(value = "lastHistoryId") Long lastHistoryId) {
+        PageRequest pageRequest = PageRequest.of(0, size, Sort.Direction.DESC, "createDate");
+        return ResponseEntity.ok(new ChatResponse(chatService.getHistories(user.getId(), roomId, lastHistoryId,pageRequest)));
     }
 
     @Operation(summary = "1대1 채팅방 생성")
-    @PostMapping
+    @PostMapping("/1one1")
     public void requestOneOnOne(@AuthenticationPrincipal User user, Long partyId) {
         chatService.requestOneOnOne(user.getId(), partyId);
     }
