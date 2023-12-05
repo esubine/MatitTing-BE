@@ -55,6 +55,7 @@ public class IntialDataTemp implements ApplicationRunner {
                 .hit(0)
                 .menu("치~즈돈까스")
                 .category(PartyCategory.JAPANESE)
+                .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .user(user)
                 .build();
 
