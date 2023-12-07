@@ -19,9 +19,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.util.PatternMatchUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import java.util.Arrays;
+import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -38,7 +44,7 @@ public class SecurityConfig {
                 //http default 인증 관련
                 .httpBasic(hb -> hb.disable())
                 .csrf(cr -> cr.disable())
-                .cors(cs -> cs.disable());
+                .cors(withDefaults());
 
         http
                 //token 기반 무상태성 설정
@@ -49,7 +55,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         getCustomizer(introspector,
                                 "/", "/home", "/matitting", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html",
-                                "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search", "/api/search/**",
+                                "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search", "/api/search/**", "api/party/{userId}",
                                 "/api/chat-rooms/**", "/webjars/**", "/favicon.ico")
                 )
                 .formLogin((form) -> form
@@ -92,6 +98,20 @@ public class SecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
 }
 
