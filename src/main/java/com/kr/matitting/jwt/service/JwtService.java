@@ -2,12 +2,14 @@ package com.kr.matitting.jwt.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.repository.UserRepository;
-import com.kr.matitting.util.RedisUtil;
+import com.kr.matitting.redis.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -16,9 +18,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
+import javax.naming.AuthenticationException;
 import java.util.Date;
 import java.util.Optional;
+
+import static com.kr.matitting.exception.token.TokenExceptionType.INVALID_ACCESS_TOKEN;
+import static com.kr.matitting.exception.token.TokenExceptionType.UNAUTHORIZED_ACCESS_TOKEN;
 
 @Service
 @RequiredArgsConstructor
@@ -106,7 +113,17 @@ public class JwtService {
         response.setHeader(refreshHeader, refreshToken);
     }
     public DecodedJWT isTokenValid(String token) {
-            return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
+        try {
+            String socialId = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token).getClaim("socialId").asString();
+        } catch (TokenExpiredException e) {
+            log.error(UNAUTHORIZED_ACCESS_TOKEN.getErrorMessage());
+            throw new TokenException(UNAUTHORIZED_ACCESS_TOKEN);
+        } catch (JWTVerificationException e) {
+            log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
+            throw new TokenException(INVALID_ACCESS_TOKEN);
+        }
+
+        return null;
     }
 
     public String getSocialId(DecodedJWT decodedJWT) {
