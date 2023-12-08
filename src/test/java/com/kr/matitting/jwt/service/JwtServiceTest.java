@@ -9,17 +9,14 @@ import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.service.UserService;
-import com.kr.matitting.util.RedisUtil;
-import org.assertj.core.api.Assertions;
+import com.kr.matitting.redis.RedisUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 @Transactional

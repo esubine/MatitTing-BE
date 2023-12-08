@@ -4,7 +4,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
-import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
@@ -16,7 +15,7 @@ import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
-import com.kr.matitting.util.RedisUtil;
+import com.kr.matitting.redis.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service

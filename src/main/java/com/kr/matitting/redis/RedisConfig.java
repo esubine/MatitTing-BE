@@ -1,4 +1,4 @@
-package com.kr.matitting.config;
+package com.kr.matitting.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

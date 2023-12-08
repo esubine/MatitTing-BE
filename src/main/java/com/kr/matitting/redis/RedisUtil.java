@@ -1,4 +1,4 @@
-package com.kr.matitting.util;
+package com.kr.matitting.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
