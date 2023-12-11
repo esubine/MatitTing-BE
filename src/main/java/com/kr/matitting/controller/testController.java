@@ -30,7 +30,7 @@ public class testController {
     }
 
     @GetMapping("/matitting")
-    public ResponseEntity<?> dummy_data(HttpServletResponse response) {
+    public ResponseEntity<User> dummy_data(HttpServletResponse response) {
         Optional<User> findUser = userRepository.findBySocialId("12309812309128301");
 
         if (findUser.isEmpty()) {
@@ -48,6 +48,34 @@ public class testController {
         }
 
         User user = userRepository.findBySocialId("12309812309128301").get();
+        String accessToken = jwtService.createAccessToken(user);
+        String refreshToken = jwtService.createRefreshToken(user);
+
+        response.addHeader(jwtService.getAccessHeader(),"Bearer "+accessToken);
+        response.addHeader(jwtService.getRefreshHeader(), "Bearer "+refreshToken);
+
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/matitting2")
+    public ResponseEntity<User> dummy_data2(HttpServletResponse response) {
+        Optional<User> findUser = userRepository.findBySocialId("1123213321");
+
+        if (findUser.isEmpty()) {
+            User user = User.builder()
+                    .socialId("1123213321")
+                    .socialType(SocialType.NAVER)
+                    .email("test@naver.com")
+                    .nickname("안경잡이개발자")
+                    .age(20)
+                    .imgUrl("증명사진50.jpg")
+                    .gender(Gender.MALE)
+                    .role(Role.USER)
+                    .build();
+            userRepository.save(user);
+        }
+
+        User user = userRepository.findBySocialId("1123213321").get();
         String accessToken = jwtService.createAccessToken(user);
         String refreshToken = jwtService.createRefreshToken(user);
 
