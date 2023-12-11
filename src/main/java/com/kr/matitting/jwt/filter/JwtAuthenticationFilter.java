@@ -8,7 +8,7 @@ import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.repository.UserRepository;
-import com.kr.matitting.util.RedisUtil;
+import com.kr.matitting.redis.RedisUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -80,9 +80,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.error(BLACK_LIST_ACCESS_TOKEN.getErrorMessage());
                 throw new TokenException(BLACK_LIST_ACCESS_TOKEN);
             }
-        } catch (TokenExpiredException e) {
-            log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
-            throw new TokenException(INVALID_ACCESS_TOKEN);
         } catch (Exception e) {
             log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
             throw new TokenException(INVALID_ACCESS_TOKEN);
