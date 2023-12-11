@@ -127,4 +127,14 @@ public class PartyController {
         List<ResponsePartyDto> myPartyList = userService.getMyPartyList(userId, role);
         return ResponseEntity.ok().body(myPartyList);
     }
+
+
+    //TODO: 파티 신청 리스트
+    // 내가 보낸것들, 내가 받은 것들 구분!
+    @GetMapping("/join")
+    public ResponseEntity<?> getJoinList(@AuthenticationPrincipal User user,
+                                         @NotNull @RequestParam Role role) {
+        List<Party> joinList = partyService.getJoinList(user, role);
+        return ResponseEntity.ok(joinList);
+    }
 }
