@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 
 @Schema(description = "파티 Response")
 public record ResponsePartyDto(
+        @Schema(description = "방장 id", example = "10")
+        @NotNull
+        Long userId,
         @Schema(description = "파티 id", nullable = false, example = "1")
         @NotNull
         Long partyId,
@@ -62,6 +65,7 @@ public record ResponsePartyDto(
 ) {
     public static ResponsePartyDto toDto(Party party) {
         return new ResponsePartyDto(
+                party.getUser().getId(),
                 party.getId(),
                 party.getPartyTitle(),
                 party.getPartyContent(),

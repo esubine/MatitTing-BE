@@ -112,7 +112,7 @@ public class JwtService {
     }
     public DecodedJWT isTokenValid(String token) {
         try {
-            String socialId = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token).getClaim("socialId").asString();
+            return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
         } catch (TokenExpiredException e) {
             log.error(UNAUTHORIZED_ACCESS_TOKEN.getErrorMessage());
             throw new TokenException(UNAUTHORIZED_ACCESS_TOKEN);
@@ -120,8 +120,6 @@ public class JwtService {
             log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
             throw new TokenException(INVALID_ACCESS_TOKEN);
         }
-
-        return null;
     }
 
     public String getSocialId(DecodedJWT decodedJWT) {

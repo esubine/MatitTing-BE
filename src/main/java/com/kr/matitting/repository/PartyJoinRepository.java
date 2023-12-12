@@ -13,4 +13,6 @@ public interface PartyJoinRepository extends JpaRepository<PartyJoin, Long> {
     List<PartyJoin> findByPartyIdAndLeaderId(Long partyId, Long leaderId);
     Optional<PartyJoin> findByPartyIdAndLeaderIdAndUserId(Long partyId, Long leaderId, Long userId);
     List<PartyJoin> findByPartyId(Long partyId);
+    List<PartyJoin> findAllByLeaderId(Long userId);
+    List<PartyJoin> findAllByUserId(Long userId);
 }
