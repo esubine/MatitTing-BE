@@ -1,6 +1,7 @@
 package com.kr.matitting.controller;
 
 import com.kr.matitting.constant.Role;
+import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.PartyJoinDto;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -126,4 +128,12 @@ public class PartyController {
         return ResponseEntity.ok().body(myPartyList);
     }
 
+    //TODO: 파티 신청 리스트
+    // 내가 보낸것들, 내가 받은 것들 구분!
+    @GetMapping("/join")
+    public ResponseEntity<?> getJoinList(@AuthenticationPrincipal User user,
+                                         @NotNull @RequestParam Role role) {
+        List<Party> joinList = partyService.getJoinList(user, role);
+        return ResponseEntity.ok(joinList);
+    }
 }

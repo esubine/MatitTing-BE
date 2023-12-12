@@ -261,4 +261,16 @@ public class PartyService {
             return "Refuse Request Completed";
         }
     }
+
+    public List<Party> getJoinList(User user, Role role) {
+        List<PartyJoin> partyJoinList;
+        if (role.equals(Role.HOST)) {
+            partyJoinList = partyJoinRepository.findAllByLeaderId(user.getId());
+        } else if (role.equals(Role.VOLUNTEER)) {
+            partyJoinList = partyJoinRepository.findAllByUserId(user.getId());
+        } else {
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+        }
+        return partyJoinList.stream().map(PartyJoin::getParty).toList();
+    }
 }
