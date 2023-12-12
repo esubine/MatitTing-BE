@@ -9,12 +9,12 @@ import java.util.List;
 @Getter
 public class ResponseMainPageDto {
     @Schema(description = "메인 페이지 party List", type = "array", implementation = ResponsePartyDto.class)
-    private List<ResponsePartyDto> partyList;
+    private List<ResponseMainPartyListDto> partyList;
     @Schema(description = "메인 페이지의 페이지 정보", implementation = ResponsePageInfoDto.class)
     private ResponsePageInfoDto pageInfo;
 
-    public ResponseMainPageDto(List<ResponsePartyDto> responsePartyDto, ResponsePageInfoDto pageInfo) {
-        this.partyList = responsePartyDto;
+    public ResponseMainPageDto(List<ResponseMainPartyListDto> responseMainPartyListDto, ResponsePageInfoDto pageInfo) {
+        this.partyList = responseMainPartyListDto;
         this.pageInfo = pageInfo;
     }
 }
