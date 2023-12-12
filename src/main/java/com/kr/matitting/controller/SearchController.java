@@ -29,8 +29,8 @@ public class SearchController {
     @GetMapping
     public ResponseEntity<ResponseSearchPageDto> partySearch(
             @ModelAttribute PartySearchCondDto partySearchCondDto,
-            @RequestParam(value = "size", required = false, defaultValue = "5") Integer size,
-            @RequestParam(value = "lastPartyId", required = false) Long lastPartyId
+            @Schema(description = "불러올 개수", example = "5") @RequestParam(value = "size", required = false, defaultValue = "5") Integer size,
+            @Schema(description = "마지막 파티 ID", example = "0")@RequestParam(value = "lastPartyId", required = false) Long lastPartyId
     ) {
         ResponseSearchPageDto partyPageTest = searchService.getPartyPage(partySearchCondDto, size, lastPartyId);
         return ResponseEntity.ok().body(partyPageTest);

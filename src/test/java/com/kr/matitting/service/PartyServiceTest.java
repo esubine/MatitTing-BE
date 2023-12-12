@@ -53,12 +53,13 @@ class PartyServiceTest {
     private MapService mapService;
 
     public static Long partyId;
+    public static User user;
     public static List<Long> partyId_list = new ArrayList<>();
     public static String guestSocialId = "12345";
 
     @BeforeEach
     public void 데이터생성() {
-        User user = User.builder()
+        user = User.builder()
                 .socialId("12345")
                 .socialType(SocialType.KAKAO)
                 .email("test@naver.com")
@@ -617,7 +618,7 @@ class PartyServiceTest {
     @Test
     void 파티삭제_성공() {
         //when
-        partyService.deleteParty(partyId);
+        partyService.deleteParty(user, partyId);
 
         //then
         Optional<Party> party = partyRepository.findById(partyId);
@@ -627,7 +628,7 @@ class PartyServiceTest {
     @Test
     void 파티삭제_실패_ID_없음() {
         //when, then
-        assertThrows(PartyException.class, () -> partyService.deleteParty(1000L));
+        assertThrows(PartyException.class, () -> partyService.deleteParty(user, 1000L));
     }
 
     //TODO: 실패
@@ -849,7 +850,6 @@ class PartyServiceTest {
 
     private PartyCreateDto createPartyCreateDto() {
         PartyCreateDto request = new PartyCreateDto();
-        request.setUserId(1L);
         request.setTitle("테스트 파티 생성 DTO");
         request.setContent("파티 생성 테스트");
         request.setLatitude(37.566828706631135);
