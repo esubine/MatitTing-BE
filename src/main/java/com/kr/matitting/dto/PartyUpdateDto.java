@@ -30,8 +30,6 @@ public record PartyUpdateDto(
         PartyAge age,
         @Schema(description = "썸네일", nullable = true, example = "돈까스.jpg")
         String thumbnail, //썸네일
-        @Schema(description = "파티 마감시간", nullable = true, example = "2024-11-08T11:44:30.327959")
-        LocalDateTime deadline, //마감시간
         @Schema(description = "파티 시작시간", nullable = true, example = "2021-12-08T11:44:30.327959")
         LocalDateTime partyTime
 

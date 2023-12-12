@@ -56,8 +56,7 @@ public class PartyService {
     public ResponsePartyDto getPartyInfo(Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         increaseHit(partyId);
-        ResponsePartyDto responsePartyDto = ResponsePartyDto.toDto(party);
-        return responsePartyDto;
+        return ResponsePartyDto.toDto(party);
     }
 
     @Transactional
@@ -168,19 +167,9 @@ public class PartyService {
         if (partyUpdateDto.thumbnail() != null) {
             party.setThumbnail(partyUpdateDto.thumbnail());
         }
-        if (partyUpdateDto.deadline() != null && partyUpdateDto.partyTime() != null) {
-            if (timeValidCheck(partyUpdateDto.deadline(), partyUpdateDto.partyTime())) {
-                party.setDeadline(partyUpdateDto.deadline());
-                party.setPartyTime(partyUpdateDto.partyTime());
-            }
-        }else if (partyUpdateDto.deadline() != null) {
-            if (timeValidCheck(partyUpdateDto.deadline(), party.getPartyTime())) {
-                party.setDeadline(partyUpdateDto.deadline());
-            }
-        }else if (partyUpdateDto.partyTime() != null) {
-            if (timeValidCheck(party.getDeadline(), partyUpdateDto.partyTime())) {
-                party.setPartyTime(partyUpdateDto.partyTime());
-            }
+        if (partyUpdateDto.partyTime() != null) {
+            party.setPartyTime(partyUpdateDto.partyTime());
+            party.setDeadline(partyUpdateDto.partyTime().minusHours(1));
         }
         if (partyUpdateDto.totalParticipant() != null) {
             if (party.getParticipantCount() <= partyUpdateDto.totalParticipant()) {
@@ -206,8 +195,11 @@ public class PartyService {
         }
     }
 
-    public void deleteParty(Long partyId) {
+    public void deleteParty(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        if (!user.getId().equals(party.getUser().getId())) {
+            throw new UserException(UserExceptionType.NOT_MATCH_USER);
+        }
         partyRepository.delete(party);
     }
 
@@ -236,7 +228,7 @@ public class PartyService {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
-        if (party.getUser().getId() != partyJoinDto.leaderId()) {
+        if (!party.getUser().getId().equals(partyJoinDto.leaderId())) {
             throw new UserException(UserExceptionType.NOT_FOUND_USER);
         }
         PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(user.getId()).build();
@@ -264,10 +256,9 @@ public class PartyService {
             Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
             return "Accept Request Completed";
-        } else if (partyJoinDto.status() == PartyJoinStatus.REFUSE) {
+        } else{
             log.info("=== REFUSE ===");
             return "Refuse Request Completed";
         }
-        return null;
     }
 }

@@ -85,8 +85,8 @@ public class PartyController {
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
 })
     @DeleteMapping("/{partyId}")
-    public ResponseEntity<String> partyDelete(@PathVariable Long partyId) {
-        partyService.deleteParty(partyId);
+    public ResponseEntity<String> partyDelete(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
+        partyService.deleteParty(user, partyId);
         return ResponseEntity.ok().body("Success Party Delete");
     }
 
