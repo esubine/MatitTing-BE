@@ -1,6 +1,9 @@
 package com.kr.matitting.repository;
 
+import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.constant.Sorts;
 import com.kr.matitting.entity.Party;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -18,33 +21,41 @@ import static com.kr.matitting.entity.QParty.party;
 public class PartyRepositoryImpl {
     private final JPAQueryFactory queryFactory;
 
-    public Slice<Party> getPartyList(double minLat, double maxLat, double minLon, double maxLon, Pageable pageable, Long lastPartyId) {
+    public Slice<Party> getPartyList(double userLatitude, double userLongitude, PartyStatus partyStatus, Sorts sorts, Long lastPartyId, Pageable pageable) {
 
-        List<Party> partyList = queryFactory
-                .select(party)
-                .from(party)
-                .where(
-                        party.latitude.goe(minLat),
-                        party.latitude.loe(maxLat),
-                        party.longitude.goe(minLon),
-                        party.longitude.loe(maxLon),
-                        ltPartyId(lastPartyId)
-                )
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
-                .orderBy(party.id.desc())
-                .fetch();
+        List<Party> parties;
 
-        return checkLastPage(partyList, pageable);
+        if (sorts == Sorts.LATEST) {
+            parties = queryFactory
+                    .select(party)
+                    .from(party)
+                    .where(
+                            eqPartyStatus(partyStatus),
+                            getBuilder(userLatitude, userLongitude),
+                            ltPartyId(lastPartyId))
+                    .orderBy(party.id.desc())
+                    .fetch();
+        } else {
+            parties = queryFactory
+                    .select(party)
+                    .from(party)
+                    .where(
+                            eqPartyStatus(partyStatus),
+                            getBuilder(userLatitude, userLongitude),
+                            ltPartyId(lastPartyId))
+                    .fetch();
+
+            parties.sort((party1, party2) -> {
+                double distance1 = calculateHaversine(userLatitude, userLongitude, party1.getLatitude(), party1.getLongitude());
+                double distance2 = calculateHaversine(userLatitude, userLongitude, party2.getLatitude(), party2.getLongitude());
+                return Double.compare(distance1, distance2);
+            });
+        }
+        return checkLastPage(parties, pageable);
     }
 
     private BooleanExpression ltPartyId(Long lastPartyId) {
-
-        if (lastPartyId == 0L) {
-            return null;
-        }
-
-        return party.id.lt(lastPartyId);
+        return lastPartyId == 0L ? null : party.id.lt(lastPartyId);
     }
 
     private Slice<Party> checkLastPage(List<Party> results, Pageable pageable) {
@@ -58,5 +69,44 @@ public class PartyRepositoryImpl {
         }
 
         return new SliceImpl<>(results, pageable, hasNext);
+    }
+
+    private BooleanBuilder getBuilder(double userLatitude, double userLongitude){
+        double radius = 0.045;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(party.latitude.between(userLatitude - radius, userLatitude + radius));
+        builder.and(party.longitude.between(userLongitude - radius, userLongitude + radius));
+
+        return builder;
+    }
+
+    private BooleanExpression eqPartyStatus(PartyStatus partyStatus) {
+        if (partyStatus == PartyStatus.FINISH) {
+            return null;
+        } else if (partyStatus == null) {
+            partyStatus = PartyStatus.RECRUIT;
+        }
+
+        return party.status.eq(partyStatus);
+    }
+
+    private double calculateHaversine(double lat1, double lon1, double lat2, double lon2) {
+        // 지구의 반지름 (단위: km)
+        double R = 6371;
+
+        // 두 지점의 위도 및 경도 차이
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        // Haversine 공식 계산
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        // 거리 반환
+        return R * c;
     }
 }
