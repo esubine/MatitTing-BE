@@ -31,18 +31,10 @@ public class MainController {
     })
     @GetMapping
     public ResponseEntity<ResponseMainPageDto> getPartyList(
-            @ModelAttribute MainPageDto mainPageDto,
-            @Schema(description = "파티상태 - 1. 입력하지 않는 경우(default): 모집 중인 파티만 조회 / 2. FINISH 입력 시: 모든 파티글 조회", nullable = true, example = "FINISH")
-            @RequestParam(value = "partyStatus", required = false, defaultValue = "FINISH") PartyStatus partyStatus,
-            @Schema(description = "조회할 갯수", nullable = true, example = "5")
-            @RequestParam(value = "size", required = false, defaultValue = "5") int size,
-            @Schema(description = "마지막으로 조회한 파티 ID", nullable = true, example = "0")
-            @RequestParam(value = "lastPartyId", required = false) Long lastPartyId,
-            @Schema(description = "정렬기준 - 1. 입력하지 않는 경우(default): 5km 반경의 파티글 중 유저와 가까운순 / 2. LATEST 입력 시: 5km 반경의 파티글 중 최신순 정렬", nullable = true, example = "LATEST")
-            @RequestParam(value = "sort", required = false) Sorts sort
+            @ModelAttribute MainPageDto mainPageDto
     ) {
-        Pageable pageable = PageRequest.of(0, size);
-        ResponseMainPageDto mainPageList = mainService.getPartyList(mainPageDto, partyStatus, pageable, lastPartyId, sort);
+        Pageable pageable = PageRequest.of(0, mainPageDto.size());
+        ResponseMainPageDto mainPageList = mainService.getPartyList(mainPageDto, pageable);
         return ResponseEntity.ok().body(mainPageList);
     }
 }
