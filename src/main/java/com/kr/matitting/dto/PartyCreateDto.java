@@ -29,9 +29,6 @@ public class PartyCreateDto {
     @NotNull
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime partyTime;
-    @Schema(description = "파티 모집 마감 시간", nullable = true, example = "2023-10-24T09:00:00")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime deadline;
     @Schema(description = "모집 인원", nullable = false, example = "4")
     @NotNull
     private int totalParticipant;
@@ -60,7 +57,6 @@ public class PartyCreateDto {
                 .title(party.getPartyTitle())
                 .content(party.getPartyContent())
                 .partyTime(party.getPartyTime())
-                .deadline(party.getDeadline())
                 .totalParticipant(party.getTotalParticipant())
                 .longitude(party.getLongitude())
                 .latitude(party.getLatitude())

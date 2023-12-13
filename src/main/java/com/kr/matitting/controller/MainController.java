@@ -1,5 +1,7 @@
 package com.kr.matitting.controller;
 
+import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.constant.Sorts;
 import com.kr.matitting.dto.MainPageDto;
 import com.kr.matitting.dto.ResponseMainPageDto;
 import com.kr.matitting.service.MainService;
@@ -29,12 +31,10 @@ public class MainController {
     })
     @GetMapping
     public ResponseEntity<ResponseMainPageDto> getPartyList(
-            @ModelAttribute MainPageDto mainPageDto,
-            @RequestParam(value = "size", required = false, defaultValue = "5") int size,
-            @RequestParam(value = "lastPartyId", required = false) Long lastPartyId
+            @ModelAttribute MainPageDto mainPageDto
     ) {
-        Pageable pageable = PageRequest.of(0, size);
-        ResponseMainPageDto mainPageList = mainService.getPartyList(mainPageDto, pageable, lastPartyId);
+        Pageable pageable = PageRequest.of(0, mainPageDto.size());
+        ResponseMainPageDto mainPageList = mainService.getPartyList(mainPageDto, pageable);
         return ResponseEntity.ok().body(mainPageList);
     }
 }

@@ -73,10 +73,6 @@ public class PartyService {
 
         checkParticipant(request.getTotalParticipant());
 
-        if (request.getDeadline() != null) {
-            checkTime(request.getPartyTime(), request.getDeadline());
-        }
-
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
         Party party = createBasePartyBuilder(request, findUser);
         Party savedParty = partyRepository.save(party);
@@ -107,12 +103,6 @@ public class PartyService {
     private void checkParticipant(int totalParticipant) {
         if (totalParticipant < 2) {
             throw new PartyException(PartyExceptionType.NOT_MINIMUM_PARTICIPANT);
-        }
-    }
-
-    private void checkTime(LocalDateTime partyTime, LocalDateTime deadline) {
-        if (partyTime.isBefore(deadline)) {
-            throw new PartyException(PartyExceptionType.WRONG_TIME);
         }
     }
 
@@ -221,7 +211,7 @@ public class PartyService {
                 .status(PartyStatus.RECRUIT)
                 .user(user)
                 .address(getAddress(request.getLongitude(), request.getLatitude()))
-                .deadline(getDeadline(request.getDeadline(), request.getPartyTime()))
+                .deadline(request.getPartyTime().minusHours(1))
                 .thumbnail(getThumbnail(request.getCategory(), request.getThumbnail()))
                 .build();
     }
