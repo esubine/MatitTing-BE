@@ -245,6 +245,10 @@ public class PartyService {
             log.info("=== ACCEPT ===");
             Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             party.increaseUser();
+            if (party.getTotalParticipant() == party.getParticipantCount()) {
+                party.setStatus(PartyStatus.FINISH);
+            }
+
             Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
             return "Accept Request Completed";
