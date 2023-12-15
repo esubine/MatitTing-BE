@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final String[] whitelist = {"/", "/index.html", "/home", "/matitting", "/login", "/oauth2/**", "/api/main**", "/api/search**",
+    private static final String[] whitelist = {"/", "/index.html", "/home", "/matitting**", "/login", "/oauth2/**", "/api/main**", "/api/search**",
             "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/**", "/api-docs/**",
             "/api/chat-rooms/**", "/chat/**", "/room/**", "/webjars/**", "/favicon.ico", "/ws-stomp/**"};
 
