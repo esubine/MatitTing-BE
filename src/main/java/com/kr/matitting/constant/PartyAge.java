@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 public enum PartyAge {
-    AGE2030("2030"), AGE3040("3040"), AGE40("40"), ALL("all");
+    AGE2030("2030"), AGE3040("3040"), AGE40("40"), ALL("ALL");
 
     @Getter
     private final String value;
