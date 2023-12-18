@@ -84,23 +84,17 @@ public class UserService {
         return user;
     }
 
-    public List<ResponsePartyDto> getMyPartyList(Long userId, Role role) {
+    public List<ResponsePartyDto> getMyPartyList(User user, Role role) {
         List<ResponsePartyDto> parties;
         List<Team> teams;
 
-        if (userId == null) {
-            throw new NullPointerException("UserId is Null");
-        } else if (role == null) {
-            throw new NullPointerException("Role is Null");
-        }
-
         if (role == Role.HOST || role == Role.VOLUNTEER) {
-            teams = partyTeamRepository.findByUserIdAndRole(userId, role);
+            teams = partyTeamRepository.findByUserIdAndRole(user.getId(), role);
             parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() != PartyStatus.FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
             return parties;
         }
         else if(role == Role.USER){
-            teams = partyTeamRepository.findByUserId(userId);
+            teams = partyTeamRepository.findByUserId(user.getId() );
             parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
             return parties;
             }
