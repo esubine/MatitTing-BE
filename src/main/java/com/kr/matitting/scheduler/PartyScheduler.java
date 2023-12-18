@@ -30,8 +30,8 @@ public class PartyScheduler {
         List<Party> partyList = partyRepository.findByStatus(PartyStatus.RECRUIT);
 
         for (Party party : partyList) {
-            if (party.getPartyTime().isBefore(overedPartyTime) && party.getStatus() == PartyStatus.RECRUIT) {
-                party.setStatus(PartyStatus.FINISH);
+            if (party.getPartyTime().isBefore(overedPartyTime) && party.getStatus() != PartyStatus.PARTY_FINISH) {
+                party.setStatus(PartyStatus.PARTY_FINISH);
                 partyRepository.save(party);
             }
         }
