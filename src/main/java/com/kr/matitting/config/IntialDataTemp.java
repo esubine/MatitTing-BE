@@ -51,7 +51,7 @@ public class IntialDataTemp implements ApplicationRunner {
                 .totalParticipant(4)
                 .participantCount(1)
                 .gender(Gender.ALL)
-                .age(PartyAge.AGE2030)
+                .age(PartyAge.TWENTY)
                 .hit(0)
                 .menu("치~즈돈까스")
                 .category(PartyCategory.JAPANESE)
