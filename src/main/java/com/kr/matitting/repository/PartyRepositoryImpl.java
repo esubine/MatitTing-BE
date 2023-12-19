@@ -82,7 +82,7 @@ public class PartyRepositoryImpl {
     }
 
     private BooleanExpression eqPartyStatus(PartyStatus partyStatus) {
-        if (partyStatus == PartyStatus.FINISH) {
+        if (partyStatus == PartyStatus.PARTY_FINISH) {
             return null;
         } else if (partyStatus == null) {
             partyStatus = PartyStatus.RECRUIT;

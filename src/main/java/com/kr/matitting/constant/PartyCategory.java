@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 public enum PartyCategory {
-    KOREAN("한식"), WESTERN("양식"), JAPANESE("일식"), CHINESE("중식"), ETC("기타");
+    KOREAN("KOREAN"), WESTERN("WESTERN"), JAPANESE("JAPANESE"), CHINESE("CHINESE"), ETC("ETC");
 
     @Getter
     private final String value;
