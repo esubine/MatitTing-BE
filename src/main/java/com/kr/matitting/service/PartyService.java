@@ -1,9 +1,6 @@
 package com.kr.matitting.service;
 
-import com.kr.matitting.constant.PartyCategory;
-import com.kr.matitting.constant.PartyJoinStatus;
-import com.kr.matitting.constant.PartyStatus;
-import com.kr.matitting.constant.Role;
+import com.kr.matitting.constant.*;
 import com.kr.matitting.dto.*;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.PartyJoin;
@@ -33,10 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.geom.Point2D;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.kr.matitting.dto.ChatRoomDto.*;
@@ -54,10 +48,31 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final MapService mapService;
-    public ResponsePartyDto getPartyInfo(Long partyId) {
+
+    public ResponsePartyDetailDto getPartyInfo(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         increaseHit(partyId);
-        return ResponsePartyDto.toDto(party);
+        return ResponsePartyDetailDto.builder()
+                .userId(party.getUser().getId())
+                .isLeader(user == null || (user.getId() != party.getUser().getId()) ? false : true)
+                .partyId(party.getId())
+                .partyTitle(party.getPartyTitle())
+                .partyContent(party.getPartyContent())
+                .address(party.getAddress())
+                .longitude(party.getLongitude())
+                .latitude(party.getLatitude())
+                .status(party.getStatus())
+                .gender(party.getGender())
+                .age(party.getAge())
+                .deadline(party.getDeadline())
+                .partyTime(party.getPartyTime())
+                .totalParticipate(party.getTotalParticipant())
+                .participate(party.getParticipantCount())
+                .menu(party.getMenu())
+                .category(party.getCategory())
+                .thumbnail(party.getThumbnail())
+                .hit(party.getHit())
+                .build();
     }
 
     @Transactional
@@ -223,34 +238,45 @@ public class PartyService {
         if (!party.getUser().getId().equals(partyJoinDto.leaderId())) {
             throw new UserException(UserExceptionType.NOT_FOUND_USER);
         }
-        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(user.getId()).build();
-        partyJoinRepository.save(partyJoin);
+        
+        if (partyJoinDto.status() == PartyJoinStatus.APPLY) {
+            PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(user.getId()).build();
+            partyJoinRepository.save(partyJoin);
+        } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
+            Optional<PartyJoin> partyJoin = partyJoinRepository.findByPartyIdAndUserId(partyJoinDto.partyId(), user.getId());
+            if (partyJoin.isPresent()) {
+                partyJoinRepository.delete(partyJoin.get());
+            }
+            //TODO: 1:1 단톡방을 삭제하는 로직 추가 예정!
+        }
+
     }
 
-    public String decideUser(PartyJoinDto partyJoinDto, User user) {
+    public String decideUser(PartyDecisionDto partyDecisionDto, User user) {
         log.info("=== decideUser() start ===");
 
-        if (!(partyJoinDto.status() == PartyJoinStatus.ACCEPT || partyJoinDto.status() == PartyJoinStatus.REFUSE)) {
+        if (!(partyDecisionDto.getStatus() == PartyDecision.ACCEPT || partyDecisionDto.getStatus() == PartyDecision.REFUSE)) {
             log.error("=== Party Join Status was requested incorrectly ===");
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
 
-        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(
-                partyJoinDto.partyId(),
-                partyJoinDto.leaderId(),
+        PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndUserId(
+                partyDecisionDto.getPartyId(),
                 user.getId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
         partyJoinRepository.delete(findPartyJoin);
 
-        if (partyJoinDto.status() == PartyJoinStatus.ACCEPT) {
+        if (partyDecisionDto.getStatus() == PartyDecision.ACCEPT) {
             log.info("=== ACCEPT ===");
-            Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+            User volunteerUser = userRepository.findByNickname(partyDecisionDto.getNickname()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+
+            Party party = partyRepository.findById(partyDecisionDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             party.increaseUser();
             if (party.getTotalParticipant() == party.getParticipantCount()) {
                 party.setStatus(PartyStatus.FINISH);
             }
-
-            Team member = Team.builder().user(user).party(party).role(Role.VOLUNTEER).build();
+            Team member = Team.builder().user(volunteerUser).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
+
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");
@@ -258,15 +284,25 @@ public class PartyService {
         }
     }
 
-    public List<Party> getJoinList(User user, Role role) {
+    public List<InvitationRequestDto> getJoinList(User user, Role role) {
         List<PartyJoin> partyJoinList;
+        List<InvitationRequestDto> invitationRequestDtos;
         if (role.equals(Role.HOST)) {
             partyJoinList = partyJoinRepository.findAllByLeaderId(user.getId());
+            invitationRequestDtos = partyJoinList.stream().map(partyJoin -> {
+                User volunteerUser = userRepository.findById(partyJoin.getUserId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+                return InvitationRequestDto.toDto(partyJoin, volunteerUser, role);
+            }).toList();
         } else if (role.equals(Role.VOLUNTEER)) {
             partyJoinList = partyJoinRepository.findAllByUserId(user.getId());
+            invitationRequestDtos = partyJoinList.stream().map(partyJoin -> {
+                User leaderUser = userRepository.findById(partyJoin.getLeaderId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+                return InvitationRequestDto.toDto(partyJoin, leaderUser, role);
+            }).toList();
         } else {
             throw new UserException(UserExceptionType.INVALID_ROLE_USER);
         }
-        return partyJoinList.stream().map(PartyJoin::getParty).toList();
+
+        return invitationRequestDtos;
     }
 }

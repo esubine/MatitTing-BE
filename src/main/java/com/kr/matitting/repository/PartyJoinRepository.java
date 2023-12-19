@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface PartyJoinRepository extends JpaRepository<PartyJoin, Long> {
     List<PartyJoin> findByLeaderId(Long leaderId);
     List<PartyJoin> findByPartyIdAndLeaderId(Long partyId, Long leaderId);
-    Optional<PartyJoin> findByPartyIdAndLeaderIdAndUserId(Long partyId, Long leaderId, Long userId);
+    Optional<PartyJoin> findByPartyIdAndUserId(Long partyId, Long userId);
     List<PartyJoin> findByPartyId(Long partyId);
 
     List<PartyJoin> findAllByLeaderId(Long userId);
