@@ -27,13 +27,17 @@ public class PartyScheduler {
 
         LocalDateTime overedPartyTime = LocalDateTime.now().minusHours(5);
 
-        List<Party> partyList = partyRepository.findByStatus(PartyStatus.RECRUIT);
+        List<Party> partyList = partyRepository.getPartyIsNotPartyFinish(PartyStatus.PARTY_FINISH);
+
+        int changeCount = 0;
 
         for (Party party : partyList) {
-            if (party.getPartyTime().isBefore(overedPartyTime) && party.getStatus() == PartyStatus.RECRUIT) {
-                party.setStatus(PartyStatus.FINISH);
+            if (party.getPartyTime().isBefore(overedPartyTime) && party.getStatus() != PartyStatus.PARTY_FINISH) {
+                party.setStatus(PartyStatus.PARTY_FINISH);
+                changeCount++;
                 partyRepository.save(party);
             }
         }
+        log.info("=== party 상태 "+ changeCount +"개 변경 완료 ===");
     }
 }

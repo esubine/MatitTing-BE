@@ -21,8 +21,10 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             "join fetch p.user " +
             "where p.id = :partyId")
     Optional<Party> findByIdFJUser(@Param("partyId") Long partyId);
-  
-    List<Party> findByStatus(PartyStatus status);
+
+    @Query("select p from Party p " +
+            "where p.status !=:status ")
+    List<Party> getPartyIsNotPartyFinish(@Param("status") PartyStatus status);
 
     @Query("UPDATE Party p " +
             "SET p.hit = p.hit+1 " +
