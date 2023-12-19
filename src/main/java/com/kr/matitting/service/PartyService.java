@@ -54,7 +54,7 @@ public class PartyService {
         increaseHit(partyId);
         return ResponsePartyDetailDto.builder()
                 .userId(party.getUser().getId())
-                .leaderTF(user == null || (user.getId() != party.getUser().getId()) ? false : true)
+                .isLeader(user == null || (user.getId() != party.getUser().getId()) ? false : true)
                 .partyId(party.getId())
                 .partyTitle(party.getPartyTitle())
                 .partyContent(party.getPartyContent())
