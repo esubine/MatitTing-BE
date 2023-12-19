@@ -22,7 +22,7 @@ public class ResponsePartyDetailDto {
     private Long userId;
 
     @Schema(description = "방장 여부", example = "true or false")
-    private Boolean leaderTF;
+    private Boolean isLeader;
     @Schema(description = "파티 id", nullable = false, example = "1")
     @NotNull
     private Long partyId;
