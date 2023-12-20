@@ -90,12 +90,12 @@ public class UserService {
 
         if (role == Role.HOST || role == Role.VOLUNTEER) {
             teams = partyTeamRepository.findByUserIdAndRole(user.getId(), role);
-            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() != PartyStatus.FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
+            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() != PartyStatus.PARTY_FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
             return parties;
         }
         else if(role == Role.USER){
             teams = partyTeamRepository.findByUserId(user.getId() );
-            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
+            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.PARTY_FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
             return parties;
             }
         return new LinkedList<ResponsePartyDto>();

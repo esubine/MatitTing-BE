@@ -272,7 +272,7 @@ public class PartyService {
             Party party = partyRepository.findById(partyDecisionDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             party.increaseUser();
             if (party.getTotalParticipant() == party.getParticipantCount()) {
-                party.setStatus(PartyStatus.FINISH);
+                party.setStatus(PartyStatus.RECRUIT_FINISH);
             }
             Team member = Team.builder().user(volunteerUser).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
