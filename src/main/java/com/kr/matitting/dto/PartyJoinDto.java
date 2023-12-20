@@ -13,12 +13,12 @@ public record PartyJoinDto(
         @Schema(description = "파티장 아이디", example = "1")
         @NotNull
         Long leaderId,
-        @Schema(description = "파티 신청 수락/거절", example = "ACCEPT")
+        @Schema(description = "파티 신청 수락/거절", example = "APPLY")
         @NotNull
         PartyJoinStatus status
 
 ) {
     public PartyJoinDto PartyJoinDto(Long partyId, Long leaderId, PartyJoinStatus status) {
-        return new PartyJoinDto(partyId, leaderId, (status == null) ? PartyJoinStatus.WAIT : status);
+        return new PartyJoinDto(partyId, leaderId, status);
     }
 }

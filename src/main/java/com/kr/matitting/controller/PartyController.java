@@ -1,12 +1,9 @@
 package com.kr.matitting.controller;
 
 import com.kr.matitting.constant.Role;
+import com.kr.matitting.dto.*;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.dto.PartyCreateDto;
-import com.kr.matitting.dto.PartyJoinDto;
-import com.kr.matitting.dto.PartyUpdateDto;
-import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.exception.Map.MapExceptionType;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
@@ -76,8 +73,8 @@ public class PartyController {
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
     @GetMapping("/{partyId}")
-    public ResponseEntity<ResponsePartyDto> partyDetail(@PathVariable Long partyId) {
-        ResponsePartyDto partyInfo = partyService.getPartyInfo(partyId);
+    public ResponseEntity<ResponsePartyDetailDto> partyDetail(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
+        ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user, partyId);
         return ResponseEntity.ok().body(partyInfo);
     }
 
@@ -112,8 +109,8 @@ public class PartyController {
             @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
     })
     @PostMapping("/decision")
-    public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
-        String result = partyService.decideUser(partyJoinDto, user);
+    public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyDecisionDto partyDecisionDto, @AuthenticationPrincipal User user) {
+        String result = partyService.decideUser(partyDecisionDto, user);
         return ResponseEntity.ok().body(result);
     }
 
@@ -122,18 +119,18 @@ public class PartyController {
             @ApiResponse(responseCode = "200", description = "파티 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class))),
             @ApiResponse(responseCode = "1000", description = "파티 팀 정보가 없습니다.", content = @Content(schema = @Schema(implementation = TeamExceptionType.class)))
     })
-    @GetMapping("/{userId}/party-status")
-    public ResponseEntity<List<ResponsePartyDto>> myPartyList(@PathVariable Long userId, @RequestParam Role role) {
-        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(userId, role);
+    @GetMapping("/party-status")
+    public ResponseEntity<List<ResponsePartyDto>> myPartyList(@AuthenticationPrincipal User user,@NotNull @RequestParam Role role) {
+        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(user, role);
         return ResponseEntity.ok().body(myPartyList);
     }
 
     //TODO: 파티 신청 리스트
     // 내가 보낸것들, 내가 받은 것들 구분!
     @GetMapping("/join")
-    public ResponseEntity<?> getJoinList(@AuthenticationPrincipal User user,
-                                         @NotNull @RequestParam Role role) {
-        List<Party> joinList = partyService.getJoinList(user, role);
-        return ResponseEntity.ok(joinList);
+    public ResponseEntity<List<InvitationRequestDto>> getJoinList(@AuthenticationPrincipal User user,
+                                                                  @NotNull @RequestParam Role role) {
+        List<InvitationRequestDto> invitationRequestDtos = partyService.getJoinList(user, role);
+        return ResponseEntity.ok(invitationRequestDtos);
     }
 }
