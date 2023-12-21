@@ -27,12 +27,13 @@ public class SearchService {
     private final PartyRepositoryCustom partyRepositoryCustom;
 
     public ResponseSearchPageDto getPartyPage(PartySearchCondDto partySearchCondDto, Integer size, Long lastPartyId) {
-        if (!(partySearchCondDto.title() == null)) {
-            increaseKeyWordScore(partySearchCondDto.title());
+        if (partySearchCondDto.keyword() == null) {
+            return new ResponseSearchPageDto(null, null, null);
         }
-        if (!(partySearchCondDto.menu() == null)) {
-            increaseKeyWordScore(partySearchCondDto.menu());
+        else{
+            increaseKeyWordScore(partySearchCondDto.keyword());
         }
+
         Sort sort = partySearchCondDto.sortDto().getOrders() == Orders.DESC
                 ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending()
                 : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending();
@@ -48,7 +49,7 @@ public class SearchService {
     public void increaseKeyWordScore(String keyWord) {
         log.info("=== increaseKeyWordScore() start ===");
 
-        Double score = 0.0;
+        int score = 0;
         try {
             redisTemplate.opsForZSet().incrementScore("ranking", keyWord,1);
         } catch (Exception e) {
@@ -57,13 +58,13 @@ public class SearchService {
         redisTemplate.opsForZSet().incrementScore("ranking", keyWord, score);
 
     }
-    public List<ResponseRankingDto> searchRankList() {
+    public List<String> searchRankList() {
         log.info("=== searchRankList() start ===");
 
         String key = "ranking";
         ZSetOperations<String, String> ZSetOperations = redisTemplate.opsForZSet();
         Set<ZSetOperations.TypedTuple<String>> typedTuples = ZSetOperations.reverseRangeWithScores(key, 0, 9);
-        return typedTuples.stream().map(set -> new ResponseRankingDto(set.getValue(), set.getScore())).collect(Collectors.toList());
+        return typedTuples.stream().map(set -> set.getValue()).toList();
     }
 
     private Long getLastPartyId(List<ResponsePartyDto> responsePartyList){
