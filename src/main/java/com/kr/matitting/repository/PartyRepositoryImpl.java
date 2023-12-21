@@ -33,6 +33,7 @@ public class PartyRepositoryImpl {
                             eqPartyStatus(partyStatus),
                             getBuilder(userLatitude, userLongitude),
                             ltPartyId(lastPartyId))
+                    .limit(pageable.getPageSize()+1)
                     .orderBy(party.id.desc())
                     .fetch();
         } else {
@@ -43,6 +44,7 @@ public class PartyRepositoryImpl {
                             eqPartyStatus(partyStatus),
                             getBuilder(userLatitude, userLongitude),
                             ltPartyId(lastPartyId))
+                    .limit(pageable.getPageSize()+1)
                     .fetch();
 
             parties.sort((party1, party2) -> {
