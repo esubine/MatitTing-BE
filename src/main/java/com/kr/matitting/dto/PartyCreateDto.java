@@ -47,7 +47,8 @@ public class PartyCreateDto {
     @Schema(description = "연령대", nullable = false, example = "2030")
     @NotNull
     private PartyAge age;
-    @Schema(description = "메뉴", nullable = true, example = "붕어빵")
+    @Schema(description = "메뉴", nullable = false, example = "붕어빵")
+    @NotNull
     private String menu;
     @Schema(description = "썸네일", nullable = true, example = " https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
     private String thumbnail;
