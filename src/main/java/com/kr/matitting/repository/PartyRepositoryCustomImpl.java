@@ -6,6 +6,7 @@ import com.kr.matitting.entity.Party;
 import com.querydsl.core.types.NullExpression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -26,17 +27,14 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
 
     @Override
     public Slice<Party> searchPage(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId) {
-        Slice<Party> partySlice = getPartyList(partySearchCondDto, pageable, lastPartyId);
-        return partySlice;
+        return getPartyList(partySearchCondDto, pageable, lastPartyId);
     }
 
     private Slice<Party> getPartyList(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId) {
         List<Party> partyList = queryFactory
                 .select(party)
                 .from(party)
-                .where(
-                        titleLike(partySearchCondDto.title()),
-                        menuLike(partySearchCondDto.menu()),
+                .where(ticketSearchPredicate(partySearchCondDto.keyword()),
                         stateEq(partySearchCondDto.status()),
                         ltPartyId(lastPartyId))
                 .offset(pageable.getOffset())
@@ -46,12 +44,29 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
         return checkLastPage(partyList, pageable);
     }
 
+    private BooleanBuilder ticketSearchPredicate(String keyword) {
+        return new BooleanBuilder(
+                titleLike(keyword)
+                        .or(menuLike(keyword))
+                        .or(contentLike(keyword))
+                        .or(addressLike(keyword))
+        );
+    }
+
     private BooleanExpression titleLike(String title) {
         return StringUtils.hasText(title) ? party.partyTitle.contains(title) : null;
     }
 
     private BooleanExpression menuLike(String menu) {
         return StringUtils.hasText(menu) ? party.menu.contains(menu) : null;
+    }
+
+    private BooleanExpression contentLike(String content) {
+        return StringUtils.hasText(content) ? party.partyContent.contains(content) : null;
+    }
+
+    private BooleanExpression addressLike(String address) {
+        return StringUtils.hasText(address) ? party.address.contains(address) : null;
     }
 
     private BooleanExpression stateEq(PartyStatus partyStatus) {
