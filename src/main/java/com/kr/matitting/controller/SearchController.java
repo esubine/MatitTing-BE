@@ -39,8 +39,8 @@ public class SearchController {
     @Operation(summary = "인기 검색어", description = "인기 검색어 TOP 10")
     @ApiResponse(responseCode = "200", description = "검색어 TOP 10 성공", content = @Content(schema = @Schema(implementation = String.class)))
     @GetMapping(value = "/rank", produces="application/json;charset=UTF-8")
-    public ResponseEntity<List<String>> searchRankList() {
-        List<String> responseRankingDtoList = searchService.searchRankList();
+    public ResponseEntity<List<ResponseRankingDto>> searchRankList() {
+        List<ResponseRankingDto> responseRankingDtoList = searchService.searchRankList();
         return ResponseEntity.ok().body(responseRankingDtoList);
     }
 }
