@@ -58,13 +58,13 @@ public class SearchService {
         redisTemplate.opsForZSet().incrementScore("ranking", keyWord, score);
 
     }
-    public List<String> searchRankList() {
+    public List<ResponseRankingDto> searchRankList() {
         log.info("=== searchRankList() start ===");
 
         String key = "ranking";
         ZSetOperations<String, String> ZSetOperations = redisTemplate.opsForZSet();
         Set<ZSetOperations.TypedTuple<String>> typedTuples = ZSetOperations.reverseRangeWithScores(key, 0, 9);
-        return typedTuples.stream().map(set -> set.getValue()).toList();
+        return typedTuples.stream().map(set -> new ResponseRankingDto(set.getValue())).toList();
     }
 
     private Long getLastPartyId(List<ResponsePartyDto> responsePartyList){
