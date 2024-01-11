@@ -95,9 +95,12 @@ public class PartyController {
             @ApiResponse(responseCode = "700", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class)))
     })
     @PostMapping("/participation")
-    public ResponseEntity<String> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
-        partyService.joinParty(partyJoinDto, user);
-        return ResponseEntity.ok().body("Success join request!");
+    public ResponseEntity<Long> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
+        Long joinPartyId = partyService.joinParty(partyJoinDto, user);
+        if (joinPartyId == null) {
+            return ResponseEntity.ok(null);
+        }
+        return ResponseEntity.ok(joinPartyId);
     }
 
     @Operation(summary = "파티 참가 수락/거절", description = "방장이 참여신청에 대한 수락/거절을 결정하는 API 입니다.")

@@ -4,8 +4,6 @@ import com.kr.matitting.constant.PartyJoinStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.Optional;
-
 public record PartyJoinDto(
         @Schema(description = "파티 아이디", example = "13")
         @NotNull

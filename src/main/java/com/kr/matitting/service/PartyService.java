@@ -106,7 +106,6 @@ public class PartyService {
         eventPublisher.publishEvent(new CreateRoomEvent(savedParty.getId(), user.getId()));
 
         return partyId;
-
     }
 
     private Point2D.Double setLocationFunc(double latitude, double longitude) {
@@ -231,25 +230,32 @@ public class PartyService {
                 .build();
     }
 
-    public void joinParty(PartyJoinDto partyJoinDto, User user) {
+    public Long joinParty(PartyJoinDto partyJoinDto, User user) {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(user.getId()).build();
+        Optional<PartyJoin> byPartyIdAndLeaderIdAndUserId = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(partyJoin.getParty().getId(), partyJoin.getLeaderId(), partyJoin.getUserId());
+
         if (!party.getUser().getId().equals(partyJoinDto.leaderId())) {
             throw new UserException(UserExceptionType.NOT_FOUND_USER);
         }
-        
-        if (partyJoinDto.status() == PartyJoinStatus.APPLY) {
-            PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(user.getId()).build();
-            partyJoinRepository.save(partyJoin);
-        } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
-            Optional<PartyJoin> partyJoin = partyJoinRepository.findByPartyIdAndUserId(partyJoinDto.partyId(), user.getId());
-            if (partyJoin.isPresent()) {
-                partyJoinRepository.delete(partyJoin.get());
-            }
-            //TODO: 1:1 단톡방을 삭제하는 로직 추가 예정!
-        }
 
+        if (partyJoinDto.status() == PartyJoinStatus.APPLY) {
+            if (!byPartyIdAndLeaderIdAndUserId.isEmpty()) {
+                throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
+            }
+            PartyJoin savedpartyJoin = partyJoinRepository.save(partyJoin);
+            return savedpartyJoin.getId();
+        }
+        else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
+            if (byPartyIdAndLeaderIdAndUserId.isEmpty()) {
+                throw new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN);
+            }
+            partyJoinRepository.deleteById(partyJoin.getParty().getId());
+            return byPartyIdAndLeaderIdAndUserId.get().getId();
+        }
+        return null;
     }
 
     public String decideUser(PartyDecisionDto partyDecisionDto, User user) {
