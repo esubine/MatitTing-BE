@@ -3,6 +3,7 @@ package com.kr.matitting.controller;
 import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.SocialType;
+import com.kr.matitting.dto.ResponseUserDto;
 import com.kr.matitting.dto.UserLoginDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.User;
@@ -33,16 +34,16 @@ public class OAuthController {
 
     @Operation(summary = "로그인", description = "사용자 로그인 API 입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseUserDto.class))),
             @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
     })
     @GetMapping("login")
-    public ResponseEntity<User> loadOAuthLogin(HttpServletResponse response,
+    public ResponseEntity<ResponseUserDto> loadOAuthLogin(HttpServletResponse response,
                                                @ModelAttribute UserLoginDto userLoginDto) {
-        User user = null;
+        ResponseUserDto userDto;
         if (userLoginDto.role() == Role.GUEST) {
-            user = User.builder()
-                    .id(0L)
+            userDto = ResponseUserDto.builder()
+                    .userId(0L)
                     .socialId(userLoginDto.socialId())
                     .socialType(userLoginDto.socialType())
                     .email(userLoginDto.email())
@@ -52,14 +53,25 @@ public class OAuthController {
                     .nickname("")
                     .imgUrl("")
                     .build();
-            return ResponseEntity.ok().body(user);
+            return ResponseEntity.ok().body(userDto);
         }
         else if (userLoginDto.role() == Role.USER) {
             response.addHeader(jwtService.getAccessHeader(), userLoginDto.accessToken());
             response.addHeader(jwtService.getRefreshHeader(), userLoginDto.refreshToken());
 
-            user = userService.getMyInfo(userLoginDto.socialType(), userLoginDto.socialId());
-            return ResponseEntity.ok().body(user);
+            User myInfo = userService.getMyInfo(userLoginDto.socialType(), userLoginDto.socialId());
+            userDto = ResponseUserDto.builder()
+                    .userId(myInfo.getId())
+                    .socialId(myInfo.getSocialId())
+                    .socialType(myInfo.getSocialType())
+                    .email(myInfo.getEmail())
+                    .nickname(myInfo.getNickname())
+                    .age(myInfo.getAge())
+                    .imgUrl(myInfo.getImgUrl())
+                    .gender(myInfo.getGender())
+                    .role(myInfo.getRole())
+                    .build();
+            return ResponseEntity.ok().body(userDto);
         }
         return ResponseEntity.badRequest().body(null);
     }
