@@ -95,9 +95,12 @@ public class PartyController {
             @ApiResponse(responseCode = "700", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class)))
     })
     @PostMapping("/participation")
-    public ResponseEntity<String> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
-        partyService.joinParty(partyJoinDto, user);
-        return ResponseEntity.ok().body("Success join request!");
+    public ResponseEntity<Long> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
+        Long joinPartyId = partyService.joinParty(partyJoinDto, user);
+        if (joinPartyId == null) {
+            return ResponseEntity.ok(null);
+        }
+        return ResponseEntity.ok(joinPartyId);
     }
 
     @Operation(summary = "파티 참가 수락/거절", description = "방장이 참여신청에 대한 수락/거절을 결정하는 API 입니다.")
@@ -125,9 +128,12 @@ public class PartyController {
         return ResponseEntity.ok().body(myPartyList);
     }
 
-    //TODO: 파티 신청 리스트
-    // 내가 보낸것들, 내가 받은 것들 구분!
-    @GetMapping("/join")
+    @Operation(summary = "파티 신청 현황", description = "파티 신청 현황을 불러오는 메소드")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파티 신청 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class))),
+            @ApiResponse(responseCode = "600", description = "사용자 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
+    })
+    @GetMapping("/party-join")
     public ResponseEntity<List<InvitationRequestDto>> getJoinList(@AuthenticationPrincipal User user,
                                                                   @NotNull @RequestParam Role role) {
         List<InvitationRequestDto> invitationRequestDtos = partyService.getJoinList(user, role);
