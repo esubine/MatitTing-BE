@@ -131,7 +131,8 @@ public class PartyController {
 
     //TODO: 파티 신청 리스트
     // 내가 보낸것들, 내가 받은 것들 구분!
-    @GetMapping("/join")
+
+    @GetMapping("/party-join")
     public ResponseEntity<List<InvitationRequestDto>> getJoinList(@AuthenticationPrincipal User user,
                                          @NotNull @RequestParam Role role) {
         List<InvitationRequestDto> invitationRequestDtos = partyService.getJoinList(user, role);
