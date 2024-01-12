@@ -128,10 +128,11 @@ public class PartyController {
         return ResponseEntity.ok().body(myPartyList);
     }
 
-
-    //TODO: 파티 신청 리스트
-    // 내가 보낸것들, 내가 받은 것들 구분!
-
+    @Operation(summary = "파티 신청 현황", description = "파티 신청 현황을 불러오는 메소드")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파티 신청 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class))),
+            @ApiResponse(responseCode = "600", description = "사용자 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
+    })
     @GetMapping("/party-join")
     public ResponseEntity<List<InvitationRequestDto>> getJoinList(@AuthenticationPrincipal User user,
                                          @NotNull @RequestParam Role role) {
