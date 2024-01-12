@@ -234,10 +234,10 @@ public class PartyService {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
-        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(partyJoinDto.leaderId()).userId(user.getId()).build();
+        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(party.getUser().getId()).userId(user.getId()).build();
         Optional<PartyJoin> byPartyIdAndLeaderIdAndUserId = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(partyJoin.getParty().getId(), partyJoin.getLeaderId(), partyJoin.getUserId());
 
-        if (!party.getUser().getId().equals(partyJoinDto.leaderId())) {
+        if (!party.getUser().getId().equals(party.getUser().getId())) {
             throw new UserException(UserExceptionType.NOT_FOUND_USER);
         }
 
