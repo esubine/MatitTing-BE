@@ -265,15 +265,14 @@ public class PartyService {
             log.error("=== Party Join Status was requested incorrectly ===");
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
-
+        User volunteerUser = userRepository.findByNickname(partyDecisionDto.getNickname()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndUserId(
                 partyDecisionDto.getPartyId(),
-                user.getId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+                volunteerUser.getId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
         partyJoinRepository.delete(findPartyJoin);
 
         if (partyDecisionDto.getStatus() == PartyDecision.ACCEPT) {
             log.info("=== ACCEPT ===");
-            User volunteerUser = userRepository.findByNickname(partyDecisionDto.getNickname()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
             Party party = partyRepository.findById(partyDecisionDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             party.increaseUser();
@@ -282,7 +281,6 @@ public class PartyService {
             }
             Team member = Team.builder().user(volunteerUser).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
-
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");
