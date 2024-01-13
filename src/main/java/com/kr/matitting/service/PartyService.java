@@ -247,15 +247,15 @@ public class PartyService {
             }
             PartyJoin savedpartyJoin = partyJoinRepository.save(partyJoin);
             return savedpartyJoin.getId();
-        }
-        else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
+        } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
             if (byPartyIdAndLeaderIdAndUserId.isEmpty()) {
                 throw new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN);
             }
             partyJoinRepository.deleteById(partyJoin.getParty().getId());
             return byPartyIdAndLeaderIdAndUserId.get().getId();
+        } else {
+            throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
-        return null;
     }
 
     public String decideUser(PartyDecisionDto partyDecisionDto, User user) {

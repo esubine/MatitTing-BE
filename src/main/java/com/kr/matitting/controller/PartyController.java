@@ -97,9 +97,6 @@ public class PartyController {
     @PostMapping("/participation")
     public ResponseEntity<Long> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
         Long joinPartyId = partyService.joinParty(partyJoinDto, user);
-        if (joinPartyId == null) {
-            return ResponseEntity.ok(null);
-        }
         return ResponseEntity.ok(joinPartyId);
     }
 
