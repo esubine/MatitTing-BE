@@ -28,6 +28,11 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "프로필 업데이트", description = "사용자의 프로필사진 혹은 닉네임을 수정해주는 메소드")
+    @GetMapping("/{userId}")
+    public ResponseEntity<User> myProfile(@PathVariable Long userId, @AuthenticationPrincipal User user) {
+        User myInfo = userService.getMyInfo(userId, user);
+        return ResponseEntity.ok(myInfo);
+    }
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "업데이트 성공"),
             @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
