@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 public enum Gender {
-    ALL("ALL"), MALE("MALE"), FEMALE("FEMALE");
+    ALL("ALL"), MALE("MALE"), FEMALE("FEMALE"), UNKNOWN("UNKNOWN");
 
     @Getter
     private final String value;

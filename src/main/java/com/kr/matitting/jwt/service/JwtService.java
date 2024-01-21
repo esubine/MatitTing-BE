@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.token.TokenExceptionType;
@@ -59,6 +60,9 @@ public class JwtService {
      * AccessToken 생성 메소드
      */
     public String createAccessToken(User user) {
+        if (user.getRole() == Role.GUEST) {
+            return null;
+        }
         Date now = new Date();
         return JWT.create() //JWT 토큰 생성 빌더 반환
                 .withSubject(ACCESS_TOKEN_SUBJECT) //JWT Subject 지정 -> AccessToken
@@ -72,6 +76,10 @@ public class JwtService {
      * RefreshToken 생성
      */
     public String createRefreshToken(User user) {
+        if (user.getRole() == Role.GUEST) {
+            return null;
+        }
+
         Date now = new Date();
         return JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
@@ -101,9 +109,12 @@ public class JwtService {
         return token.get();
     }
 
-    public void updateRefreshToken(String socialId, String refreshToken) {
+    public void updateRefreshToken(User user, String refreshToken) {
+        if (user.getRole() == Role.GUEST) {
+            return;
+        }
         // Redis refreshToken
-        redisUtil.setDateExpire(socialId, refreshToken, refreshTokenExpirationPeriod);
+        redisUtil.setDateExpire(user.getSocialId(), refreshToken, refreshTokenExpirationPeriod);
     }
 
     private void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
