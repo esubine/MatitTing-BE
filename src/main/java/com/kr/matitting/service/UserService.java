@@ -17,6 +17,7 @@ import com.kr.matitting.redis.RedisUtil;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
+import com.kr.matitting.s3.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,16 +33,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
-    private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final PartyTeamRepository partyTeamRepository;
     private final JwtService jwtService;
     private final RedisUtil redisUtil;
 
-    public User signUp(UserSignUpDto userSignUpDto) {
+    public void signUp(UserSignUpDto userSignUpDto) {
         User user = userSignUpDto.toEntity();
-        User save = userRepository.save(user);
-        return save;
+        userRepository.save(user);
     }
     public void update(Long userId, UserUpdateDto userUpdateDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
@@ -52,6 +51,7 @@ public class UserService {
         if (userUpdateDto.imgUrl() != null) {
             user.setImgUrl(userUpdateDto.imgUrl());
         }
+        user.setRole(Role.USER);
     }
 
     public void logout(String accessToken) {
@@ -60,6 +60,23 @@ public class UserService {
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
         String socialId = decodedJWT.getClaim("socialId").asString();
 
+        //expired 시간 check
+        tokenRemove(accessToken, socialId);
+    }
+
+    public void withdraw(String accessToken) {
+        log.info("=== withdraw() start ===");
+
+        DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
+        String socialId = decodedJWT.getClaim("socialId").asString();
+
+        tokenRemove(accessToken, socialId);
+
+        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        userRepository.delete(user);
+    }
+
+    private void tokenRemove(String accessToken, String socialId) {
         //expired 시간 check
         Long expiration = jwtService.getExpiration(accessToken);
 
@@ -70,18 +87,12 @@ public class UserService {
         redisUtil.setDateExpire(accessToken, "logout", expiration);
     }
 
-    public void withdraw(String accessToken) {
-        log.info("=== withdraw() start ===");
+    public User getMyInfo(Long userId, User user) {
+        if (!user.getId().equals(userId)) {
+            throw new UserException(UserExceptionType.NOT_MATCH_USER);
+        }
 
-        DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
-        String socialId = decodedJWT.getClaim("socialId").asString();
-        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-        userRepository.delete(user);
-    }
-
-    public User getMyInfo(SocialType socialType, String socialId) {
-        User user = userRepository.findBySocialTypeAndSocialId(socialType, socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-        return user;
+        return userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_MATCH_USER));
     }
 
     public List<ResponsePartyDto> getMyPartyList(User user, Role role) {

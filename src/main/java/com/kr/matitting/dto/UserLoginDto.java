@@ -5,13 +5,7 @@ import com.kr.matitting.constant.SocialType;
 import jakarta.validation.constraints.NotNull;
 
 public record UserLoginDto(
-        @NotNull
-        String email,
-        @NotNull
-        SocialType socialType,
-        @NotNull
-        String socialId,
-        @NotNull
+        Long userId,
         Role role,
         String accessToken,
         String refreshToken

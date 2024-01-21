@@ -39,48 +39,26 @@ public class OAuthController {
     })
     @GetMapping("login")
     public ResponseEntity<ResponseUserDto> loadOAuthLogin(HttpServletResponse response,
-                                               @ModelAttribute UserLoginDto userLoginDto) {
-        ResponseUserDto userDto;
-        if (userLoginDto.role() == Role.GUEST) {
-            userDto = ResponseUserDto.builder()
-                    .userId(0L)
-                    .socialId(userLoginDto.socialId())
-                    .socialType(userLoginDto.socialType())
-                    .email(userLoginDto.email())
-                    .role(userLoginDto.role())
-                    .age(0)
-                    .gender(Gender.ALL)
-                    .nickname("")
-                    .imgUrl("")
-                    .build();
-            return ResponseEntity.ok().body(userDto);
-        }
-        else if (userLoginDto.role() == Role.USER) {
+                                                          @ModelAttribute UserLoginDto userLoginDto) {
+
+        ResponseUserDto userDto = ResponseUserDto.builder()
+                .userId(userLoginDto.userId())
+                .role(userLoginDto.role())
+                .build();
+
+        if (userLoginDto.accessToken() != "" && userLoginDto.refreshToken() != "") {
             response.addHeader(jwtService.getAccessHeader(), userLoginDto.accessToken());
             response.addHeader(jwtService.getRefreshHeader(), userLoginDto.refreshToken());
-
-            User myInfo = userService.getMyInfo(userLoginDto.socialType(), userLoginDto.socialId());
-            userDto = ResponseUserDto.builder()
-                    .userId(myInfo.getId())
-                    .socialId(myInfo.getSocialId())
-                    .socialType(myInfo.getSocialType())
-                    .email(myInfo.getEmail())
-                    .nickname(myInfo.getNickname())
-                    .age(myInfo.getAge())
-                    .imgUrl(myInfo.getImgUrl())
-                    .gender(myInfo.getGender())
-                    .role(myInfo.getRole())
-                    .build();
-            return ResponseEntity.ok().body(userDto);
         }
-        return ResponseEntity.badRequest().body(null);
+
+        return ResponseEntity.ok(userDto);
     }
     @Operation(summary = "회원가입", description = "회원가입 API 입니다.")
     @ApiResponse(responseCode = "201", description = "회원가입 성공", content = @Content(schema = @Schema(implementation = User.class)))
     @PostMapping("signup")
-    public ResponseEntity<User> loadOAuthSignUp(@Valid UserSignUpDto userSignUpDto) {
-        User user = userService.signUp(userSignUpDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    public ResponseEntity<?> loadOAuthSignUp(@Valid UserSignUpDto userSignUpDto) {
+        userService.signUp(userSignUpDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃 성공 API 입니다.")
