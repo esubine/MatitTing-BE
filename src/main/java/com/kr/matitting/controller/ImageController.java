@@ -23,7 +23,9 @@ import java.util.Map;
 public class ImageController {
     private final S3Uploader s3Uploader;
 
-    @Operation(summary = "이미지 s3 업로드", description = "이미지 s3 업로드 API 입니다.")
+    @Operation(summary = "이미지 s3 업로드", description = "이미지 s3 업로드 API 입니다. \n\n" +
+                                                        "[로직설명] \n\n"  +
+                                                        "MULTIPART_FORM_DATA_VALUE 타입으로 이미지 추가 후 API 요청 시 s3에 업로드하는 로직을 거친 뒤 s3 이미지 주소가 반환됩니다. \n\n")
     @ApiResponse(responseCode = "200", description = "OK",
             content = @Content(schemaProperties = {
                     @SchemaProperty(name = "imgUrl", schema = @Schema(type = "string", description = "imgUrl"))}))
