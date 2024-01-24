@@ -8,9 +8,9 @@ import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.mock.WithCustomMockUser;
+import com.kr.matitting.redis.RedisUtil;
 import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.service.UserService;
-import com.kr.matitting.util.RedisUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -65,15 +63,15 @@ class OAuthControllerTest {
         userRepository.save(user);
     }
 
-    @BeforeEach
-    void 토큰발급() {
-        //로그인 후 토큰 발급!!
-        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
-        User user = userService.signUp(userSignUpDto);
-        accessToken = jwtService.createAccessToken(user);
-        refreshToken = jwtService.createRefreshToken(user);
-        jwtService.updateRefreshToken(user.getSocialId(), refreshToken);
-    }
+//    @BeforeEach
+//    void 토큰발급() {
+//        //로그인 후 토큰 발급!!
+//        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+//        User user = userService.signUp(userSignUpDto);
+//        accessToken = jwtService.createAccessToken(user);
+//        refreshToken = jwtService.createRefreshToken(user);
+//        jwtService.updateRefreshToken(user.getSocialId(), refreshToken);
+//    }
 
     @BeforeEach
     void clear(){

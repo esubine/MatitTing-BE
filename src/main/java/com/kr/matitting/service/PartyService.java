@@ -62,7 +62,7 @@ public class PartyService {
                 .age(party.getAge())
                 .deadline(party.getDeadline())
                 .partyTime(party.getPartyTime())
-                .totalParticipate(party.getTotalParticipant())
+                .totalParticipant(party.getTotalParticipant())
                 .participate(party.getParticipantCount())
                 .menu(party.getMenu())
                 .category(party.getCategory())
