@@ -1,31 +1,19 @@
 package com.kr.matitting.service;
 
 import com.kr.matitting.constant.*;
-import com.kr.matitting.dto.ChatRoomDto;
-import com.kr.matitting.entity.ChatRoom;
-import com.kr.matitting.entity.ChatUser;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
-
-import static com.kr.matitting.constant.ChatUserRole.*;
-import static com.kr.matitting.dto.ChatRoomDto.*;
-import static org.assertj.core.api.Assertions.*;
 
 @Transactional
 @SpringBootTest
@@ -33,7 +21,7 @@ class ChatServiceTest {
     @Autowired
     ChatRoomRepository chatRoomRepository;
     @Autowired
-    ChatHistoryRepository chatHistoryRepository;
+    ChatRepository chatRepository;
     @Autowired
     ChatUserRepository chatUserRepository;
     @Autowired

@@ -1,7 +1,7 @@
 package com.kr.matitting.repository;
 
 import com.kr.matitting.constant.ChatRoomType;
-import com.kr.matitting.entity.ChatHistory;
+import com.kr.matitting.entity.Chat;
 import com.kr.matitting.entity.ChatRoom;
 import com.kr.matitting.entity.QChatHistory;
 import com.kr.matitting.entity.QChatRoom;
@@ -26,7 +26,7 @@ public class ChatRepositoryCustomImpl implements ChatRepositoryCustom {
     private final QChatHistory qChatHistory = QChatHistory.chatHistory;
     private final QChatRoom qChatRoom = QChatRoom.chatRoom;
 
-    public List<ChatHistory> getHistories(Long chatUserId, Long roomId, Long lastId, Pageable pageable) {
+    public List<Chat> getChats(Long chatUserId, Long roomId, Long lastId, Pageable pageable) {
         return queryFactory
                 .selectFrom(qChatHistory)
                 .where(

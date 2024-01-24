@@ -1,15 +1,17 @@
 package com.kr.matitting.service;
 
 import com.kr.matitting.constant.ChatRoomType;
+import com.kr.matitting.dto.ChatMessage;
+import com.kr.matitting.dto.ResponseChatDto;
 import com.kr.matitting.entity.*;
 import com.kr.matitting.exception.chat.ChatException;
 import com.kr.matitting.exception.chat.ChatExceptionType;
 import com.kr.matitting.exception.party.PartyException;
-import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,6 @@ import java.util.Optional;
 
 import static com.kr.matitting.constant.ChatRoomType.*;
 import static com.kr.matitting.constant.ChatUserRole.*;
-import static com.kr.matitting.dto.ChatHistoryDto.*;
 import static com.kr.matitting.dto.ChatRoomDto.*;
 import static com.kr.matitting.dto.ChatUserDto.*;
 import static com.kr.matitting.entity.ChatRoom.*;
@@ -36,7 +37,7 @@ import static com.kr.matitting.exception.user.UserExceptionType.*;
 public class ChatService {
     private final ChatUserRepository chatUserRepository;
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatHistoryRepository chatHistoryRepository;
+    private final ChatRepository chatRepository;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final SimpMessageSendingOperations messagingTemplate;
@@ -54,15 +55,19 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatHistoryResponse> getHistories(Long userId, Long roomId, Long lastHistoryId, Pageable pageable) {
-        ChatUser chatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
-        List<ChatHistory> chatHistories = chatRepositoryCustom.getHistories(chatUser.getId(), roomId, lastHistoryId, pageable);
+    public List<ResponseChatDto> getChats(Long userId, Long roomId, Long lastChatId, Pageable pageable) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
 
-        if (chatHistories == null) return null;
-
-        return chatHistories.stream()
-                .map(ChatHistoryResponse::new)
-                .toList();
+        return chatRoom.getChatList().stream()
+                .map(chat -> {
+                    User user = chat.getSendUser();
+                    return ResponseChatDto.builder()
+                            .senderId(user.getId())
+                            .nickname(user.getNickname())
+                            .message(chat.getMessage())
+                            .createAt(chat.getCreateDate())
+                            .build();
+                }).toList();
     }
 
     @Transactional
@@ -79,7 +84,7 @@ public class ChatService {
             throw new ChatException(NOT_FOUND_CHAT_ROOM);
         }
 
-        ChatRoom room = createRoom(party, user, PRIVATE, party.getPartyTitle());
+        ChatRoom room = createRoom(party, user, party.getPartyTitle());
         chatRoomRepository.save(room);
 
         ChatUser chatOwner = ChatUser.createChatUser(room, party.getUser(), ADMIN, PRIVATE);
@@ -134,7 +139,7 @@ public class ChatService {
         User user = userRepository.findById(createRoomEvent.getUserId()).orElseThrow(
                 () -> new UserException(NOT_FOUND_USER)
         );
-        ChatRoom room = createRoom(party, user, GROUP, party.getPartyTitle());
+        ChatRoom room = createRoom(party, user, party.getPartyTitle());
         chatRoomRepository.save(room);
 
         ChatUser chatUser = ChatUser.createChatUser(room, user, ADMIN, GROUP);
@@ -149,13 +154,9 @@ public class ChatService {
     @Transactional
     public void sendMessage(Long userId, ChatMessage chatMessage) {
         Long roomId = chatMessage.getRoomId();
-        chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(
-                () -> new ChatException(NO_PRINCIPAL)
-        );
-
-        chatRoomRepository.findById(roomId).ifPresent(
-                room -> room.setModifiedDate(LocalDateTime.now())
-        );
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        chatRoom.setModifiedDate(LocalDateTime.now());
+        chatRoom.getChatUserList().stream().map(user -> user.getId().equals(userId)).findAny().orElseThrow(() -> new UserException(INVALID_ROLE_USER));
 
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
     }
