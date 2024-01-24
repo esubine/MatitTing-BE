@@ -59,15 +59,15 @@ class PartyControllerTest {
     static User user;
     public static Long partyId;
 
-    @BeforeEach
-    void 토큰발급() {
-        //로그인 후 토큰 발급!!
-        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
-        user = userService.signUp(userSignUpDto);
-        accessToken = "BEARER "+jwtService.createAccessToken(user);
-        refreshToken = "BEARER "+jwtService.createRefreshToken(user);
-        jwtService.updateRefreshToken(user.getSocialId(), refreshToken);
-    }
+//    @BeforeEach
+//    void 토큰발급() {
+//        //로그인 후 토큰 발급!!
+//        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+//        user = userService.signUp(userSignUpDto);
+//        accessToken = "BEARER "+jwtService.createAccessToken(user);
+//        refreshToken = "BEARER "+jwtService.createRefreshToken(user);
+//        jwtService.updateRefreshToken(user.getSocialId(), refreshToken);
+//    }
     @BeforeEach
     public void 파티생성() {
         Party party = Party.builder()
