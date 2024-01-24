@@ -59,7 +59,7 @@ public class ResponsePartyDetailDto {
     private LocalDateTime partyTime;
     @Schema(description = "모집 인원", nullable = false, example = "4")
     @NotNull
-    private Integer totalParticipate;
+    private Integer totalParticipant;
     @Schema(description = "현재 참가 인원", nullable = false, example = "2")
     @NotNull
     private Integer participate;
