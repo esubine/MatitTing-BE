@@ -35,15 +35,22 @@ public class PartyController {
     private final UserService userService;
 
     // 파티 모집 글 생성
-    @Operation(summary = "파티 글 생성", description = "파티 글 생성 API 입니다.")
+    @Operation(summary = "파티 글 생성", description = "파티 글 생성 API 입니다. \n\n" +
+                                                    "[로직 설명] \n\n" +
+                                                    "1. 파티 생성에 필요한 데이터들을 request로 받습니다.\n\n" +
+                                                    "\t 1-1. 파티 생성 dto 중 thumbnail은 필수값이 아닙니다. thumbnail이 없는 경우 category에 맞춰 thumbnail이 설정됩니다.\n\n" +
+                                                    "\t 1-2. 파티 마감시간은 '파티시간의 -1시간'으로 자동 설정됩니다.\n\n" +
+                                                    "\t 1-3. 파티 생성 dto 중 totalParticipant는 2이상이어야 합니다.\n\n" +
+                                                    "2. 1의 유효성 검사를 거친 후 request값에 따라 파티를 생성합니다.\n\n" +
+                                                    "※ 파티 생성 완료 시 채팅방이 자동으로 생성됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created",
                     content = @Content(schemaProperties = {
                             @SchemaProperty(name = "partyId", schema = @Schema(type = "long", description = "파티 아이디"))})),
             @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class))),
-            @ApiResponse(responseCode = "1300", description = "카카오 맵 Authorization이 실패했습니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
-            @ApiResponse(responseCode = "1301", description = "카카오 맵에서 데이터를 받아오지 못했습니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
-            @ApiResponse(responseCode = "1302", description = "카카오 맵 서버 오류입니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class)))
+            @ApiResponse(responseCode = "1300", description = "카카오 맵 Authorization이 실패했습니다. \n\n *kakao map api 관련 설정값이 잘못되어 발생하는 에러입니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
+            @ApiResponse(responseCode = "1301", description = "카카오 맵에서 데이터를 받아오지 못했습니다. \n\n *위도, 경도값이 유효하지 않아 카카오맵에서 데이터 조회, 주소변환이 되지 않을때 발생합니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
+            @ApiResponse(responseCode = "1302", description = "카카오 맵 서버 오류입니다. \n\n *카카오맵 자체 오류입니다..", content = @Content(schema = @Schema(implementation = MapExceptionType.class)))
     })
 
     @PostMapping

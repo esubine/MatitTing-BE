@@ -8,7 +8,6 @@ import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.Map.MapException;
 import com.kr.matitting.exception.Map.MapExceptionType;
-import com.kr.matitting.exception.main.MainExceptionType;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
@@ -19,19 +18,16 @@ import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
-import com.kr.matitting.repository.PartyRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.geom.Point2D;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.kr.matitting.dto.ChatRoomDto.*;
 
@@ -212,8 +208,8 @@ public class PartyService {
     // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
     private Party createBasePartyBuilder(PartyCreateDto request, User user) {
         return Party.builder()
-                .partyTitle(request.getTitle())
-                .partyContent(request.getContent())
+                .partyTitle(request.getPartyTitle())
+                .partyContent(request.getPartyContent())
                 .latitude(setLocationFunc(request.getLatitude(), request.getLongitude()).x)
                 .longitude(setLocationFunc(request.getLatitude(), request.getLongitude()).y)
                 .partyTime(request.getPartyTime())
