@@ -210,6 +210,7 @@ public class PartyService {
         return Party.builder()
                 .partyTitle(request.getPartyTitle())
                 .partyContent(request.getPartyContent())
+                .partyPlaceName(request.getPartyPlaceName())
                 .latitude(setLocationFunc(request.getLatitude(), request.getLongitude()).x)
                 .longitude(setLocationFunc(request.getLatitude(), request.getLongitude()).y)
                 .partyTime(request.getPartyTime())

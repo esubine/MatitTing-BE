@@ -25,6 +25,10 @@ public class PartyCreateDto {
     @Schema(description = "파티 내용", nullable = false, example = "붕어빵은 팥이 근본입니다.")
     @NotNull
     private String partyContent;
+
+    @Schema(description = "파티 장소명", nullable = false, example = "원조 붕어빵")
+    @NotNull
+    private String partyPlaceName;
     @Schema(description = "파티 시작 시간", nullable = false, example = "2023-10-24T10:00:00")
     @NotNull
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -57,6 +61,7 @@ public class PartyCreateDto {
         return PartyCreateDto.builder()
                 .partyTitle(party.getPartyTitle())
                 .partyContent(party.getPartyContent())
+                .partyPlaceName(party.getPartyPlaceName())
                 .partyTime(party.getPartyTime())
                 .totalParticipant(party.getTotalParticipant())
                 .longitude(party.getLongitude())
