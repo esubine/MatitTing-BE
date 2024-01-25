@@ -20,6 +20,8 @@ public record PartyUpdateDto(
         Double longitude,
         @Schema(description = "장소 경도", nullable = true, example = "37.001")
         Double latitude,
+        @Schema(description = "파티 장소", nullable = true, example = "달달 블라썸")
+        String partyPlaceName,
         @Schema(description = "모집 여부", nullable = true, example = "RECRUIT")
         PartyStatus status, //모집 여부
         @Schema(description = "모집 인원", nullable = true, example = "4")

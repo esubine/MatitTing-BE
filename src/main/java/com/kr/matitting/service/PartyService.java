@@ -57,6 +57,7 @@ public class PartyService {
                 .address(party.getAddress())
                 .longitude(party.getLongitude())
                 .latitude(party.getLatitude())
+                .partyPlaceName(party.getPartyPlaceName())
                 .status(party.getStatus())
                 .gender(party.getGender())
                 .age(party.getAge())
@@ -161,6 +162,9 @@ public class PartyService {
             party.setLongitude(partyUpdateDto.longitude());
             String address = mapService.coordToAddr(partyUpdateDto.longitude(), partyUpdateDto.latitude());
             party.setAddress(address);
+        }
+        if (partyUpdateDto.partyPlaceName() != null) {
+            party.setPartyPlaceName(partyUpdateDto.partyPlaceName());
         }
         if (partyUpdateDto.status() != null) {
             party.setStatus(partyUpdateDto.status());

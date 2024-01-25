@@ -42,6 +42,8 @@ public class ResponsePartyDetailDto {
     @Schema(description = "위도", nullable = false, example = "37.53645109566274")
     @NotNull
     private double latitude;
+    @Schema(description = "파티 장소", nullable = true, example = "달달 블라썸")
+    private String partyPlaceName;
     @Schema(description = "파티 상태", nullable = false, example = "RECRUIT")
     @NotNull
     private PartyStatus status;
