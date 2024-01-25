@@ -36,6 +36,8 @@ public class Party extends BaseTimeEntity {
     @Column(nullable = false, name = "address")
     private String address; // 주소
 
+    @Column(nullable = false, name = "place_name")
+    private String partyPlaceName;
     @Column(name = "longitude")
     private double longitude;
 

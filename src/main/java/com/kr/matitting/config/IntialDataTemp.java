@@ -28,39 +28,39 @@ public class IntialDataTemp implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        User user = userService.signUp(
-                new UserSignUpDto(
-                        createUUID(),
-                        SocialType.NAVER,
-                        createUUID(),
-                        createUUID(),
-                        15,
-                        createUUID(),
-                        Gender.ALL)
-        );
+//        User user = userService.signUp(
+//                new UserSignUpDto(
+//                        createUUID(),
+//                        SocialType.NAVER,
+//                        createUUID(),
+//                        createUUID(),
+//                        15,
+//                        createUUID(),
+//                        Gender.ALL)
+//        );
 
-        Party party = Party.builder()
-                .partyTitle("맛있팅 참여하세요")
-                .partyContent("저는 돈까스를 좋아합니다")
-                .address("서울 마포구 포은로2나길 44")
-                .latitude(37.550457)
-                .longitude(126.909708)
-                .status(PartyStatus.RECRUIT)
-                .deadline(LocalDateTime.now().plusDays(1))
-                .partyTime(LocalDateTime.now().plusDays(3))
-                .totalParticipant(4)
-                .participantCount(1)
-                .gender(Gender.ALL)
-                .age(PartyAge.TWENTY)
-                .hit(0)
-                .menu("치~즈돈까스")
-                .category(PartyCategory.JAPANESE)
-                .user(user)
-                .build();
-
-        partyRepository.save(party);
-
-        chatService.createChatRoom(new CreateRoomEvent(party.getId(), user.getId()));
+//        Party party = Party.builder()
+//                .partyTitle("맛있팅 참여하세요")
+//                .partyContent("저는 돈까스를 좋아합니다")
+//                .address("서울 마포구 포은로2나길 44")
+//                .latitude(37.550457)
+//                .longitude(126.909708)
+//                .status(PartyStatus.RECRUIT)
+//                .deadline(LocalDateTime.now().plusDays(1))
+//                .partyTime(LocalDateTime.now().plusDays(3))
+//                .totalParticipant(4)
+//                .participantCount(1)
+//                .gender(Gender.ALL)
+//                .age(PartyAge.TWENTY)
+//                .hit(0)
+//                .menu("치~즈돈까스")
+//                .category(PartyCategory.JAPANESE)
+//                .user(user)
+//                .build();
+//
+//        partyRepository.save(party);
+//
+//        chatService.createChatRoom(new CreateRoomEvent(party.getId(), user.getId()));
 //        chatService.createChatRoom(new CreateGroupRoomEvent());
 //        chatService.createRoomEvent(new CreateRoomEvent(null, null));
 //        chatService.createRoomEvent(new CreateRoomEvent(null, null));
