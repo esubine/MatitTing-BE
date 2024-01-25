@@ -32,6 +32,8 @@ public record ResponsePartyDto(
         @Schema(description = "위도", nullable = false, example = "37.53645109566274")
         @NotNull
         double latitude,
+        @Schema(description = "파티 장소", nullable = true, example = "달달 블라썸")
+        String partyPlaceName,
         @Schema(description = "파티 상태", nullable = false, example = "RECRUIT")
         @NotNull
         PartyStatus status,
@@ -73,6 +75,7 @@ public record ResponsePartyDto(
                 party.getAddress(),
                 party.getLongitude(),
                 party.getLatitude(),
+                party.getPartyPlaceName(),
                 party.getStatus(),
                 party.getGender(),
                 party.getAge(),
