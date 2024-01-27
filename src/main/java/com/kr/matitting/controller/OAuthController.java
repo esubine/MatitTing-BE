@@ -1,15 +1,12 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.constant.Gender;
-import com.kr.matitting.constant.Role;
-import com.kr.matitting.constant.SocialType;
 import com.kr.matitting.dto.ResponseUserDto;
 import com.kr.matitting.dto.UserLoginDto;
-import com.kr.matitting.dto.UserSignUpDto;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenExceptionType;
-import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
+import com.kr.matitting.oauth2.dto.KakaoParams;
+import com.kr.matitting.oauth2.dto.NaverParams;
+import com.kr.matitting.oauth2.service.OauthService;
 import com.kr.matitting.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,71 +15,60 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/oauth2/")
+@RequestMapping("/oauth2")
 public class OAuthController {
     private final UserService userService;
     private final JwtService jwtService;
+    private final OauthService oauthService;
+    @PostMapping("/kakao")
+    public ResponseEntity<ResponseUserDto> kakaoCallback(@RequestBody KakaoParams kakaoParams) {
+        log.debug("넘겨받은 kakao 인증키 :: " + kakaoParams.getAuthorizationCode());
 
-    @Operation(summary = "로그인", description = "로그인 API \n\n" +
-                                                "Security 내부에서 redirect 시킨 URL로 데이터를 받아 Client로 Response하는 메소드이다. \n\n \n\n" +
-                                                "로직 설명 \n\n" +
-                                                "1. userId, role, accessToken, refreshToken을 받는다. (이 때 Token 값들은 role 값이 USER[기존유저]일 때만 값이 들어있다) \n\n" +
-                                                "2. 값을 Client에게 response 한다. \n\n" +
-                                                "※ 사용자가 신규 유저일 경우에는 성별, 생년월일, 닉네임 등은 랜덤으로 설정되어 DB에 저장되게 된다. 이는 이후에 회원가입 API를 통해서 Update가 필요!"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseUserDto.class))),
-            @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
-    })
-    @GetMapping("login")
-    public ResponseEntity<ResponseUserDto> loadOAuthLogin(HttpServletResponse response,
-                                                          @ModelAttribute UserLoginDto userLoginDto) {
+        UserLoginDto userLoginDto = oauthService.getMemberByOauthLogin(kakaoParams);
 
-        ResponseUserDto userDto = ResponseUserDto.builder()
-                .userId(userLoginDto.userId())
-                .role(userLoginDto.role())
-                .build();
+        //응답 헤더 생성
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(jwtService.getAccessHeader(), userLoginDto.accessToken());
+        httpHeaders.add(jwtService.getRefreshHeader(), userLoginDto.refreshToken());
 
-        if (userLoginDto.accessToken() != "" && userLoginDto.refreshToken() != "") {
-            response.addHeader(jwtService.getAccessHeader(), userLoginDto.accessToken());
-            response.addHeader(jwtService.getRefreshHeader(), userLoginDto.refreshToken());
-        }
-
-        return ResponseEntity.ok(userDto);
+        return ResponseEntity.ok().headers(httpHeaders).body(new ResponseUserDto(userLoginDto.userId(), userLoginDto.role()));
     }
-    @Operation(summary = "회원가입", description = "회원가입 API \n\n" +
-                                                "사용자가 신규 회원일 때 추가 정보를 입력받아 DB 정보를 Update 시켜주는 API \n\n \n\n" +
-                                                "로직 설명 \n\n" +
-                                                "1. 사용자의 ID와 추가로 입력 받은 값(성별, 생년월일, 닉네임)을 Request 받는다. \n\n" +
-                                                "2. 사용자 ID 값으로 해당 사용자를 찾아서 추가로 입력받은 값을 업데이트 해준다. \n\n" +
-                                                "3. 사용자의 Role을 GUEST -> USER로 변환한다."
-    )
-    @ApiResponse(responseCode = "201", description = "회원가입 성공")
-    @PostMapping("signup")
-    public ResponseEntity<?> loadOAuthSignUp(@Valid UserSignUpDto userSignUpDto) {
-        userService.signUp(userSignUpDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+
+    @PostMapping("/naver")
+    public ResponseEntity<ResponseUserDto> naverCallback(@RequestBody NaverParams naverParams) {
+        log.debug("넘겨받은 naver 인증키 :: " + naverParams.getAuthorizationCode());
+
+        UserLoginDto userLoginDto = oauthService.getMemberByOauthLogin(naverParams);
+
+        //응답 헤더 생성
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(jwtService.getAccessHeader(),userLoginDto.accessToken());
+        httpHeaders.add(jwtService.getRefreshHeader(),userLoginDto.refreshToken());
+
+        return ResponseEntity.ok().headers(httpHeaders).body(new ResponseUserDto(userLoginDto.userId(), userLoginDto.role()));
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃 API \n\n" +
-                                                "로그아웃 시 사용자의 인증/인가에 필요한 토큰을 제거하는 API \n\n \n\n" +
-                                                "로직 설명 \n\n" +
-                                                "1. [request header] \"Authorization\"에 accessToken을 담은 요청이 들어오면 해당 reuqest를 받아 Token을 꺼낸다. \n\n" +
-                                                "2. accessToken의 유효시간을 검사하여 남은 시간만큼 Black List에 등록한다. => Black List에 들어가면 accessToken 검사 시 Pass 하지 못한다. \n\n" +
-                                                "3. accessToken에서 꺼낸 사용자의 SocialId로 refreshToken을 삭제한다. \n\n"
+            "로그아웃 시 사용자의 인증/인가에 필요한 토큰을 제거하는 API \n\n \n\n" +
+            "로직 설명 \n\n" +
+            "1. [request header] \"Authorization\"에 accessToken을 담은 요청이 들어오면 해당 reuqest를 받아 Token을 꺼낸다. \n\n" +
+            "2. accessToken의 유효시간을 검사하여 남은 시간만큼 Black List에 등록한다. => Black List에 들어가면 accessToken 검사 시 Pass 하지 못한다. \n\n" +
+            "3. accessToken에서 꺼낸 사용자의 SocialId로 refreshToken을 삭제한다. \n\n"
     )
     @ApiResponse(responseCode = "200", description = "로그아웃 성공")
-    @PostMapping("logout")
+    @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
+
         String accessToken = jwtService.extractToken(request, "accessToken");
         userService.logout(accessToken);
         return ResponseEntity.ok("logout Success");
@@ -97,7 +83,7 @@ public class OAuthController {
                                                 "4. 사용자의 정보를 DB에서 조회하여 삭제한다."
     )
     @ApiResponse(responseCode = "200", description = "회원탈퇴 성공")
-    @DeleteMapping("withdraw")
+    @DeleteMapping("/withdraw")
     public ResponseEntity<String> withdraw(HttpServletRequest request) {
         String accessToken = jwtService.extractToken(request, "accessToken");
         userService.withdraw(accessToken);
@@ -116,7 +102,7 @@ public class OAuthController {
         @ApiResponse(responseCode = "201", description = "토큰 재발급 성공"),
         @ApiResponse(responseCode = "1200", description = "Refresh Token이 없습니다.", content = @Content(schema = @Schema(implementation = TokenExceptionType.class)))
     })
-    @GetMapping("renew-token")
+    @GetMapping("/renew-token")
     public ResponseEntity<String> renewToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtService.extractToken(request, "refreshToken");
         String accessToken = jwtService.renewToken(refreshToken);
