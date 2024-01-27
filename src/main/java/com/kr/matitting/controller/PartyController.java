@@ -169,7 +169,7 @@ public class PartyController {
             "1. HOST => 내가 방장으로 존재하는 파티에 사용자들이 참가 요청을 보낸 리스트를 반환 \n\n" +
             "2. VOLUNTEER => 내가 상대방의 파티에 참가 요청을 보낸 리스트를 반환")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파티 신청 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class))),
+            @ApiResponse(responseCode = "200", description = "파티 신청 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = InvitationRequestDto.class))),
             @ApiResponse(responseCode = "600", description = "사용자 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
     })
     @GetMapping("/party-join")

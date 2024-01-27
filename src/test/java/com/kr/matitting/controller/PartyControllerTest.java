@@ -17,7 +17,6 @@ import com.kr.matitting.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -384,7 +382,7 @@ class PartyControllerTest {
     @Test
     void 파티신청_성공() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         String newAccessToken = jwtService.createAccessToken(newUser);
         String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT));
@@ -402,7 +400,7 @@ class PartyControllerTest {
     @Test
     void 파티신청_실패_방장Id가_없을때() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         String newAccessToken = jwtService.createAccessToken(newUser);
         String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(partyId, 213321321L, PartyJoinStatus.WAIT));
@@ -420,7 +418,7 @@ class PartyControllerTest {
     @Test
     void 파티신청_실패_파티Id가_없을때() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         String newAccessToken = jwtService.createAccessToken(newUser);
         String partyJoinDto = objectMapper.writeValueAsString(new PartyJoinDto(123312L, user.getId(), PartyJoinStatus.WAIT));
@@ -438,7 +436,7 @@ class PartyControllerTest {
     @Test
     void 파티요청_수락_성공() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
@@ -457,7 +455,7 @@ class PartyControllerTest {
     @Test
     void 파티요청_수락_실패_상태대기() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
@@ -476,7 +474,7 @@ class PartyControllerTest {
     @Test
     void 파티요청_수락_실패_파티없음() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
@@ -495,7 +493,7 @@ class PartyControllerTest {
     @Test
     void 파티요청_수락_실패_유저없음() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 
@@ -514,7 +512,7 @@ class PartyControllerTest {
     @Test
     void 파티요청_거절_성공() throws Exception {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", SocialType.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("321321321", OauthProvider.KAKAO, "test@naver.com", "새싹개발자", 26, "증명사진.jpg", Gender.MALE);
         User newUser = userService.signUp(userSignUpDto);
         partyService.joinParty(new PartyJoinDto(partyId, user.getId(), PartyJoinStatus.WAIT), newUser);
 

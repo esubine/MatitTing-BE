@@ -44,7 +44,7 @@ public class testController {
         if (findUser.isEmpty()) {
             User user = User.builder()
                     .socialId("12309812309128301")
-                    .socialType(SocialType.KAKAO)
+                    .oauthProvider(OauthProvider.KAKAO)
                     .email("test@kakao.com")
                     .nickname("새싹개발자")
                     .age(20)
@@ -74,7 +74,7 @@ public class testController {
         if (findUser.isEmpty()) {
             User user = User.builder()
                     .socialId("1123213321")
-                    .socialType(SocialType.NAVER)
+                    .oauthProvider(OauthProvider.NAVER)
                     .email("test@naver.com")
                     .nickname("안경잡이개발자")
                     .age(20)
@@ -110,7 +110,7 @@ public class testController {
         if(findUser.isEmpty()){
             User user1 = User.builder()
                     .socialId("3035953918")
-                    .socialType(SocialType.KAKAO)
+                    .oauthProvider(OauthProvider.KAKAO)
                     .email("parksn5029@nate.com")
                     .nickname("나무개발자")
                     .age(26)
@@ -122,7 +122,7 @@ public class testController {
         }
         User user1 = User.builder()
                 .socialId("3035953918")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("parksn5029@nate.com")
                 .nickname("나무개발자")
                 .age(26)
@@ -136,7 +136,7 @@ public class testController {
 
         User user2 = User.builder()
                 .socialId("213312213")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("parksn5029@naver.com")
                 .nickname("잔디개발자")
                 .age(22)

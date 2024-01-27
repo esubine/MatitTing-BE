@@ -2,7 +2,6 @@ package com.kr.matitting.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kr.matitting.constant.*;
-import com.kr.matitting.dto.SortDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
@@ -65,7 +64,7 @@ class SearchControllerTest {
     public void 데이터생성() {
         User user = User.builder()
                 .socialId("12345")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("test@naver.com")
                 .nickname("새싹개발자")
                 .age(26)
@@ -99,7 +98,7 @@ class SearchControllerTest {
 
         User user1 = User.builder()
                 .socialId("098")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user1@naver.com")
                 .nickname("User1")
                 .age(26)
@@ -110,7 +109,7 @@ class SearchControllerTest {
 
         User user2 = User.builder()
                 .socialId("456")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("user2@naver.com")
                 .nickname("User2")
                 .age(20)
@@ -121,7 +120,7 @@ class SearchControllerTest {
 
         User user3 = User.builder()
                 .socialId("836")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user3@naver.com")
                 .nickname("User3")
                 .age(36)
@@ -232,7 +231,7 @@ class SearchControllerTest {
     @BeforeEach
     void 토큰발급() {
         //로그인 후 토큰 발급!!
-        UserSignUpDto userSignUpDto = new UserSignUpDto("132321321321", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("132321321321", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
         User user = userService.signUp(userSignUpDto);
         accessToken = "BEARER "+jwtService.createAccessToken(user);
         refreshToken = "BEARER "+jwtService.createRefreshToken(user);

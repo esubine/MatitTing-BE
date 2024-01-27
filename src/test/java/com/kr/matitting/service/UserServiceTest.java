@@ -1,7 +1,6 @@
 package com.kr.matitting.service;
 
 import com.kr.matitting.constant.*;
-import com.kr.matitting.dto.PartyCreateDto;
 import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
@@ -49,7 +48,7 @@ class UserServiceTest {
 
         User user = User.builder()
                 .socialId("12345")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("test@naver.com")
                 .nickname("새싹개발자")
                 .age(26)
@@ -83,7 +82,7 @@ class UserServiceTest {
 
         User user1 = User.builder()
                 .socialId("098")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user1@naver.com")
                 .nickname("User1")
                 .age(26)
@@ -94,7 +93,7 @@ class UserServiceTest {
 
         User user2 = User.builder()
                 .socialId("456")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("user2@naver.com")
                 .nickname("User2")
                 .age(20)
@@ -105,7 +104,7 @@ class UserServiceTest {
 
         User user3 = User.builder()
                 .socialId("836")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user3@naver.com")
                 .nickname("User3")
                 .age(36)
@@ -234,7 +233,7 @@ class UserServiceTest {
     @Test
     void 회원가입_성공() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("8545232", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("8545232", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
 
         //when
         User user = userService.signUp(userSignUpDto);
@@ -242,7 +241,7 @@ class UserServiceTest {
         //then
         assertThat(user.getId()).isNotNull();
         assertThat(user.getSocialId()).isEqualTo("8545232");
-        assertThat(user.getSocialType()).isEqualTo(SocialType.KAKAO);
+        assertThat(user.getOauthProvider()).isEqualTo(OauthProvider.KAKAO);
         assertThat(user.getEmail()).isEqualTo("signUp@naver.com");
         assertThat(user.getNickname()).isEqualTo("안경잡이개발자");
         assertThat(user.getAge()).isEqualTo(26);
@@ -253,7 +252,7 @@ class UserServiceTest {
     @Test
     void 회원가입_실패_socialId_없음() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto(null, SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto(null, OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
 
         //when, then
         assertThrows(DataIntegrityViolationException.class, () -> userService.signUp(userSignUpDto));
@@ -271,7 +270,7 @@ class UserServiceTest {
     @Test
     void 회원가입_실패_email_없음() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", SocialType.KAKAO, null, "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", OauthProvider.KAKAO, null, "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
 
         //when, then
         assertThrows(DataIntegrityViolationException.class, () -> userService.signUp(userSignUpDto));
@@ -280,7 +279,7 @@ class UserServiceTest {
     @Test
     void 회원가입_실패_nickname_없음() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", SocialType.KAKAO, "signUp@naver.com", null, 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("12345", OauthProvider.KAKAO, "signUp@naver.com", null, 26, "증명사진.jpg", Gender.MALE);
 
         //when, then
         assertThrows(DataIntegrityViolationException.class, () -> userService.signUp(userSignUpDto));
@@ -289,7 +288,7 @@ class UserServiceTest {
     @Test
     void 회원가입_실패_age_없음() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto(null, SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", null, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto(null, OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", null, "증명사진.jpg", Gender.MALE);
 
         //when, then
         assertThrows(DataIntegrityViolationException.class, () -> userService.signUp(userSignUpDto));
@@ -298,7 +297,7 @@ class UserServiceTest {
     @Test
     void 회원가입_실패_gender_없음() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto(null, SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", null);
+        UserSignUpDto userSignUpDto = new UserSignUpDto(null, OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", null);
 
         //when, then
         assertThrows(DataIntegrityViolationException.class, () -> userService.signUp(userSignUpDto));
@@ -307,7 +306,7 @@ class UserServiceTest {
     @Test
     void 회원탈퇴_성공() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("4326632362", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("4326632362", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
         User user = userService.signUp(userSignUpDto);
         String accessToken = jwtService.createAccessToken(user);
 
@@ -317,15 +316,15 @@ class UserServiceTest {
 
         //then
         assertThat(findUser.isEmpty()).isTrue();
-        assertThrows(UserException.class, () -> userService.getMyInfo(user.getSocialType(), user.getSocialId()));
+        assertThrows(UserException.class, () -> userService.getMyInfo(user.getOauthProvider(), user.getSocialId()));
     }
 
     @Test
     void 회원탈퇴_실패_socialId_없음() {
         //given
-        UserSignUpDto userSignUpDto = new UserSignUpDto("7723732732732", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("7723732732732", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
         User user = userService.signUp(userSignUpDto);
-        User userfake = new UserSignUpDto("23456", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE).toEntity();
+        User userfake = new UserSignUpDto("23456", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE).toEntity();
         String accessToken = jwtService.createAccessToken(userfake);
 
         //when, then
@@ -336,7 +335,7 @@ class UserServiceTest {
     void 프로필_업데이트_성공_사진() {
         //given
         String imgUrl = "새로찍은증명사진.jpg";
-        UserSignUpDto userSignUpDto = new UserSignUpDto("6897876768467546754", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("6897876768467546754", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
         User user = userService.signUp(userSignUpDto);
 
         //when
@@ -352,7 +351,7 @@ class UserServiceTest {
     void 프로필_업데이트_성공_닉네임() {
         //given
         String updateNickname = "새싹개발자";
-        UserSignUpDto userSignUpDto = new UserSignUpDto("15145744", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("15145744", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
         User user = userService.signUp(userSignUpDto);
 
         //when
@@ -368,7 +367,7 @@ class UserServiceTest {
     void 프로필_업데이트_실패_ID_Null() {
         //given
         String updateNickname = "새싹개발자";
-        UserSignUpDto userSignUpDto = new UserSignUpDto("9888735", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("9888735", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
         User user = userService.signUp(userSignUpDto);
 
         //when, then
