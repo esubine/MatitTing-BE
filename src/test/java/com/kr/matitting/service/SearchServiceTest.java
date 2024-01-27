@@ -2,7 +2,6 @@ package com.kr.matitting.service;
 
 import com.kr.matitting.constant.*;
 import com.kr.matitting.dto.PartySearchCondDto;
-import com.kr.matitting.dto.ResponseSearchDto;
 import com.kr.matitting.dto.ResponseSearchPageDto;
 import com.kr.matitting.dto.SortDto;
 import com.kr.matitting.entity.Party;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -65,7 +63,7 @@ class SearchServiceTest {
     public void 데이터생성() {
         User user = User.builder()
                 .socialId("12345")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("test@naver.com")
                 .nickname("새싹개발자")
                 .age(26)
@@ -99,7 +97,7 @@ class SearchServiceTest {
 
         User user1 = User.builder()
                 .socialId("098")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user1@naver.com")
                 .nickname("User1")
                 .age(26)
@@ -110,7 +108,7 @@ class SearchServiceTest {
 
         User user2 = User.builder()
                 .socialId("456")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("user2@naver.com")
                 .nickname("User2")
                 .age(20)
@@ -121,7 +119,7 @@ class SearchServiceTest {
 
         User user3 = User.builder()
                 .socialId("836")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user3@naver.com")
                 .nickname("User3")
                 .age(36)

@@ -33,7 +33,6 @@ import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 
 @Slf4j
 @Transactional
@@ -61,7 +60,7 @@ class PartyServiceTest {
     public void 데이터생성() {
         user = User.builder()
                 .socialId("12345")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("test@naver.com")
                 .nickname("새싹개발자")
                 .age(26)
@@ -95,7 +94,7 @@ class PartyServiceTest {
 
         User user1 = User.builder()
                 .socialId("098")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user1@naver.com")
                 .nickname("User1")
                 .age(26)
@@ -106,7 +105,7 @@ class PartyServiceTest {
 
         User user2 = User.builder()
                 .socialId("456")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("user2@naver.com")
                 .nickname("User2")
                 .age(20)
@@ -117,7 +116,7 @@ class PartyServiceTest {
 
         User user3 = User.builder()
                 .socialId("836")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("user3@naver.com")
                 .nickname("User3")
                 .age(36)

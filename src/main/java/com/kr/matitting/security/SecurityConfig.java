@@ -1,9 +1,6 @@
 package com.kr.matitting.security;
 
 import com.kr.matitting.jwt.filter.JwtAuthenticationFilter;
-import com.kr.matitting.oauth2.handler.OAuth2LoginFailureHandler;
-import com.kr.matitting.oauth2.handler.OAuth2LoginSuccessHandler;
-import com.kr.matitting.oauth2.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,9 +30,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -61,14 +55,6 @@ public class SecurityConfig {
                 .formLogin((form) -> form
                         .loginPage("/")
                         .permitAll());
-
-        http
-                //oauth 로그인 설정
-                .oauth2Login(oauth ->
-                        oauth
-                                .successHandler(oAuth2LoginSuccessHandler)
-                                .failureHandler(oAuth2LoginFailureHandler)
-                                .userInfoEndpoint(userService -> userService.userService(customOAuth2UserService)));
 
         http
                 //jwt custom filter 적용
