@@ -34,8 +34,10 @@ public class UserService {
     private final RedisUtil redisUtil;
 
     public void signUp(UserSignUpDto userSignUpDto) {
-        User user = userSignUpDto.toEntity();
-        userRepository.save(user);
+        User user = userRepository.findById(userSignUpDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        user.setNickname(userSignUpDto.nickname());
+        user.setGender(userSignUpDto.gender());
+        user.setAge(userSignUpDto.age());
     }
     public void update(Long userId, UserUpdateDto userUpdateDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));

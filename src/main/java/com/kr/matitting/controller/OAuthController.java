@@ -2,6 +2,7 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.dto.ResponseUserDto;
 import com.kr.matitting.dto.UserLoginDto;
+import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.oauth2.dto.KakaoParams;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -56,6 +58,20 @@ public class OAuthController {
         httpHeaders.add(jwtService.getRefreshHeader(),userLoginDto.refreshToken());
 
         return ResponseEntity.ok().headers(httpHeaders).body(new ResponseUserDto(userLoginDto.userId(), userLoginDto.role()));
+    }
+
+    @Operation(summary = "회원가입", description = "회원가입 API \n\n" +
+            "사용자가 신규 회원일 때 추가 정보를 입력받아 DB 정보를 Update 시켜주는 API \n\n \n\n" +
+            "로직 설명 \n\n" +
+            "1. 사용자의 ID와 추가로 입력 받은 값(성별, 생년월일, 닉네임)을 Request 받는다. \n\n" +
+            "2. 사용자 ID 값으로 해당 사용자를 찾아서 추가로 입력받은 값을 업데이트 해준다. \n\n" +
+            "3. 사용자의 Role을 GUEST -> USER로 변환한다."
+    )
+    @ApiResponse(responseCode = "201", description = "회원가입 성공")
+    @PostMapping("signup")
+    public ResponseEntity<?> loadOAuthSignUp(@Valid UserSignUpDto userSignUpDto) {
+        userService.signUp(userSignUpDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃 API \n\n" +
