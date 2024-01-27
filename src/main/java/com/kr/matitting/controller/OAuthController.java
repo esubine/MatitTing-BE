@@ -1,9 +1,11 @@
 package com.kr.matitting.controller;
 
+import com.kr.matitting.dto.InvitationRequestDto;
 import com.kr.matitting.dto.ResponseUserDto;
 import com.kr.matitting.dto.UserLoginDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.exception.token.TokenExceptionType;
+import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.oauth2.dto.KakaoParams;
 import com.kr.matitting.oauth2.dto.NaverParams;
@@ -32,6 +34,20 @@ public class OAuthController {
     private final UserService userService;
     private final JwtService jwtService;
     private final OauthService oauthService;
+
+    @Operation(summary = "카카오 소셜 로그인", description = "로그인 API \n\n" +
+            "인증 Code를 전달받아서 Social Server와 통신하며 사용자 정보를 받아오는 로직 \n\n \n\n" +
+            "로직 설명 \n\n" +
+            "1. Social 인증 Code를 전달받는다. \n\n" +
+            "2. 인증 Code를 활용하여 accessToken 요청 URI를 작성한뒤 social server에 요청을 보내 accessToken을 받는다. \n\n" +
+            "3. 받은 accessToken을 활용하여 사용자 정보 요청 URI를 작성한 뒤 요청을 보낸다. \n\n" +
+            "4. 사용자 정보를 DB에서 찾아 신규, 기존 유저인지 판별 후 해당하는 값들을 response \n\n" +
+            "※ 신규 유저는 userId와 role(GUEST)를 기존 유저는 userId와 role(USER), accessToken, refreshToken을 발급하여 Response ※"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseUserDto.class))),
+            @ApiResponse(responseCode = "404", description = "유저 NOT FOUND", content = @Content(schema = @Schema(implementation = UserException.class)))
+    })
     @PostMapping("/kakao")
     public ResponseEntity<ResponseUserDto> kakaoCallback(@RequestBody KakaoParams kakaoParams) {
         log.debug("넘겨받은 kakao 인증키 :: " + kakaoParams.getAuthorizationCode());
@@ -46,6 +62,14 @@ public class OAuthController {
         return ResponseEntity.ok().headers(httpHeaders).body(new ResponseUserDto(userLoginDto.userId(), userLoginDto.role()));
     }
 
+    @Operation(summary = "네이버 소셜 로그인", description = "로그인 API \n\n" +
+            "인증 Code를 전달받아서 Social Server와 통신하며 사용자 정보를 받아오는 로직 \n\n \n\n" +
+            "로직은 카카오 소셜 로그인과 동일"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseUserDto.class))),
+            @ApiResponse(responseCode = "404", description = "유저 NOT FOUND", content = @Content(schema = @Schema(implementation = UserException.class)))
+    })
     @PostMapping("/naver")
     public ResponseEntity<ResponseUserDto> naverCallback(@RequestBody NaverParams naverParams) {
         log.debug("넘겨받은 naver 인증키 :: " + naverParams.getAuthorizationCode());
