@@ -2,6 +2,7 @@ package com.kr.matitting.security;
 
 import com.kr.matitting.jwt.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -49,7 +50,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         getCustomizer(introspector,
                                 "/", "/home", "/matitting**", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html",
-                                "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search**", "/api/search/rank", "api/party/{userId}",
+                                "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search**", "/api/search/rank", "/api/party/{partyId}",
                                 "/api/chat-rooms/**", "/webjars/**", "/favicon.ico")
                 )
                 .formLogin((form) -> form

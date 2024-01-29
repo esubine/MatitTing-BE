@@ -107,19 +107,6 @@ public class testController {
     public ResponseEntity<ResponseDummyDataDto> test(HttpServletResponse response) {
         Optional<User> findUser = userRepository.findBySocialId("3035953918");
 
-        if(findUser.isEmpty()){
-            User user1 = User.builder()
-                    .socialId("3035953918")
-                    .oauthProvider(OauthProvider.KAKAO)
-                    .email("parksn5029@nate.com")
-                    .nickname("나무개발자")
-                    .age(26)
-                    .imgUrl("증명사진100.jpg")
-                    .gender(Gender.MALE)
-                    .role(Role.USER)
-                    .build();
-            User saved1 = userRepository.save(user1);
-        }
         User user1 = User.builder()
                 .socialId("3035953918")
                 .oauthProvider(OauthProvider.KAKAO)

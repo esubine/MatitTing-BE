@@ -1,7 +1,7 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.dto.InvitationRequestDto;
-import com.kr.matitting.dto.ResponseUserDto;
+import com.kr.matitting.constant.OauthProvider;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.UserLoginDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.exception.token.TokenExceptionType;
@@ -9,6 +9,7 @@ import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.oauth2.dto.KakaoParams;
 import com.kr.matitting.oauth2.dto.NaverParams;
+import com.kr.matitting.oauth2.dto.OauthReq;
 import com.kr.matitting.oauth2.service.OauthService;
 import com.kr.matitting.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,43 +46,29 @@ public class OAuthController {
             "※ 신규 유저는 userId와 role(GUEST)를 기존 유저는 userId와 role(USER), accessToken, refreshToken을 발급하여 Response ※"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseUserDto.class))),
+            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = Long.class))),
             @ApiResponse(responseCode = "404", description = "유저 NOT FOUND", content = @Content(schema = @Schema(implementation = UserException.class)))
     })
-    @PostMapping("/kakao")
-    public ResponseEntity<ResponseUserDto> kakaoCallback(@RequestBody KakaoParams kakaoParams) {
-        log.debug("넘겨받은 kakao 인증키 :: " + kakaoParams.getAuthorizationCode());
+    @PostMapping("/login")
+    public ResponseEntity<?> kakaoCallback(@RequestBody OauthReq oauthReq) {
+        log.debug("넘겨받은 kakao 인증키 :: " + oauthReq.getCode());
 
-        UserLoginDto userLoginDto = oauthService.getMemberByOauthLogin(kakaoParams);
+        UserLoginDto userLoginDto;
+        if (oauthReq.getOauthProvider() == OauthProvider.KAKAO) {
+            userLoginDto = oauthService.getMemberByOauthLogin(new KakaoParams(oauthReq.getCode()));
+        } else {
+            userLoginDto = oauthService.getMemberByOauthLogin(new NaverParams(oauthReq.getCode(), oauthReq.getState()));
+        }
 
-        //응답 헤더 생성
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(jwtService.getAccessHeader(), userLoginDto.accessToken());
-        httpHeaders.add(jwtService.getRefreshHeader(), userLoginDto.refreshToken());
-
-        return ResponseEntity.ok().headers(httpHeaders).body(new ResponseUserDto(userLoginDto.userId(), userLoginDto.role()));
-    }
-
-    @Operation(summary = "네이버 소셜 로그인", description = "로그인 API \n\n" +
-            "인증 Code를 전달받아서 Social Server와 통신하며 사용자 정보를 받아오는 로직 \n\n \n\n" +
-            "로직은 카카오 소셜 로그인과 동일"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseUserDto.class))),
-            @ApiResponse(responseCode = "404", description = "유저 NOT FOUND", content = @Content(schema = @Schema(implementation = UserException.class)))
-    })
-    @PostMapping("/naver")
-    public ResponseEntity<ResponseUserDto> naverCallback(@RequestBody NaverParams naverParams) {
-        log.debug("넘겨받은 naver 인증키 :: " + naverParams.getAuthorizationCode());
-
-        UserLoginDto userLoginDto = oauthService.getMemberByOauthLogin(naverParams);
-
-        //응답 헤더 생성
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(jwtService.getAccessHeader(),userLoginDto.accessToken());
-        httpHeaders.add(jwtService.getRefreshHeader(),userLoginDto.refreshToken());
-
-        return ResponseEntity.ok().headers(httpHeaders).body(new ResponseUserDto(userLoginDto.userId(), userLoginDto.role()));
+        if (userLoginDto.role() == Role.USER) {
+            //응답 헤더 생성
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add(jwtService.getAccessHeader(), userLoginDto.accessToken());
+            httpHeaders.add(jwtService.getRefreshHeader(), userLoginDto.refreshToken());
+            return ResponseEntity.ok().headers(httpHeaders).body(null);
+        } else {
+            return ResponseEntity.ok(userLoginDto.userId());
+        }
     }
 
     @Operation(summary = "회원가입", description = "회원가입 API \n\n" +

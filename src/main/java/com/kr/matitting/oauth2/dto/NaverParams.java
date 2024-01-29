@@ -1,11 +1,13 @@
 package com.kr.matitting.oauth2.dto;
 
 import com.kr.matitting.constant.OauthProvider;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @Getter
+@AllArgsConstructor
 public class NaverParams implements OauthParams{
     private String authorizationCode;
     private String state;

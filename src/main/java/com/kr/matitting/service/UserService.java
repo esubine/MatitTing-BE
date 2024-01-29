@@ -3,6 +3,7 @@ package com.kr.matitting.service;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
+import com.kr.matitting.dto.ResponseMyInfo;
 import com.kr.matitting.dto.ResponsePartyDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
@@ -39,16 +40,16 @@ public class UserService {
         user.setGender(userSignUpDto.gender());
         user.setAge(userSignUpDto.age());
     }
-    public void update(Long userId, UserUpdateDto userUpdateDto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+    public void update(User user, UserUpdateDto userUpdateDto) {
+        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
         if (userUpdateDto.nickname() != null) {
-            user.setNickname(userUpdateDto.nickname());
+            findUser.setNickname(userUpdateDto.nickname());
         }
         if (userUpdateDto.imgUrl() != null) {
-            user.setImgUrl(userUpdateDto.imgUrl());
+            findUser.setImgUrl(userUpdateDto.imgUrl());
         }
-        user.setRole(Role.USER);
+        findUser.setRole(Role.USER);
     }
 
     public void logout(String accessToken) {
@@ -84,12 +85,19 @@ public class UserService {
         redisUtil.setDateExpire(accessToken, "logout", expiration);
     }
 
-    public User getMyInfo(Long userId, User user) {
-        if (!user.getId().equals(userId)) {
-            throw new UserException(UserExceptionType.NOT_MATCH_USER);
-        }
-
-        return userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_MATCH_USER));
+    public ResponseMyInfo getMyInfo(User user) {
+        User myInfo = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_MATCH_USER));
+        return new ResponseMyInfo(
+                myInfo.getId(),
+                myInfo.getSocialId(),
+                myInfo.getOauthProvider(),
+                myInfo.getEmail(),
+                myInfo.getNickname(),
+                myInfo.getAge(),
+                myInfo.getImgUrl(),
+                myInfo.getGender(),
+                myInfo.getRole()
+        );
     }
 
     public List<ResponsePartyDto> getMyPartyList(User user, Role role) {
