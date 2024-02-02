@@ -2,8 +2,7 @@ package com.kr.matitting.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kr.matitting.constant.Gender;
-import com.kr.matitting.constant.PartyStatus;
-import com.kr.matitting.constant.SocialType;
+import com.kr.matitting.constant.OauthProvider;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.User;
@@ -22,11 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -57,7 +51,7 @@ class UserControllerTest {
     @BeforeEach
     void 토큰발급() {
         //로그인 후 토큰 발급!!
-        UserSignUpDto userSignUpDto = new UserSignUpDto("132321321321", SocialType.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
+        UserSignUpDto userSignUpDto = new UserSignUpDto("132321321321", OauthProvider.KAKAO, "signUp@naver.com", "안경잡이개발자", 26, "증명사진.jpg", Gender.MALE);
         user = userService.signUp(userSignUpDto);
         accessToken = "BEARER "+jwtService.createAccessToken(user);
         refreshToken = "BEARER "+jwtService.createRefreshToken(user);

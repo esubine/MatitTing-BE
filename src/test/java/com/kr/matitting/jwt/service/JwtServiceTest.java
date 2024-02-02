@@ -2,11 +2,7 @@ package com.kr.matitting.jwt.service;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.Role;
-import com.kr.matitting.constant.SocialType;
-import com.kr.matitting.dto.UserSignUpDto;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.redis.RedisUtil;
 import com.kr.matitting.service.UserService;

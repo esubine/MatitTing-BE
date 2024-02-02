@@ -2,7 +2,7 @@ package com.kr.matitting.entity;
 
 import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.Role;
-import com.kr.matitting.constant.SocialType;
+import com.kr.matitting.constant.OauthProvider;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,7 +31,7 @@ public class User extends BaseTimeEntity{
     @Schema(description = "소셜 Type", nullable = false, example = "KAKAO")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SocialType socialType; // KAKAO, NAVER, GOOGLE
+    private OauthProvider oauthProvider; // KAKAO, NAVER, GOOGLE
 
     @Schema(description = "사용자 email", nullable = false, example = "parksn5029@naver.com")
     @Column(nullable = false, length = 30, unique = true)

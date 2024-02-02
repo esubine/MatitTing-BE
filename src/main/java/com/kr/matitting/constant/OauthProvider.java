@@ -1,5 +1,5 @@
 package com.kr.matitting.constant;
 
-public enum SocialType {
+public enum OauthProvider {
     KAKAO, NAVER
 }

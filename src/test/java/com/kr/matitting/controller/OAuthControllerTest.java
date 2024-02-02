@@ -2,9 +2,8 @@ package com.kr.matitting.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kr.matitting.constant.Gender;
+import com.kr.matitting.constant.OauthProvider;
 import com.kr.matitting.constant.Role;
-import com.kr.matitting.constant.SocialType;
-import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.mock.WithCustomMockUser;
@@ -52,7 +51,7 @@ class OAuthControllerTest {
     void setUp() {
         User user = User.builder()
                 .socialId("453534")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("test@naver.com")
                 .nickname("새싹개발자")
                 .age(26)
@@ -89,7 +88,7 @@ class OAuthControllerTest {
                         .header("X-AUTH-TOKEN", "aaaaaaa")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("socialId", "213321321")
-                        .param("socialType", String.valueOf(SocialType.KAKAO))
+                        .param("socialType", String.valueOf(OauthProvider.KAKAO))
                         .param("email", "test1@naver.com")
                         .param("nickname", "안경잡이")
                         .param("age", "25")
@@ -107,7 +106,7 @@ class OAuthControllerTest {
                         .with(csrf())
                         .header("X-AUTH-TOKEN", "aaaaaaa")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .param("socialType", String.valueOf(SocialType.KAKAO))
+                        .param("socialType", String.valueOf(OauthProvider.KAKAO))
                         .param("email", "test1@naver.com")
                         .param("nickname", "안경잡이")
                         .param("age", "25")
@@ -143,7 +142,7 @@ class OAuthControllerTest {
                         .header("X-AUTH-TOKEN", "aaaaaaa")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("socialId", "213321321")
-                        .param("socialType", String.valueOf(SocialType.KAKAO))
+                        .param("socialType", String.valueOf(OauthProvider.KAKAO))
                         .param("email", "test1@naver.com")
                         .param("age", "25")
                         .param("imgUrl", "증명.jpg")
@@ -161,7 +160,7 @@ class OAuthControllerTest {
                         .header("X-AUTH-TOKEN", "aaaaaaa")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("socialId", "213321321")
-                        .param("socialType", String.valueOf(SocialType.KAKAO))
+                        .param("socialType", String.valueOf(OauthProvider.KAKAO))
                         .param("email", "test1@naver.com")
                         .param("nickname", "안경잡이")
                         .param("imgUrl", "증명.jpg")
@@ -179,7 +178,7 @@ class OAuthControllerTest {
                         .header("X-AUTH-TOKEN", "aaaaaaa")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("socialId", "213321321")
-                        .param("socialType", String.valueOf(SocialType.KAKAO))
+                        .param("socialType", String.valueOf(OauthProvider.KAKAO))
                         .param("email", "test1@naver.com")
                         .param("nickname", "안경잡이")
                         .param("age", "25")
@@ -198,7 +197,7 @@ class OAuthControllerTest {
                         .header("X-AUTH-TOKEN", "aaaaaaa")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("socialId", "213321321")
-                        .param("socialType", String.valueOf(SocialType.KAKAO))
+                        .param("socialType", String.valueOf(OauthProvider.KAKAO))
                         .param("email", "test1@naver.com")
                         .param("nickname", "안경잡이")
                         .param("age", "25")
@@ -230,7 +229,7 @@ class OAuthControllerTest {
     void 회원탈퇴_실패_socialId_없음() throws Exception {
         //given
         User user = userRepository.findBySocialId("453534").get();
-        User newUser = User.builder().socialId("123132").socialType(SocialType.NAVER).email("random@google.com").nickname("테두").age(30).imgUrl("헝그리.jpg").gender(Gender.FEMALE).role(Role.USER).build();
+        User newUser = User.builder().socialId("123132").oauthProvider(OauthProvider.NAVER).email("random@google.com").nickname("테두").age(30).imgUrl("헝그리.jpg").gender(Gender.FEMALE).role(Role.USER).build();
 
         //when
         String accessToken = jwtService.createAccessToken(newUser);
@@ -268,7 +267,7 @@ class OAuthControllerTest {
     @Test
     void 토큰재발급_실패_RefreshToken_없음() throws Exception {
         //given
-        User newUser = User.builder().socialId("123132").socialType(SocialType.NAVER).email("random@google.com").nickname("테두").age(30).imgUrl("헝그리.jpg").gender(Gender.FEMALE).role(Role.USER).build();
+        User newUser = User.builder().socialId("123132").oauthProvider(OauthProvider.NAVER).email("random@google.com").nickname("테두").age(30).imgUrl("헝그리.jpg").gender(Gender.FEMALE).role(Role.USER).build();
         String newRefreshToken = jwtService.createRefreshToken(newUser);
         //when, then
         mockMvc.perform(get("/oauth2/renew-token")

@@ -1,6 +1,5 @@
 package com.kr.matitting.jwt.filter;
 
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
@@ -23,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -48,10 +49,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 필터를 거치지 않을 URL 을 설정하고, true 를 return 하면 바로 다음 필터를 진행하게 됨
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        if (PatternMatchUtils.simpleMatch("/api/party/**", request.getRequestURI())
-                && !request.getRequestURI().contains("-")
-                && request.getMethod().equals(HttpMethod.GET.toString())) {
-            return true;
+        if (PatternMatchUtils.simpleMatch("/api/party/**", request.getRequestURI()) && request.getMethod().equals(HttpMethod.GET.toString())) {
+            // 정규 표현식 패턴 정의
+            String pattern = "\\d$"; // 숫자로 끝나는지 확인하는 패턴
+            Pattern r = Pattern.compile(pattern);
+            Matcher m = r.matcher(request.getRequestURI());
+
+            if (m.find()) {
+                if (request.getHeader(jwtService.getAccessHeader()) == null) return true;
+                else return false;
+            }
+            else return false;
         }
         return PatternMatchUtils.simpleMatch(whitelist, request.getRequestURI());
     }

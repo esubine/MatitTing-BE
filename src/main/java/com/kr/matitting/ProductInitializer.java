@@ -2,7 +2,6 @@ package com.kr.matitting;
 
 import com.kr.matitting.constant.*;
 import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.PartyJoin;
 import com.kr.matitting.entity.Team;
 import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,7 @@ public class ProductInitializer implements ApplicationRunner {
     private List<User> createUser() {
         User user1 = User.builder()
                 .socialId("323123123")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("one@kakao.com")
                 .nickname("첫째")
                 .age(26)
@@ -43,7 +42,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user2 = User.builder()
                 .socialId("18515513")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("two@naver.com")
                 .nickname("둘째")
                 .age(32)
@@ -54,7 +53,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user3 = User.builder()
                 .socialId("121311513")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("three@kakao.com")
                 .nickname("셋째")
                 .age(30)
@@ -65,7 +64,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user4 = User.builder()
                 .socialId("998877")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("four@naver.com")
                 .nickname("넷째")
                 .age(42)
@@ -76,7 +75,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user5 = User.builder()
                 .socialId("77548465")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("five@kakao.com")
                 .nickname("다섯째")
                 .age(52)
@@ -87,7 +86,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user6 = User.builder()
                 .socialId("41568531")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("six@naver.com")
                 .nickname("여섯째")
                 .age(52)
@@ -98,7 +97,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user7 = User.builder()
                 .socialId("44235481")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("seven@kakao.com")
                 .nickname("일곱째")
                 .age(22)
@@ -109,7 +108,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user8 = User.builder()
                 .socialId("131365656")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("eight@naver.com")
                 .nickname("여덞째")
                 .age(27)
@@ -120,7 +119,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user9 = User.builder()
                 .socialId("5151655616")
-                .socialType(SocialType.KAKAO)
+                .oauthProvider(OauthProvider.KAKAO)
                 .email("nine@kakao.com")
                 .nickname("아홉째")
                 .age(32)
@@ -131,7 +130,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         User user10 = User.builder()
                 .socialId("0054051")
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .email("ten@naver.com")
                 .nickname("열째")
                 .age(38)

@@ -1,10 +1,8 @@
 package com.kr.matitting.security;
 
 import com.kr.matitting.jwt.filter.JwtAuthenticationFilter;
-import com.kr.matitting.oauth2.handler.OAuth2LoginFailureHandler;
-import com.kr.matitting.oauth2.handler.OAuth2LoginSuccessHandler;
-import com.kr.matitting.oauth2.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,9 +31,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -55,20 +50,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         getCustomizer(introspector,
                                 "/", "/home", "/matitting**", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html",
-                                "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search**", "/api/search/rank", "api/party/{userId}",
+                                "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search**", "/api/search/rank", "/api/party/{partyId}",
                                 "/api/chat-rooms/**", "/webjars/**", "/favicon.ico")
                 )
                 .formLogin((form) -> form
                         .loginPage("/")
                         .permitAll());
-
-        http
-                //oauth 로그인 설정
-                .oauth2Login(oauth ->
-                        oauth
-                                .successHandler(oAuth2LoginSuccessHandler)
-                                .failureHandler(oAuth2LoginFailureHandler)
-                                .userInfoEndpoint(userService -> userService.userService(customOAuth2UserService)));
 
         http
                 //jwt custom filter 적용

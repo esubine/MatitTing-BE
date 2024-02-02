@@ -1,19 +1,15 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.constant.Role;
-import com.kr.matitting.dto.PartyCreateDto;
+import com.kr.matitting.dto.ResponseMyInfo;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.team.TeamExceptionType;
 import com.kr.matitting.exception.user.UserExceptionType;
-import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,9 +28,9 @@ public class UserController {
                                                     "로직 설명 \n\n" +
                                                     "1. URI에서 받아온 userId와 Token 값에서의 userId와 비교하여 본인인지 판단한다. \n\n" +
                                                     "2. 본인일 경우에는 DB에서 나의 정보를 가져와서 response")
-    @GetMapping("/{userId}")
-    public ResponseEntity<User> myProfile(@PathVariable Long userId, @AuthenticationPrincipal User user) {
-        User myInfo = userService.getMyInfo(userId, user);
+    @GetMapping
+    public ResponseEntity<ResponseMyInfo> myProfile(@AuthenticationPrincipal User user) {
+        ResponseMyInfo myInfo = userService.getMyInfo(user);
         return ResponseEntity.ok(myInfo);
     }
 
@@ -48,9 +44,9 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "업데이트 성공"),
             @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
     })
-    @PatchMapping("/{userId}")
-    public ResponseEntity<String> myProfileUpdate(@RequestBody UserUpdateDto userUpdateDto, @PathVariable Long userId) {
-        userService.update(userId, userUpdateDto);
+    @PatchMapping
+    public ResponseEntity<String> myProfileUpdate(@RequestBody UserUpdateDto userUpdateDto, @AuthenticationPrincipal User user) {
+        userService.update(user, userUpdateDto);
         return ResponseEntity.ok("Success Profile Update");
     }
 }

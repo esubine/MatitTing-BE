@@ -1,8 +1,6 @@
 package com.kr.matitting.dto;
 
-import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.Role;
-import com.kr.matitting.constant.SocialType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

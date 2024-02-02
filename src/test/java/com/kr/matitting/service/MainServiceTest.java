@@ -8,7 +8,6 @@ import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyRepositoryImpl;
 import com.kr.matitting.repository.UserRepository;
-import com.sun.tools.javac.Main;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -44,7 +43,7 @@ class MainServiceTest {
                 .gender(Gender.ALL)
                 .imgUrl("https://www.naver.com")
                 .role(Role.USER)
-                .socialType(SocialType.NAVER)
+                .oauthProvider(OauthProvider.NAVER)
                 .build();
         userRepository.save(user);
 
