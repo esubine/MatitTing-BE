@@ -50,7 +50,7 @@ public class ResponsePartyDetailDto {
     @Schema(description = "성별", nullable = false, example = "ALL")
     @NotNull
     private Gender gender;
-    @Schema(description = "연령대", nullable = false, example = "2030")
+    @Schema(description = "연령대", nullable = false, example = "TWENTY")
     @NotNull
     private PartyAge age;
     @Schema(description = "파티 모집 마감 시간", nullable = false, example = "2023-10-24T09:00:00")
@@ -67,7 +67,7 @@ public class ResponsePartyDetailDto {
     private Integer participate;
     @Schema(description = "파티 메뉴", nullable = true, example = "붕어빵")
     private String menu;
-    @Schema(description = "카테고리", nullable = false, example = "한식")
+    @Schema(description = "카테고리", nullable = false, example = "KOREAN")
     private PartyCategory category;
     @Schema(description = "썸네일", nullable = true, example = " https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
     @NotNull

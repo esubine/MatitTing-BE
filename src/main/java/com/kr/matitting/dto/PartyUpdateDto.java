@@ -28,7 +28,7 @@ public record PartyUpdateDto(
         Integer totalParticipant, //모집 인원
         @Schema(description = "모집 성별", nullable = true, example = "ALL")
         Gender gender, //성별
-        @Schema(description = "모집 나이", nullable = true, example = "AGE2030")
+        @Schema(description = "모집 나이", nullable = true, example = "TWENTY")
         PartyAge age,
         @Schema(description = "썸네일", nullable = true, example = "돈까스.jpg")
         String thumbnail, //썸네일

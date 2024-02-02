@@ -33,7 +33,7 @@ public class InvitationRequestDto {
     @Schema(description = "성별", nullable = false, example = "ALL")
     @NotNull
     private Gender partyGender;
-    @Schema(description = "연령대", nullable = false, example = "2030")
+    @Schema(description = "연령대", nullable = false, example = "TWENTY")
     @NotNull
     private PartyAge partyAge;
 
