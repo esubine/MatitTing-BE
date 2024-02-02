@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "chat_id")
+@Table(name = "chat")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Chat {
     @Id
@@ -19,8 +19,8 @@ public class Chat {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User sendUser;
+    @JoinColumn(name = "chat_user_id")
+    private ChatUser sendUser;
 
     @Column(nullable = false, length = 100)
     private String message;

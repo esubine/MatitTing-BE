@@ -99,6 +99,7 @@ public class PartyService {
         Map<String, Long> partyId = new HashMap<>();
         partyId.put("partyId", savedParty.getId());
 
+        // 파티 글 생성 시 파티방 생성
         eventPublisher.publishEvent(new CreateRoomEvent(savedParty.getId(), user.getId()));
 
         return partyId;
@@ -277,6 +278,9 @@ public class PartyService {
             }
             Team member = Team.builder().user(volunteerUser).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
+
+            eventPublisher.publishEvent(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
+
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");

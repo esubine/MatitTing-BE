@@ -28,12 +28,12 @@ public class ChatRoom extends BaseTimeEntity {
     @JoinColumn(name = "party_id", nullable = false)
     private Party party;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "master_id")
     private User master;
 
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<User> chatUserList = new ArrayList<>();
+    private List<ChatUser> chatUserList = new ArrayList<>(); // 참여자들
 
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chat> chatList = new ArrayList<>();

@@ -1,7 +1,6 @@
 package com.kr.matitting.entity;
 
-import com.kr.matitting.constant.ChatRoomType;
-import com.kr.matitting.constant.ChatUserRole;
+import com.kr.matitting.constant.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -29,18 +28,15 @@ public class ChatUser extends BaseTimeEntity{
     private User user;
 
     @Enumerated(EnumType.STRING)
-    private ChatUserRole userRole;
+    private Role userRole;
 
-    @Enumerated(EnumType.STRING)
-    private ChatRoomType roomType;
-
-    public static ChatUser createChatUser(ChatRoom chatRoom, User user, ChatUserRole userRole, ChatRoomType roomType) {
+    public static ChatUser createChatUser(ChatRoom chatRoom, User user, Role userRole) {
         ChatUser chatUser = new ChatUser();
         chatUser.chatRoom = chatRoom;
         chatUser.user = user;
         chatUser.userRole = userRole;
-        chatUser.roomType = roomType;
         chatUser.nickname = user.getNickname();
         return chatUser;
     }
 }
+
