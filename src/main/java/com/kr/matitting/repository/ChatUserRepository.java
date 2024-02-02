@@ -12,14 +12,15 @@ import java.util.Optional;
 
 public interface ChatUserRepository extends JpaRepository<ChatUser, Long> {
 
-    @Query("select cu from ChatUser cu " +
-            "join fetch cu.chatRoom " +
-            "where cu.user.id = :userId and cu.roomType = :roomType")
-    List<ChatUser> findByUserIdAndRoomTypeFJRoom(@Param("userId") Long userId,
-                                                 @Param("roomType") ChatRoomType roomType,
-                                                 Pageable pageable);
+//    @Query("select cu from ChatUser cu " +
+//            "join fetch cu.chatRoom " +
+//            "where cu.user.id = :userId and cu.roomType = :roomType")
+//    List<ChatUser> findByUserIdAndRoomTypeFJRoom(@Param("userId") Long userId,
+//                                                 @Param("roomType") ChatRoomType roomType,
+//                                                 Pageable pageable);
 
     Optional<ChatUser> findByUserIdAndChatRoomId(Long userId, Long roomId);
+
 
     @Query("select cu from ChatUser cu " +
             "join fetch cu.chatRoom " +
@@ -34,4 +35,11 @@ public interface ChatUserRepository extends JpaRepository<ChatUser, Long> {
     List<ChatUser> findByChatRoomId(Long roomId);
 
     Optional<ChatUser> findByIdAndChatRoomId(Long id, Long roomId);
+
+    List<ChatUser> findByUserId(Long userId);
+
+    @Query("select cu.chatRoom.id from ChatUser cu " +
+            "where cu.user.id =: userId")
+    List<Long> getChatRoomIdByUserId(@Param("userId") Long userId);
+
 }

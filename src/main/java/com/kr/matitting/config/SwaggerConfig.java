@@ -1,14 +1,11 @@
 package com.kr.matitting.config;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.StringSchema;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Map;
 
 @Configuration
 public class SwaggerConfig {
@@ -26,5 +23,11 @@ public class SwaggerConfig {
                 .version("v1.0.0");
     }
 
+    @Bean
+    public OpenApiCustomizer customiser() {
+        return openApi -> openApi.addServersItem(
+                new io.swagger.v3.oas.models.servers.Server()
+                        .url("/ws/{any}").description("WebSocket Server"));
+    }
 
 }

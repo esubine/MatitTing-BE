@@ -1,5 +1,6 @@
 package com.kr.matitting.controller;
 
+<<<<<<< HEAD
 import com.kr.matitting.constant.*;
 import com.kr.matitting.dto.ResponseDummyDataDto;
 import com.kr.matitting.entity.Party;
@@ -10,6 +11,15 @@ import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
+=======
+import com.kr.matitting.constant.Gender;
+import com.kr.matitting.constant.Role;
+import com.kr.matitting.constant.SocialType;
+import com.kr.matitting.entity.User;
+import com.kr.matitting.jwt.service.JwtService;
+import com.kr.matitting.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+>>>>>>> 83380af969497d1478364370f300d2790f4976da
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +27,26 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+<<<<<<< HEAD
 import java.time.LocalDateTime;
+=======
+>>>>>>> 83380af969497d1478364370f300d2790f4976da
 import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
+<<<<<<< HEAD
 public class testController {
 
     private final UserRepository userRepository;
     private final PartyRepository partyRepository;
     private final PartyJoinRepository partyJoinRepository;
+=======
+//TODO 테스트 종료 후 삭제 예정
+public class testController {
+
+    private final UserRepository userRepository;
+>>>>>>> 83380af969497d1478364370f300d2790f4976da
     private final JwtService jwtService;
 
     @GetMapping("/home")
@@ -34,17 +54,26 @@ public class testController {
         return "home";
     }
 
+<<<<<<< HEAD
     @Operation(summary = "유저 더미데이터 생성 1", description = "유저 더미데이터 생성 API \n\n" +
                                                         "해당 API 요청 시 유저 1명이 생성됩니다.\n\n"
     )
     @GetMapping("/matitting")
     public ResponseEntity<User> dummy_data(HttpServletResponse response) {
+=======
+    @GetMapping("/matitting")
+    public ResponseEntity<?> dummy_data(HttpServletResponse response) {
+>>>>>>> 83380af969497d1478364370f300d2790f4976da
         Optional<User> findUser = userRepository.findBySocialId("12309812309128301");
 
         if (findUser.isEmpty()) {
             User user = User.builder()
                     .socialId("12309812309128301")
+<<<<<<< HEAD
                     .oauthProvider(OauthProvider.KAKAO)
+=======
+                    .socialType(SocialType.KAKAO)
+>>>>>>> 83380af969497d1478364370f300d2790f4976da
                     .email("test@kakao.com")
                     .nickname("새싹개발자")
                     .age(20)
@@ -59,6 +88,7 @@ public class testController {
         String accessToken = jwtService.createAccessToken(user);
         String refreshToken = jwtService.createRefreshToken(user);
 
+<<<<<<< HEAD
         response.addHeader(jwtService.getAccessHeader(), "Bearer " + accessToken);
         response.addHeader(jwtService.getRefreshHeader(), "Bearer " + refreshToken);
 
@@ -196,4 +226,11 @@ public class testController {
         partyJoinRepository.save(partyJoin2);
         return ResponseEntity.ok(new ResponseDummyDataDto(saved1AccessToken, saved1refreshToken, saved2AccessToken, saved2refreshToken, party1Id, party2Id));
     }
+=======
+        response.addHeader(jwtService.getAccessHeader(),"Bearer "+accessToken);
+        response.addHeader(jwtService.getRefreshHeader(), "Bearer "+refreshToken);
+
+        return ResponseEntity.ok(user);
+    }
+>>>>>>> 83380af969497d1478364370f300d2790f4976da
 }
