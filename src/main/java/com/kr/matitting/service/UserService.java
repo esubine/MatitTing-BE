@@ -39,6 +39,7 @@ public class UserService {
         user.setNickname(userSignUpDto.nickname());
         user.setGender(userSignUpDto.gender());
         user.setAge(userSignUpDto.age());
+        user.setRole(Role.USER);
     }
     public void update(User user, UserUpdateDto userUpdateDto) {
         User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
@@ -49,7 +50,6 @@ public class UserService {
         if (userUpdateDto.imgUrl() != null) {
             findUser.setImgUrl(userUpdateDto.imgUrl());
         }
-        findUser.setRole(Role.USER);
     }
 
     public void logout(String accessToken) {
