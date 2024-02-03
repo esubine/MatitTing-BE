@@ -22,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,8 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String secretKey;
 
     private static final String[] whitelist = {"/", "/index.html", "/home", "/matitting**", "/login", "/oauth2/**", "/api/main**", "/api/search**", "/api/search/rank",
-            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**","/demo-ui.html", "/swagger-ui/**", "/api-docs/**",
-            "/api/chat-rooms/**", "/chat/**", "/room/**", "/webjars/**", "/favicon.ico", "/ws-stomp/**"};
+            "/login/oauth2/code/**", "/oauth2/signUp", "/error", "/js/**", "/demo-ui.html", "/swagger-ui/**", "/api-docs/**",
+            "/chat/**", "/room/**", "/webjars/**", "/favicon.ico", "/ws-stomp/**"};
 
 
     // 필터를 거치지 않을 URL 을 설정하고, true 를 return 하면 바로 다음 필터를 진행하게 됨
@@ -58,8 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (m.find()) {
                 if (request.getHeader(jwtService.getAccessHeader()) == null) return true;
                 else return false;
-            }
-            else return false;
+            } else return false;
         }
         return PatternMatchUtils.simpleMatch(whitelist, request.getRequestURI());
     }
