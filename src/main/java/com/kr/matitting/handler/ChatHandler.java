@@ -1,6 +1,5 @@
 package com.kr.matitting.handler;
 
-import com.kr.matitting.dto.ChatHistoryDto;
 import com.kr.matitting.dto.ChatUserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ public class ChatHandler {
             return "";
     }
 
-    public void sendChatMessage(ChatHistoryDto.ChatMessage chatMessage) {
+//    public void sendChatMessage(ChatHistoryDto.ChatMessage chatMessage) {
 //        if (ChatMessage.MessageType.ENTER.equals(chatMessage.getType())) {
 //            chatMessage.setMessage(chatMessage.getSender() + "님이 방에 입장했습니다.");
 //            chatMessage.setSender("[알림]");
@@ -33,6 +32,6 @@ public class ChatHandler {
 //            chatMessage.setMessage(chatMessage.getSender() + "님이 방에서 나갔습니다.");
 //            chatMessage.setSender("[알림]");
 //        }
-        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
-    }
+//        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
+//    }
 }

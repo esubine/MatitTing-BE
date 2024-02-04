@@ -12,6 +12,8 @@ public enum ChatExceptionType implements BaseExceptionType {
     NO_PRINCIPAL(1603, HttpStatus.BAD_REQUEST, "접근 권한이 없습니다."),
     NOT_FOUND_CHAT_USER_INFO(1604, HttpStatus.BAD_REQUEST, ""),
 
+    IS_NOT_HAVE_CHAT_ROOM(1605, HttpStatus.OK, "참여중인 채팅방이 없습니다.")
+
     ;
 
     private final int errorCode;
