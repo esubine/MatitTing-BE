@@ -29,27 +29,22 @@ public class ChatRoom extends BaseTimeEntity {
     private Party party;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_user_id")
-    private User user;
-
-    @Enumerated(EnumType.STRING)
-    private ChatRoomType roomType;
+    @JoinColumn(name = "master_id")
+    private User master;
 
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatUser> chatUserList = new ArrayList<>();
+    private List<ChatUser> chatUserList = new ArrayList<>(); // 참여자들
 
-    public static ChatRoom createRoom(Party party, User user, ChatRoomType roomType, String title) {
+    @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Chat> chatList = new ArrayList<>();
+
+    public static ChatRoom createRoom(Party party, User user, String title) {
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.party = party;
-        chatRoom.user = user;
-        chatRoom.roomType = roomType;
+        chatRoom.master = user;
         chatRoom.setModifiedDate(LocalDateTime.now());
         chatRoom.title = title;
 
         return chatRoom;
-    }
-
-    public void updateNow() {
-        this.setModifiedDate(LocalDateTime.now());
     }
 }

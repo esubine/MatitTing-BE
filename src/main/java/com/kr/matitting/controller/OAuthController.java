@@ -2,6 +2,7 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.constant.OauthProvider;
 import com.kr.matitting.constant.Role;
+import com.kr.matitting.dto.ResponseLoginDto;
 import com.kr.matitting.dto.UserLoginDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.exception.token.TokenExceptionType;
@@ -46,7 +47,7 @@ public class OAuthController {
             "※ 신규 유저는 userId와 role(GUEST)를 기존 유저는 userId와 role(USER), accessToken, refreshToken을 발급하여 Response ※"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = Long.class))),
+            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseLoginDto.class))),
             @ApiResponse(responseCode = "404", description = "유저 NOT FOUND", content = @Content(schema = @Schema(implementation = UserException.class)))
     })
     @PostMapping("/login")
@@ -65,9 +66,9 @@ public class OAuthController {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add(jwtService.getAccessHeader(), userLoginDto.accessToken());
             httpHeaders.add(jwtService.getRefreshHeader(), userLoginDto.refreshToken());
-            return ResponseEntity.ok().headers(httpHeaders).body(null);
+            return ResponseEntity.ok().headers(httpHeaders).body(new ResponseLoginDto(null));
         } else {
-            return ResponseEntity.ok(userLoginDto.userId());
+            return ResponseEntity.ok(new ResponseLoginDto(userLoginDto.userId()));
         }
     }
 

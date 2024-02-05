@@ -282,6 +282,9 @@ public class PartyService {
             }
             Team member = Team.builder().user(volunteerUser).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
+
+            eventPublisher.publishEvent(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
+
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");

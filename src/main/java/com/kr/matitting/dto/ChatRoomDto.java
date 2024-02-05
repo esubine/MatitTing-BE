@@ -57,4 +57,12 @@ public interface ChatRoomDto {
         private Long partyId;
         private Long userId;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class JoinRoomEvent {
+        private Long partyId;
+        private Long userId;
+    }
 }

@@ -1,6 +1,6 @@
 package com.kr.matitting.dto;
 
-import com.kr.matitting.constant.ChatUserRole;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.entity.ChatUser;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ public interface ChatUserDto {
     @Getter
     class ChatUserResponse {
         private Long chatUserId;
-        private ChatUserRole role;
+        private Role role;
         private String nickname;
 
         public ChatUserResponse(ChatUser chatUser) {

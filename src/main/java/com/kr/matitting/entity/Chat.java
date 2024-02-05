@@ -10,29 +10,25 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "chat_history")
+@Table(name = "chat")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChatHistory {
+public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "chat_history")
+    @Column(name = "chat_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_user_id")
-    private ChatUser chatUser;
+    private ChatUser sendUser;
 
     @Column(nullable = false, length = 100)
-    private String content;
+    private String message;
 
     @CreatedDate
     private LocalDateTime createDate;
 
-    public static ChatHistory createHistory(ChatUser chatUser, String content) {
-        ChatHistory chatHistory = new ChatHistory();
-        chatHistory.chatUser = chatUser;
-        chatHistory.content = content;
-
-        return chatHistory;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id")
+    private ChatRoom chatRoom;
 }
