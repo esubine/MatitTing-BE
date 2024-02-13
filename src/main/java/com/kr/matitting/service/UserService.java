@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,13 +35,16 @@ public class UserService {
     private final JwtService jwtService;
     private final RedisUtil redisUtil;
 
-    public void signUp(UserSignUpDto userSignUpDto) {
+    public User signUp(UserSignUpDto userSignUpDto) {
         User user = userRepository.findById(userSignUpDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         user.setNickname(userSignUpDto.nickname());
         user.setGender(userSignUpDto.gender());
-        user.setAge(userSignUpDto.age());
+        user.setAge(LocalDate.now().getYear() - userSignUpDto.birthday().getYear());
         user.setRole(Role.USER);
+
+        return user;
     }
+
     public void update(User user, UserUpdateDto userUpdateDto) {
         User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
