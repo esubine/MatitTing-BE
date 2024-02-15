@@ -8,6 +8,7 @@ import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.Map.MapException;
 import com.kr.matitting.exception.Map.MapExceptionType;
+import com.kr.matitting.exception.main.MainExceptionType;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.partyjoin.PartyJoinException;
@@ -18,16 +19,19 @@ import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
+import com.kr.matitting.repository.PartyRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.geom.Point2D;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.kr.matitting.dto.ChatRoomDto.*;
 
@@ -44,6 +48,7 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final MapService mapService;
+    private final NotificationService notificationService;
 
     public ResponsePartyDetailDto getPartyInfo(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
@@ -73,7 +78,7 @@ public class PartyService {
     }
 
     @Transactional
-    public void increaseHit(Long partyId){
+    public void increaseHit(Long partyId) {
         partyRepository.increaseHit(partyId);
     }
 
@@ -219,6 +224,7 @@ public class PartyService {
                 .longitude(setLocationFunc(request.getLatitude(), request.getLongitude()).y)
                 .partyTime(request.getPartyTime())
                 .totalParticipant(request.getTotalParticipant())
+                .participantCount(1)
                 .gender(request.getGender())
                 .age(request.getAge())
                 .menu(request.getMenu())
@@ -247,6 +253,7 @@ public class PartyService {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
             }
             PartyJoin savedpartyJoin = partyJoinRepository.save(partyJoin);
+            notificationService.send(party.getUser(), NotificationType.PARTICIPATION_REQUEST, "파티 신청했습니다.");
             return savedpartyJoin.getId();
         } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
             if (byPartyIdAndLeaderIdAndUserId.isEmpty()) {
@@ -285,8 +292,10 @@ public class PartyService {
 
             eventPublisher.publishEvent(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
 
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 수락");
             return "Accept Request Completed";
         } else {
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 거절");
             log.info("=== REFUSE ===");
             return "Refuse Request Completed";
         }

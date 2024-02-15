@@ -57,7 +57,7 @@ public class Party extends BaseTimeEntity {
     private int totalParticipant; // 모집 인원
 
     @Column(name = "participant_count")
-    @ColumnDefault("1")
+    @ColumnDefault("11")
     private int participantCount; // 참가자 수
 
     @Column(nullable = false, name = "gender")
