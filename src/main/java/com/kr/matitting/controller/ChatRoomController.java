@@ -1,6 +1,7 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.dto.*;
+import com.kr.matitting.dto.ResponseChatRoomListDto;
+import com.kr.matitting.dto.ResponseChatRoomUserDto;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;

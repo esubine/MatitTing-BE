@@ -1,5 +1,6 @@
 package com.kr.matitting.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.constant.OauthProvider;
@@ -59,6 +60,7 @@ public class User extends BaseTimeEntity{
     @Column(nullable = false)
     private Role role; //신규유저 or 기존유저
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Party> partyList = new ArrayList<>();
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
+
 public enum PartyAge {
     TWENTY("TWENTY"), THIRTY("THIRTY"), FORTY("THIRTY"), ALL("ALL");
 

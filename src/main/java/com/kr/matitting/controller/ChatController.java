@@ -2,7 +2,6 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.dto.ChatEvictDto;
 import com.kr.matitting.dto.ChatMessage;
-import com.kr.matitting.entity.ChatRoom;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,10 +13,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static com.kr.matitting.dto.ChatRoomDto.ChatResponse;
-import static com.kr.matitting.dto.ChatRoomDto.ChatRoomItem;
 
 @RestController
 @RequestMapping("/api/chat")

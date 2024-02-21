@@ -1,7 +1,6 @@
 package com.kr.matitting.constant;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 public enum Role {

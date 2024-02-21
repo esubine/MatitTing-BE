@@ -1,5 +1,8 @@
 package com.kr.matitting.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
@@ -81,16 +84,20 @@ public class Party extends BaseTimeEntity {
     @Column(name = "category")
     private PartyCategory category;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Team> teamList = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PartyJoin> partyJoinList = new ArrayList<>();
 
+    @JsonIgnore
     @OneToOne(mappedBy = "party", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatRoom chatRoom;
 

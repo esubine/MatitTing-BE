@@ -1,7 +1,5 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.constant.PartyStatus;
-import com.kr.matitting.constant.Sorts;
 import com.kr.matitting.dto.MainPageDto;
 import com.kr.matitting.dto.ResponseMainPageDto;
 import com.kr.matitting.service.MainService;
@@ -15,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor

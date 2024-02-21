@@ -253,7 +253,7 @@ public class PartyService {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
             }
             PartyJoin savedpartyJoin = partyJoinRepository.save(partyJoin);
-            notificationService.send(party.getUser(), NotificationType.PARTICIPATION_REQUEST, "파티 신청했습니다.");
+            notificationService.send(party.getUser(), NotificationType.PARTICIPATION_REQUEST, "파티 신청이 도착했어요.", "파티 신청했습니다.");
             return savedpartyJoin.getId();
         } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
             if (byPartyIdAndLeaderIdAndUserId.isEmpty()) {
@@ -292,10 +292,10 @@ public class PartyService {
 
             eventPublisher.publishEvent(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
 
-            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 수락");
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.", "참가신청 수락");
             return "Accept Request Completed";
         } else {
-            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 거절");
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.","참가신청 거절");
             log.info("=== REFUSE ===");
             return "Refuse Request Completed";
         }
