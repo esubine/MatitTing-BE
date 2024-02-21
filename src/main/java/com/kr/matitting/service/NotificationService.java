@@ -5,11 +5,9 @@ import com.kr.matitting.dto.NotificationDto;
 import com.kr.matitting.entity.Notification;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.EmitterRepository;
-import com.kr.matitting.repository.EmitterRepositoryImpl;
 import com.kr.matitting.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -25,11 +23,10 @@ public class NotificationService {
 
     private final EmitterRepository emitterRepository;
     private final NotificationRepository notificationRepository;
-    private final EmitterRepositoryImpl emitterRepositoryImpl;
 
     public SseEmitter subscribe(User user, String lastEventId) {
 
-        String emitterId = makeTimeIncludeId(user);
+        String emitterId = makeTimeIncludeId(user.getId());
 
         SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
 
@@ -38,9 +35,10 @@ public class NotificationService {
 
         emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
         emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
+        emitter.onError((e) -> emitterRepository.deleteAllEmitterStartWithId(emitterId));
 
-        String eventId = makeTimeIncludeId(user);
         //503 에러 방지를 위한 더미 이벤트 전송
+        String eventId = makeTimeIncludeId(user.getId());
         sendNotification(emitter, eventId, emitterId, "EventStream Created. [userId=" + user.getId() + "]");
 
         if (hasLostData(lastEventId)) {
@@ -50,8 +48,8 @@ public class NotificationService {
         return emitter;
     }
 
-    private String makeTimeIncludeId(User user) {
-        return user.getId() + "_" + System.currentTimeMillis();
+    private String makeTimeIncludeId(Long userId) {
+        return userId + "_" + System.currentTimeMillis();
     }
 
     private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
@@ -74,27 +72,30 @@ public class NotificationService {
         Map<String, Object> eventCaches = emitterRepository.findAllEventCacheStartWithByMemberId(String.valueOf(user.getId()));
         System.out.println("eventCaches = " + eventCaches.size());
 
-//        Map<String, SseEmitter> emitters = emitterRepositoryImpl.getEmitters();
-//        Map<String, Object> eventCache = emitterRepositoryImpl.getEventCache();
-
-// 뭔가 이상하다! 캐시아이디가 나와야하는데 이미터아이디가 eventCaches의 id로 나오고 있음
+        /**
+         * cache에 쌓인 데이터 send
+         */
         eventCaches.entrySet().stream()
-                .filter(entry -> lastEventId.compareTo(entry.getKey()) == 0)
+                //TODO: < 0
+                .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
                 .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
+
+        /**
+         * cache 비우기
+         */
+        eventCaches.clear();
     }
 
-    public void send(User receiver, NotificationType notificationType, String content){
-        Notification notification = notificationRepository.save(new Notification(receiver, notificationType, content));
+    public void send(User receiver, NotificationType notificationType, String title, String content){
+        Notification notification = notificationRepository.save(new Notification(receiver, notificationType, title, content));
 
         Long userId = receiver.getId();
-        String eventId = userId+"_"+System.currentTimeMillis();
+        String eventId = makeTimeIncludeId(userId);
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(String.valueOf(userId));
-
-        System.out.println("eventId = " + eventId);
+        emitterRepository.saveEventCache(eventId, NotificationDto.Response.createResponse(notification, eventId));
 
         emitters.forEach(
                 (key, emitter) -> {
-                    emitterRepository.saveEventCache(key, notification);
                     sendNotification(emitter, eventId, key, NotificationDto.Response.createResponse(notification, eventId));
                 }
         );

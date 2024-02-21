@@ -15,17 +15,20 @@ public class Notification extends BaseTimeEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id")
     private Long id;
+    private String title;
     private String content;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationType notificationType;
-    @ManyToOne
-    @JoinColumn(name = "member_id")
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User receiver;
     @Builder
-    public Notification(User receiver, NotificationType notificationType, String content) {
+    public Notification(User receiver, NotificationType notificationType, String title, String content) {
         this.receiver = receiver;
         this.notificationType = notificationType;
+        this.title = title;
         this.content = content;
     }
 }

@@ -2,6 +2,7 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.*;
+import com.kr.matitting.entity.Notification;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.Map.MapExceptionType;
 import com.kr.matitting.exception.party.PartyExceptionType;
@@ -78,6 +79,11 @@ public class PartyController {
     @PatchMapping("{partyId}")
     public ResponseEntity<String> updateParty(@RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
         partyService.partyUpdate(partyUpdateDto, partyId);
+
+        Notification.builder()
+
+                .build();
+
         return ResponseEntity.ok().body("Success Party update");
     }
 

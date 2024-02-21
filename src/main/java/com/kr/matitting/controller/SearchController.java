@@ -1,13 +1,14 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.dto.*;
+import com.kr.matitting.dto.PartySearchCondDto;
+import com.kr.matitting.dto.ResponseRankingDto;
+import com.kr.matitting.dto.ResponseSearchPageDto;
 import com.kr.matitting.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

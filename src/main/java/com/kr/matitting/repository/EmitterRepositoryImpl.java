@@ -3,7 +3,6 @@ package com.kr.matitting.repository;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -17,14 +16,6 @@ public class EmitterRepositoryImpl implements EmitterRepository {
     public SseEmitter save(String emitterId, SseEmitter sseEmitter) { // emitter를 저장
         emitters.put(emitterId, sseEmitter);
         return sseEmitter;
-    }
-
-    public Map<String, SseEmitter> getEmitters(){
-        return emitters;
-    }
-
-    public Map<String, Object> getEventCache(){
-        return eventCache;
     }
 
     @Override
