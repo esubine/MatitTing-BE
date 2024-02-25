@@ -44,6 +44,7 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final MapService mapService;
+    private final NotificationService notificationService;
 
     public ResponsePartyDetailDto getPartyInfo(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
@@ -247,6 +248,8 @@ public class PartyService {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
             }
             PartyJoin savedpartyJoin = partyJoinRepository.save(partyJoin);
+            notificationService.send(party.getUser(), NotificationType.PARTICIPATION_REQUEST, "파티 신청이 도착했어요.", "파티 신청했습니다.");
+
             return savedpartyJoin.getId();
         } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
             if (byPartyIdAndLeaderIdAndUserId.isEmpty()) {
@@ -284,10 +287,11 @@ public class PartyService {
             teamRepository.save(member);
 
             eventPublisher.publishEvent(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
-
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.", "참가신청 수락");
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.","참가신청 거절");
             return "Refuse Request Completed";
         }
     }
