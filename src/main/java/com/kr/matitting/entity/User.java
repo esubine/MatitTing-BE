@@ -34,7 +34,7 @@ public class User extends BaseTimeEntity{
     private OauthProvider oauthProvider; // KAKAO, NAVER, GOOGLE
 
     @Schema(description = "사용자 email", nullable = false, example = "parksn5029@naver.com")
-    @Column(nullable = false, length = 30, unique = true)
+    @Column(nullable = false, length = 30)
     private String email;   //이메일
 
     @Schema(description = "사용자 닉네임", nullable = false, example = "안경잡이 개발자")
