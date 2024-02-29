@@ -25,7 +25,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -54,12 +53,12 @@ public class PartyController {
     })
 
     @PostMapping
-    public ResponseEntity<Map<String, Long>> createParty(
+    public ResponseEntity<ResponseCreatePartyDto> createParty(
             @AuthenticationPrincipal User user,
             @RequestBody @Valid PartyCreateDto request
     ) {
-        Map<String, Long> partyId = partyService.createParty(user, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(partyId);
+        ResponseCreatePartyDto responseCreatePartyDto = partyService.createParty(user, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseCreatePartyDto);
     }
 
     @Operation(summary = "파티 업데이트", description = "파티 정보 업데이트 API \n\n" +

@@ -61,4 +61,19 @@ public class ChatRoomController {
         return ResponseEntity.ok(chatService.getRoomUsers(roomId, user.getId()));
     }
 
+    @Operation(summary = "채팅방의 정보조회", description = "채팅방의 정보조회 API \n\n" +
+                                                        "[로직 설명] \n\n" +
+                                                        "입력한 chat room id에 해당하는 채팅방의 정보를 리턴합니다. \n\n")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = {
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatRoomInfoDto.class)))})
+    })
+    @GetMapping("/{chatRoomId}")
+    public ResponseEntity<ResponseChatRoomInfoDto> getChatRoomInfo(@PathVariable Long chatRoomId,
+                                                                    @AuthenticationPrincipal User user){
+
+        return ResponseEntity.ok(chatService.getChatRoomInfo(chatRoomId));
+    }
+
 }

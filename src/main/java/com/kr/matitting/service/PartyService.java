@@ -2,10 +2,7 @@ package com.kr.matitting.service;
 
 import com.kr.matitting.constant.*;
 import com.kr.matitting.dto.*;
-import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.PartyJoin;
-import com.kr.matitting.entity.Team;
-import com.kr.matitting.entity.User;
+import com.kr.matitting.entity.*;
 import com.kr.matitting.exception.Map.MapException;
 import com.kr.matitting.exception.Map.MapExceptionType;
 import com.kr.matitting.exception.party.PartyException;
@@ -21,15 +18,16 @@ import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.geom.Point2D;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
-import static com.kr.matitting.dto.ChatRoomDto.*;
+import static com.kr.matitting.dto.ChatRoomDto.CreateRoomEvent;
+import static com.kr.matitting.dto.ChatRoomDto.JoinRoomEvent;
 
 @Slf4j
 @Service
@@ -38,13 +36,13 @@ import static com.kr.matitting.dto.ChatRoomDto.*;
 public class PartyService {
     @Value("${cloud.aws.s3.url}")
     private String url;
-    private final ApplicationEventPublisher eventPublisher;
     private final PartyJoinRepository partyJoinRepository;
     private final PartyTeamRepository teamRepository;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final MapService mapService;
     private final NotificationService notificationService;
+    private final ChatService chatService;
 
     public ResponsePartyDetailDto getPartyInfo(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
@@ -74,11 +72,11 @@ public class PartyService {
     }
 
     @Transactional
-    public void increaseHit(Long partyId){
+    public void increaseHit(Long partyId) {
         partyRepository.increaseHit(partyId);
     }
 
-    public Map<String, Long> createParty(User user, PartyCreateDto request) {
+    public ResponseCreatePartyDto createParty(User user, PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
         Long userId = user.getId();
@@ -98,12 +96,11 @@ public class PartyService {
 
         teamRepository.save(team);
 
-        Map<String, Long> partyId = new HashMap<>();
-        partyId.put("partyId", savedParty.getId());
+        // 채팅방 생성
+        CreateRoomEvent createRoomEvent = new CreateRoomEvent(savedParty.getId(), user.getId());
+        ChatRoom createdChatRoom = chatService.createChatRoom(createRoomEvent);
 
-        eventPublisher.publishEvent(new CreateRoomEvent(savedParty.getId(), user.getId()));
-
-        return partyId;
+        return new ResponseCreatePartyDto(savedParty, createdChatRoom);
     }
 
     private Point2D.Double setLocationFunc(double latitude, double longitude) {
@@ -286,12 +283,14 @@ public class PartyService {
             Team member = Team.builder().user(volunteerUser).party(party).role(Role.VOLUNTEER).build();
             teamRepository.save(member);
 
-            eventPublisher.publishEvent(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
+            // 참가신청 수락된 유저 ~ 채팅방에 초대
+            chatService.addParticipant(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
+
             notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.", "참가신청 수락");
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");
-            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.","참가신청 거절");
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.", "참가신청 거절");
             return "Refuse Request Completed";
         }
     }
