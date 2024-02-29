@@ -43,9 +43,8 @@ public class PartyController {
                                                     "2. 1의 유효성 검사를 거친 후 request값에 따라 파티를 생성합니다.\n\n" +
                                                     "※ 파티 생성 완료 시 채팅방이 자동으로 생성됩니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created",
-                    content = @Content(schemaProperties = {
-                            @SchemaProperty(name = "partyId", schema = @Schema(type = "long", description = "파티 아이디"))})),
+
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(implementation = ResponseCreatePartyDto.class))),
             @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class))),
             @ApiResponse(responseCode = "1300", description = "카카오 맵 Authorization이 실패했습니다. \n\n *kakao map api 관련 설정값이 잘못되어 발생하는 에러입니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
             @ApiResponse(responseCode = "1301", description = "카카오 맵에서 데이터를 받아오지 못했습니다. \n\n *위도, 경도값이 유효하지 않아 카카오맵에서 데이터 조회, 주소변환이 되지 않을때 발생합니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
