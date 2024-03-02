@@ -45,10 +45,10 @@ public class PartyCreateDto {
     @Schema(description = "성별", nullable = false, example = "ALL")
     @NotNull
     private Gender gender;
-    @Schema(description = "카테고리", nullable = false, example = "한식")
+    @Schema(description = "카테고리", nullable = false, example = "KOREAN")
     @NotNull
     private PartyCategory category;
-    @Schema(description = "연령대", nullable = false, example = "2030")
+    @Schema(description = "연령대", nullable = false, example = "TWENTY")
     @NotNull
     private PartyAge age;
     @Schema(description = "메뉴", nullable = false, example = "붕어빵")
