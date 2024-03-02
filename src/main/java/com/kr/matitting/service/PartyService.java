@@ -229,7 +229,7 @@ public class PartyService {
                 .build();
     }
 
-    public Long joinParty(PartyJoinDto partyJoinDto, User user) {
+    public ResponsePartyJoinDto joinParty(PartyJoinDto partyJoinDto, User user) {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
@@ -247,13 +247,13 @@ public class PartyService {
             PartyJoin savedpartyJoin = partyJoinRepository.save(partyJoin);
             notificationService.send(party.getUser(), NotificationType.PARTICIPATION_REQUEST, "파티 신청이 도착했어요.", "파티 신청했습니다.");
 
-            return savedpartyJoin.getId();
+            return new ResponsePartyJoinDto(savedpartyJoin.getId());
         } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
             if (byPartyIdAndLeaderIdAndUserId.isEmpty()) {
                 throw new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN);
             }
             partyJoinRepository.delete(byPartyIdAndLeaderIdAndUserId.get());
-            return byPartyIdAndLeaderIdAndUserId.get().getId();
+            return new ResponsePartyJoinDto(byPartyIdAndLeaderIdAndUserId.get().getId());
         } else {
             throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
