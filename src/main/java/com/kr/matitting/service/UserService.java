@@ -86,7 +86,7 @@ public class UserService {
     }
 
     public ResponseMyInfo getMyInfo(User user) {
-        User myInfo = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_MATCH_USER));
+        User myInfo = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         return new ResponseMyInfo(
                 myInfo.getId(),
                 myInfo.getSocialId(),
