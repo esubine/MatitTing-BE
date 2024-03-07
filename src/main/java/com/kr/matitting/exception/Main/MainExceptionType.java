@@ -1,4 +1,4 @@
-package com.kr.matitting.exception.main;
+package com.kr.matitting.exception.Main;
 
 import com.kr.matitting.exception.BaseExceptionType;
 import lombok.AllArgsConstructor;
