@@ -79,6 +79,7 @@ public class PartyService {
     public ResponseCreatePartyDto createParty(User user, PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
+        //TODO: 수정필요!! -> @AuthenticationPrincipal을 통해서 User 정보를 가져올 때 이미 사용자 검사를 진행하기 때문에 아래 로직은 필요 없다!!
         Long userId = user.getId();
         User findUser = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
@@ -189,20 +190,11 @@ public class PartyService {
         }
     }
 
-    private boolean timeValidCheck(LocalDateTime deadlineTime, LocalDateTime partyTime) {
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(deadlineTime) && deadlineTime.isBefore(partyTime)) {
-            return true;
-        } else {
-            throw new PartyException(PartyExceptionType.INVALID_UPDATE_VALUE);
-        }
-    }
-
     public void deleteParty(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
 
         if (!user.getId().equals(party.getUser().getId())) {
-            throw new UserException(UserExceptionType.NOT_MATCH_USER);
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
         }
         partyRepository.delete(party);
     }
@@ -232,7 +224,7 @@ public class PartyService {
     public ResponsePartyJoinDto joinParty(PartyJoinDto partyJoinDto, User user) {
         log.info("=== joinParty() start ===");
 
-        Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+        Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(party.getUser().getId()).userId(user.getId()).build();
         Optional<PartyJoin> byPartyIdAndLeaderIdAndUserId = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(partyJoin.getParty().getId(), partyJoin.getLeaderId(), partyJoin.getUserId());
 

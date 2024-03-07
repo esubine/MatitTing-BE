@@ -9,6 +9,8 @@ import com.kr.matitting.constant.Role;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.token.TokenExceptionType;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.redis.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -123,15 +125,12 @@ public class JwtService {
     private void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
         response.setHeader(refreshHeader, refreshToken);
     }
-    public DecodedJWT isTokenValid(String token) {
+    public DecodedJWT isTokenValid(String token) throws TokenExpiredException {
         try {
             return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
-        } catch (TokenExpiredException e) {
+        } catch (JWTVerificationException e) {
             log.error(UNAUTHORIZED_ACCESS_TOKEN.getErrorMessage());
             throw new TokenException(UNAUTHORIZED_ACCESS_TOKEN);
-        } catch (JWTVerificationException e) {
-            log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
-            throw new TokenException(INVALID_ACCESS_TOKEN);
         }
     }
 
@@ -145,13 +144,11 @@ public class JwtService {
         String socialId = decodedJWT.getClaim("socialId").asString();
         String findToken = redisUtil.getData(socialId);
 
-        if (findToken == null) {
+        if (findToken == null || findToken.equals(refreshToken)) {
             throw new TokenException(TokenExceptionType.NOT_FOUND_REFRESH_TOKEN);
-        } else if (!findToken.equals(refreshToken)) {
-            throw new TokenException(TokenExceptionType.INVALID_REFRESH_TOKEN);
         }
 
-        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new TokenException(TokenExceptionType.INVALID_REFRESH_TOKEN));
+        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         return createAccessToken(user);
     }
 
