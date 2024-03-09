@@ -144,9 +144,8 @@ public class JwtService {
         String socialId = decodedJWT.getClaim("socialId").asString();
         String findToken = redisUtil.getData(socialId);
 
-        if (findToken == null || findToken.equals(refreshToken)) {
+        if (findToken == null || !findToken.equals(refreshToken))
             throw new TokenException(TokenExceptionType.NOT_FOUND_REFRESH_TOKEN);
-        }
 
         User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         return createAccessToken(user);
