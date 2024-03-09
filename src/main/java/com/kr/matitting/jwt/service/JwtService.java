@@ -62,10 +62,9 @@ public class JwtService {
      * AccessToken 생성 메소드
      */
     public String createAccessToken(User user) {
-        if (user.getRole() == Role.GUEST) {
-            return null;
-        }
-        Date now = new Date();
+        if (user.getRole() == Role.GUEST)
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+
         return JWT.create() //JWT 토큰 생성 빌더 반환
                 .withSubject(ACCESS_TOKEN_SUBJECT) //JWT Subject 지정 -> AccessToken
                 .withClaim("socialId", user.getSocialId())
@@ -78,17 +77,18 @@ public class JwtService {
      * RefreshToken 생성
      */
     public String createRefreshToken(User user) {
-        if (user.getRole() == Role.GUEST) {
-            return null;
-        }
+        if (user.getRole() == Role.GUEST)
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
 
         Date now = new Date();
-        return JWT.create()
+        String refreshToken = JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
                 .withClaim("socialId", user.getSocialId())
                 .withClaim("role", user.getRole().getKey())
                 .withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
                 .sign(Algorithm.HMAC512(secretKey));
+        updateRefreshToken(user, refreshToken);
+        return refreshToken;
     }
 
     /**
