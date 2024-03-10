@@ -41,8 +41,6 @@ public class OauthService {
             String accessToken = jwtService.createAccessToken(user);
             String refreshToken = jwtService.createRefreshToken(user);
 
-            jwtService.updateRefreshToken(user, refreshToken);
-
             return new UserLoginDto(user.getId(), user.getRole(), accessToken, refreshToken);
         } 
         //신규유저
