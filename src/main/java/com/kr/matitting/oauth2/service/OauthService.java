@@ -36,27 +36,30 @@ public class OauthService {
         Optional<User> bySocialTypeAndSocialId = userRepository.findByOauthProviderAndSocialId(request.getOauthProvider(), request.getSocialId());
 
         //기존유저
-        if (bySocialTypeAndSocialId.isPresent()) {
+        if (bySocialTypeAndSocialId.isPresent() && bySocialTypeAndSocialId.get().getRole() == Role.USER) {
             User user = bySocialTypeAndSocialId.get();
             String accessToken = jwtService.createAccessToken(user);
             String refreshToken = jwtService.createRefreshToken(user);
 
             return new UserLoginDto(user.getId(), user.getRole(), accessToken, refreshToken);
-        } 
-        //신규유저
-        else {
-            Random random = new Random();
-            User newUser = User.builder()
-                    .email(request.getEmail())
-                    .socialId(request.getSocialId())
-                    .oauthProvider(request.getOauthProvider())
-                    .nickname(NICKNAME[random.nextInt(18)] + random.nextInt(0, 999))
-                    .age(-1)
-                    .gender(Gender.UNKNOWN)
-                    .role(Role.GUEST)
-                    .build();
-            User saved = userRepository.save(newUser);
-            return new UserLoginDto(saved.getId(), saved.getRole(), null, null);
+        } else if (bySocialTypeAndSocialId.isPresent() && bySocialTypeAndSocialId.get().getRole() == Role.GUEST) {
+            userRepository.deleteById(bySocialTypeAndSocialId.get().getId());
         }
+        return saveNewUser(request);
+    }
+
+    private UserLoginDto saveNewUser(OauthMember request) {
+        Random random = new Random();
+        User newUser = User.builder()
+                .email(request.getEmail())
+                .socialId(request.getSocialId())
+                .oauthProvider(request.getOauthProvider())
+                .nickname(NICKNAME[random.nextInt(18)] + random.nextInt(0, 999))
+                .age(-1)
+                .gender(Gender.UNKNOWN)
+                .role(Role.GUEST)
+                .build();
+        User saved = userRepository.save(newUser);
+        return new UserLoginDto(saved.getId(), saved.getRole(), null, null);
     }
 }
