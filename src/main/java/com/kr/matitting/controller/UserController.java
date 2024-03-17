@@ -28,6 +28,9 @@ public class UserController {
                                                     "로직 설명 \n\n" +
                                                     "1. URI에서 받아온 userId와 Token 값에서의 userId와 비교하여 본인인지 판단한다. \n\n" +
                                                     "2. 본인일 경우에는 DB에서 나의 정보를 가져와서 response")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
+    })
     @GetMapping
     public ResponseEntity<ResponseMyInfo> myProfile(@AuthenticationPrincipal User user) {
         ResponseMyInfo myInfo = userService.getMyInfo(user);
@@ -41,8 +44,7 @@ public class UserController {
                                                         "2. Dto에 들어있는 값을 확인하여 사용자 정보를 업데이트 한다."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "업데이트 성공"),
-            @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
+        @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
     })
     @PatchMapping
     public ResponseEntity<String> myProfileUpdate(@RequestBody UserUpdateDto userUpdateDto, @AuthenticationPrincipal User user) {
