@@ -3,17 +3,16 @@ package com.kr.matitting.controller;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.*;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.Map.MapException;
 import com.kr.matitting.exception.Map.MapExceptionType;
-import com.kr.matitting.exception.party.PartyExceptionType;
-import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
-import com.kr.matitting.exception.team.TeamExceptionType;
-import com.kr.matitting.exception.user.UserExceptionType;
+import com.kr.matitting.exception.party.PartyException;
+import com.kr.matitting.exception.partyjoin.PartyJoinException;
+import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.service.PartyService;
 import com.kr.matitting.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -43,12 +42,11 @@ public class PartyController {
                                                     "2. 1의 유효성 검사를 거친 후 request값에 따라 파티를 생성합니다.\n\n" +
                                                     "※ 파티 생성 완료 시 채팅방이 자동으로 생성됩니다.")
     @ApiResponses(value = {
-
-            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(implementation = ResponseCreatePartyDto.class))),
-            @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class))),
-            @ApiResponse(responseCode = "1300", description = "카카오 맵 Authorization이 실패했습니다. \n\n *kakao map api 관련 설정값이 잘못되어 발생하는 에러입니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
-            @ApiResponse(responseCode = "1301", description = "카카오 맵에서 데이터를 받아오지 못했습니다. \n\n *위도, 경도값이 유효하지 않아 카카오맵에서 데이터 조회, 주소변환이 되지 않을때 발생합니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
-            @ApiResponse(responseCode = "1302", description = "카카오 맵 서버 오류입니다. \n\n *카카오맵 자체 오류입니다..", content = @Content(schema = @Schema(implementation = MapExceptionType.class)))
+        @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(implementation = ResponseCreatePartyDto.class))),
+        @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "1300", description = "카카오 맵 Authorization이 실패했습니다. \n\n *kakao map api 관련 설정값이 잘못되어 발생하는 에러입니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
+        @ApiResponse(responseCode = "1301", description = "카카오 맵에서 데이터를 받아오지 못했습니다. \n\n *위도, 경도값이 유효하지 않아 카카오맵에서 데이터 조회, 주소변환이 되지 않을때 발생합니다.", content = @Content(schema = @Schema(implementation = MapExceptionType.class))),
+        @ApiResponse(responseCode = "1302", description = "카카오 맵 서버 오류입니다. \n\n *카카오맵 자체 오류입니다..", content = @Content(schema = @Schema(implementation = MapException.class)))
     })
 
     @PostMapping
@@ -70,8 +68,9 @@ public class PartyController {
                                                     "※ 파티의 모집 인원을 수정 시 => 현재 파티에 참여한 인원보다 작은 인원으로 수정 시 Exception이 발생하게 됩니다."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "업데이트 성공"),
-            @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "파티 업데이트 성공", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class))),
+        @ApiResponse(responseCode = "400(801)", description = "올바르지 못한 REQUEST 값.", content = @Content(schema = @Schema(implementation = PartyException.class)))
     })
     @PatchMapping("/{partyId}")
     public ResponseEntity<String> updateParty(@RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
@@ -86,8 +85,8 @@ public class PartyController {
                                                     "2. 정보를 response 할 때 해당 파티에 대해서 내가 방장인지 아닌지에 대한 여부를 추가로 response"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파티 세부정보 불러오기 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class))),
-            @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "파티 세부정보 조회 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDetailDto.class))),
+        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
     })
     @GetMapping("/{partyId}")
     public ResponseEntity<ResponsePartyDetailDto> partyDetail(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
@@ -97,8 +96,9 @@ public class PartyController {
 
     @Operation(summary = "파티 삭제", description = "파티를 삭제하는 API 입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파티 삭제 성공"),
-            @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "파티 삭제 성공", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "403(602)", description = "권한이 없는 사용자, Role이 유효하지 않음", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
     })
     @DeleteMapping("/{partyId}")
     public ResponseEntity<String> partyDelete(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
@@ -115,8 +115,10 @@ public class PartyController {
                                                     "※ ACCEPT or CANCEL 입력이 아닐 시에는 Exception"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "참가 신청 성공"),
-            @ApiResponse(responseCode = "700", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "파티 참가 신청 성공", content = @Content(schema = @Schema(implementation = ResponsePartyJoinDto.class))),
+        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "404(700)", description = "참가 신청 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyJoinException.class))),
+        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
     })
     @PostMapping("/participation")
     //TODO: 이거 dto로 response하기
@@ -133,11 +135,10 @@ public class PartyController {
                                                         "4. 사용자 요청에 대해서 응답이 진행되었으므로, PartyJoin DB에서 사용자가 신청한 신청 데이터를 삭제한다. \n\n" +
                                                         "※ ACCEPT을 진행할 때 party 모집 인원이 만석일 경우는 Exception")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "수락/거절 결정 성공"),
-            @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class))),
-            @ApiResponse(responseCode = "700", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class))),
-            @ApiResponse(responseCode = "702", description = "파티 참가 상태가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = PartyJoinExceptionType.class))),
-            @ApiResponse(responseCode = "800", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "파티 참가 수락/거절 성공", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "404(700)", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinException.class))),
+        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
     })
     @PostMapping("/decision")
     public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyDecisionDto partyDecisionDto, @AuthenticationPrincipal User user) {
@@ -151,10 +152,7 @@ public class PartyController {
                                                 "1. HOST => 내가 방장으로 있는 파티 리스트를 반환 \n\n" +
                                                 "2. VOLUNTEER => 내가 참여한 파티 리스트를 반환 \n\n" +
                                                 "3. USER => 내가 방장으로 있던 파티 + 내가 참여한 파티 들중 파티가 끝난 리스트를 반환")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파티 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class))),
-            @ApiResponse(responseCode = "1000", description = "파티 팀 정보가 없습니다.", content = @Content(schema = @Schema(implementation = TeamExceptionType.class)))
-    })
+    @ApiResponse(responseCode = "200", description = "파티 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class)))
     @GetMapping("/party-status")
     public ResponseEntity<List<ResponsePartyDto>> myPartyList(@AuthenticationPrincipal User user,@NotNull @RequestParam Role role) {
         List<ResponsePartyDto> myPartyList = userService.getMyPartyList(user, role);
@@ -167,8 +165,9 @@ public class PartyController {
             "1. HOST => 내가 방장으로 존재하는 파티에 사용자들이 참가 요청을 보낸 리스트를 반환 \n\n" +
             "2. VOLUNTEER => 내가 상대방의 파티에 참가 요청을 보낸 리스트를 반환")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "파티 신청 현황 불러오기 성공", content = @Content(schema = @Schema(implementation = InvitationRequestDto.class))),
-            @ApiResponse(responseCode = "600", description = "사용자 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "파티 신청 현황 조회 성공", content = @Content(schema = @Schema(implementation = InvitationRequestDto.class))),
+        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "403(602)", description = "권한이 없는 사용자, Role이 유효하지 않음", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @GetMapping("/party-join")
     public ResponseEntity<List<InvitationRequestDto>> getJoinList(@AuthenticationPrincipal User user,

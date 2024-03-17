@@ -24,7 +24,6 @@ public class NotificationController {
 
     @Operation(summary = "알림 구독", description = "알림을 받기 위해 SSE 통신을 연결하는 API \n\n" +
             "Request시 Header에 'Last-Event-ID'를 넣어주어 마지막으로 받은 알림이 어디까지인지 BackEnd에게 요청")
-    @ApiResponse(responseCode = "200", description = "SSE 연결 성공")
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(
             @AuthenticationPrincipal User user,

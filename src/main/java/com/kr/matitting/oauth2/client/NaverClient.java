@@ -65,7 +65,7 @@ public class NaverClient implements OauthClient{
         NaverToken naverToken = rt.postForObject(url, tokenRequest, NaverToken.class);
 
         if (naverToken == null) {
-            throw new TokenException(TokenExceptionType.NOT_FOUND_SOCIAL_TOKEN);
+            throw new TokenException(TokenExceptionType.INVALID_SOCIAL_TOKEN);
         }
 
         return naverToken.getAccess_token();

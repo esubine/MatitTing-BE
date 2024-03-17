@@ -11,8 +11,8 @@ import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
-import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.redis.RedisUtil;
+import com.kr.matitting.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -21,14 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
-import javax.naming.AuthenticationException;
 import java.util.Date;
 import java.util.Optional;
 
-import static com.kr.matitting.exception.token.TokenExceptionType.INVALID_ACCESS_TOKEN;
-import static com.kr.matitting.exception.token.TokenExceptionType.UNAUTHORIZED_ACCESS_TOKEN;
+import static com.kr.matitting.exception.token.TokenExceptionType.VERIFICATION_ACCESS_TOKEN;
 
 @Service
 @RequiredArgsConstructor
@@ -129,8 +126,8 @@ public class JwtService {
         try {
             return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
         } catch (JWTVerificationException e) {
-            log.error(UNAUTHORIZED_ACCESS_TOKEN.getErrorMessage());
-            throw new TokenException(UNAUTHORIZED_ACCESS_TOKEN);
+            log.error(VERIFICATION_ACCESS_TOKEN.getErrorMessage());
+            throw new TokenException(VERIFICATION_ACCESS_TOKEN);
         }
     }
 
