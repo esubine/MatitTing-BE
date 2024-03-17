@@ -28,6 +28,7 @@ public class SearchController {
                                                 "1. 사용자가 검색창에 keyword를 입력하면 이를 request로 받아서 값을 검사한다 => 값이 null이면 파티방을 return하지 않고, null이 아니면 인기 검색어에 count +1이 진행된다. \n\n" +
                                                 "2. 입력한 keyword 값을 포함하고 있는 파티방을 가져오고 lastPartyId를 검사하여 마지막으로 받은 파티방 정보 다음 값부터의 N개, lastPartyId, hasNext(검색해서 나온 정보들 중 마지막 값인지 아닌지를 return)를 response 한다."
     )
+    @ApiResponse(responseCode = "200", description = "파티 검색 성공", content = @Content(schema = @Schema(implementation = ResponseSearchDto.class)))
     @GetMapping
     public ResponseEntity<ResponseSearchPageDto> partySearch(
             @ModelAttribute PartySearchCondDto partySearchCondDto,
@@ -43,6 +44,7 @@ public class SearchController {
                                                     "로직 설명 \n\n" +
                                                     "1. redis에서 사용자들이 가장 많이 검색한 검색어 10개를 가져와서 response 한다. \n\n" +
                                                     "※ redis에서 지원하는 자료형들 중 Z Set를 사용하는데, 이는 최대 값 정렬을 자동으로 지원하여 keyword:score 구조를 내림차순으로 관리해준다.")
+    @ApiResponse(responseCode = "200", description = "인기 검색어 조회 성공", content = @Content(schema = @Schema(implementation = ResponseRankingDto.class)))
     @GetMapping(value = "/rank", produces="application/json;charset=UTF-8")
     public ResponseEntity<List<ResponseRankingDto>> searchRankList() {
         List<ResponseRankingDto> responseRankingDtoList = searchService.searchRankList();

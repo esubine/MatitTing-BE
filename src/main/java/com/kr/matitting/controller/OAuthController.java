@@ -6,7 +6,7 @@ import com.kr.matitting.dto.ResponseLoginDto;
 import com.kr.matitting.dto.UserLoginDto;
 import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.token.TokenExceptionType;
+import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.oauth2.dto.KakaoParams;
@@ -24,7 +24,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +49,8 @@ public class OAuthController {
             "Response body : newUserId"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "1104", description = "유효하지 않은 소셜 Token\n\n 소셜 서버에서 가져온 Token이 유효하지 않을 때 발생", content = @Content(schema = @Schema(implementation = TokenExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = ResponseLoginDto.class))),
+        @ApiResponse(responseCode = "400(1104)", description = "유효하지 않은 소셜 Token\n\n 소셜 서버에서 가져온 Token이 유효하지 않을 때 발생", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @PostMapping("/login")
     public ResponseEntity<ResponseLoginDto> socialLogin(@Valid @RequestBody OauthReq oauthReq) {
@@ -97,8 +97,9 @@ public class OAuthController {
             "status code : 400"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
-        @ApiResponse(responseCode = "602", description = "권한이 없는 사용자, Role이 유효하지 않음", content = @Content(schema = @Schema(implementation = UserException.class)))
+        @ApiResponse(responseCode = "201", description = "회원가입 성공"),
+        @ApiResponse(responseCode = "403(602)", description = "권한이 없는 사용자, Role이 유효하지 않음", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class)))
     })
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto) {
@@ -121,8 +122,9 @@ public class OAuthController {
             "Response Body : logout Success"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "1100", description = "AccessToken이 존재하지 않음", content = @Content(schema = @Schema(implementation = TokenExceptionType.class))),
-        @ApiResponse(responseCode = "1102", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "로그아웃 성공", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "400(1100)", description = "AccessToken이 존재하지 않음", content = @Content(schema = @Schema(implementation = TokenException.class))),
+        @ApiResponse(responseCode = "401(1102)", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
@@ -141,9 +143,10 @@ public class OAuthController {
                                                 "Response Body : withdraw Success"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
-        @ApiResponse(responseCode = "1100", description = "AccessToken이 존재하지 않음", content = @Content(schema = @Schema(implementation = TokenExceptionType.class))),
-        @ApiResponse(responseCode = "1102", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenExceptionType.class)))
+        @ApiResponse(responseCode = "200", description = "호원 탈퇴 성공", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "400(1100)", description = "AccessToken이 존재하지 않음", content = @Content(schema = @Schema(implementation = TokenException.class))),
+        @ApiResponse(responseCode = "401(1102)", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @DeleteMapping("/withdraw")
     public ResponseEntity<String> withdraw(HttpServletRequest request) {
@@ -163,8 +166,9 @@ public class OAuthController {
                                                     "Response Body : Success"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "600", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
-        @ApiResponse(responseCode = "1200", description = "Refresh Token이 없습니다.", content = @Content(schema = @Schema(implementation = TokenExceptionType.class)))
+        @ApiResponse(responseCode = "201", description = "토큰 재발급 성공", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+        @ApiResponse(responseCode = "400(1200)", description = "Refresh Token이 없습니다.", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @GetMapping("/renew-token")
     public ResponseEntity<String> renewToken(HttpServletRequest request, HttpServletResponse response) {
