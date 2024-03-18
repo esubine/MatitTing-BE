@@ -70,11 +70,12 @@ public class PartyController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "파티 업데이트 성공", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class))),
-        @ApiResponse(responseCode = "400(801)", description = "올바르지 못한 REQUEST 값.", content = @Content(schema = @Schema(implementation = PartyException.class)))
+        @ApiResponse(responseCode = "400(801)", description = "올바르지 못한 REQUEST 값.", content = @Content(schema = @Schema(implementation = PartyException.class))),
+        @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PatchMapping("/{partyId}")
-    public ResponseEntity<String> updateParty(@RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
-        partyService.partyUpdate(partyUpdateDto, partyId);
+    public ResponseEntity<String> updateParty(@AuthenticationPrincipal User user, @RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
+        partyService.partyUpdate(user, partyUpdateDto, partyId);
         return ResponseEntity.ok().body("Success Party update");
     }
 
@@ -118,7 +119,8 @@ public class PartyController {
         @ApiResponse(responseCode = "200", description = "파티 참가 신청 성공", content = @Content(schema = @Schema(implementation = ResponsePartyJoinDto.class))),
         @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
         @ApiResponse(responseCode = "404(700)", description = "참가 신청 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyJoinException.class))),
-        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
+        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class))),
+        @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PostMapping("/participation")
     //TODO: 이거 dto로 response하기
@@ -138,7 +140,8 @@ public class PartyController {
         @ApiResponse(responseCode = "200", description = "파티 참가 수락/거절 성공", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
         @ApiResponse(responseCode = "404(700)", description = "참가할 파티를 찾지 못했습니다.", content = @Content(schema = @Schema(implementation = PartyJoinException.class))),
-        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
+        @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class))),
+        @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PostMapping("/decision")
     public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyDecisionDto partyDecisionDto, @AuthenticationPrincipal User user) {

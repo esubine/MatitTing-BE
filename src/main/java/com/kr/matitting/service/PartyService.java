@@ -145,8 +145,11 @@ public class PartyService {
         return address;
     }
 
-    public void partyUpdate(PartyUpdateDto partyUpdateDto, Long partyId) {
+    public void partyUpdate(User user, PartyUpdateDto partyUpdateDto, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        if (!user.getId().equals(party.getUser().getId())) {
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+        }
         if (partyUpdateDto.partyTitle() != null) {
             party.setPartyTitle(partyUpdateDto.partyTitle());
         }
@@ -225,13 +228,14 @@ public class PartyService {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+
+        if (party.getUser().getId().equals(user.getId())) throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+
         PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(party.getUser().getId()).userId(user.getId()).build();
         Optional<PartyJoin> byPartyIdAndLeaderIdAndUserId = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(partyJoin.getParty().getId(), partyJoin.getLeaderId(), partyJoin.getUserId());
-
         if (!party.getUser().getId().equals(party.getUser().getId())) {
             throw new UserException(UserExceptionType.NOT_FOUND_USER);
         }
-
         if (partyJoinDto.status() == PartyJoinStatus.APPLY) {
             if (!byPartyIdAndLeaderIdAndUserId.isEmpty()) {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
@@ -246,9 +250,8 @@ public class PartyService {
             }
             partyJoinRepository.delete(byPartyIdAndLeaderIdAndUserId.get());
             return new ResponsePartyJoinDto(byPartyIdAndLeaderIdAndUserId.get().getId());
-        } else {
-            throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
         }
+        return null;
     }
 
     public String decideUser(PartyDecisionDto partyDecisionDto, User user) {
@@ -262,6 +265,10 @@ public class PartyService {
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndUserId(
                 partyDecisionDto.getPartyId(),
                 volunteerUser.getId()).orElseThrow(() -> new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN));
+
+        if (!findPartyJoin.getLeaderId().equals(user.getId()))
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+
         partyJoinRepository.delete(findPartyJoin);
 
         if (partyDecisionDto.getStatus() == PartyDecision.ACCEPT) {
