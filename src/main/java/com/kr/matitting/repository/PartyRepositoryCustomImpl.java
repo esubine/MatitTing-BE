@@ -37,7 +37,6 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
                 .where(ticketSearchPredicate(partySearchCondDto.keyword()),
                         stateEq(partySearchCondDto.status()),
                         ltPartyId(lastPartyId))
-                .offset(pageable.getOffset())
                 .limit(pageable.getPageSize()+1)
                 .orderBy(partySort(pageable))
                 .fetch();

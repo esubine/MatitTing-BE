@@ -9,6 +9,8 @@ import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.token.TokenException;
+import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
@@ -52,26 +54,33 @@ public class UserService {
         if (userUpdateDto.imgUrl() != null) findUser.setImgUrl(userUpdateDto.imgUrl());
     }
 
-    public void logout(String accessToken) {
+    public void logout(String accessToken, User user) {
         log.info("=== logout() start ===");
 
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
         String socialId = decodedJWT.getClaim("socialId").asString();
 
+        if (socialId != user.getSocialId())
+            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
+
         //expired 시간 check
         tokenRemove(accessToken, socialId);
     }
 
-    public void withdraw(String accessToken) {
+    public void withdraw(String accessToken, User user) {
+        //TODO: 현재 로그인 사용자와 비교 필요
         log.info("=== withdraw() start ===");
 
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
         String socialId = decodedJWT.getClaim("socialId").asString();
 
+        if (socialId != user.getSocialId())
+            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
+
         tokenRemove(accessToken, socialId);
 
-        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-        userRepository.delete(user);
+        User findUser = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        userRepository.delete(findUser);
     }
 
     private void tokenRemove(String accessToken, String socialId) {
