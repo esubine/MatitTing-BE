@@ -33,6 +33,28 @@ public class ReviewService {
     private final UserRepository userRepository;
 
     /**
+     * 리뷰 리스트 조회
+     */
+    public List<ReviewGetRes> getReviewList(User user, ReviewType reviewType) {
+        if (reviewType.equals(ReviewType.RECEIVER)) {
+            if (user.getReceivedReviews() != null)
+                return user.getReceivedReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).toList();
+        } else {
+            if (user.getSendReviews() != null)
+                return user.getSendReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReceiver())).toList();
+        }
+        return null;
+    }
+
+    /**
+     * 리뷰 상세 조회
+     */
+    public ReviewInfoRes getReview(User user, Long reviewId) {
+        Review review = getReview(reviewId);
+        return ReviewInfoRes.toDto(review, user);
+    }
+
+    /**
      * 리뷰 생성
      */
     public ReviewCreateRes createReview(ReviewCreateReq reviewCreateReq, User user) {

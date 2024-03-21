@@ -26,6 +26,26 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
+    @Operation(summary = "리뷰 리스트 조회", description = "나에게 온 리뷰 리스트를 불러오는 API \n\n" +
+            "ReviewType으로 내가 받은 리뷰 리스트 or 내가 보낸 리뷰 리스트를 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ReviewGetRes.class))),
+    })
+    @GetMapping
+    public ResponseEntity<List<ReviewGetRes>> getReviewList(@AuthenticationPrincipal User user, @RequestParam ReviewType reviewType) {
+        return ResponseEntity.ok(reviewService.getReviewList(user, reviewType));
+    }
+
+    @Operation(summary = "리뷰 상세 조회", description = "리뷰 상세 정보를 불러오는 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 상세 조회 성공", content = @Content(schema = @Schema(implementation = ReviewInfoRes.class))),
+            @ApiResponse(responseCode = "404(1700)", description = "리뷰 정보가 없음", content = @Content(schema = @Schema(implementation = ReviewException.class)))
+    })
+    @GetMapping("/{reviewId}")
+    public ResponseEntity<ReviewInfoRes> getReview(@AuthenticationPrincipal User user, @PathVariable Long reviewId) {
+        return ResponseEntity.ok(reviewService.getReview(user, reviewId));
+    }
+
     @Operation(summary = "리뷰 작성", description = "방장에게 리뷰를 작성하는 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "리뷰 작성 성공", content = @Content(schema = @Schema(implementation = ReviewCreateRes.class))),
