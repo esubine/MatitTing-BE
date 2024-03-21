@@ -38,4 +38,28 @@ public class ReviewController {
     public ResponseEntity<ReviewCreateRes> createReview(@RequestBody ReviewCreateReq reviewCreateReq, @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(reviewCreateReq, user));
     }
+
+    @Operation(summary = "리뷰 수정", description = "작성한 리뷰를 수정하는 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 수정 성공"),
+            @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+            @ApiResponse(responseCode = "404(1700)", description = "리뷰 정보가 없음", content = @Content(schema = @Schema(implementation = ReviewException.class)))
+    })
+    @PatchMapping
+    public ResponseEntity<?> updateReview(@RequestBody ReviewUpdateReq reviewUpdateReq, @AuthenticationPrincipal User user) {
+        reviewService.updateReview(reviewUpdateReq, user);
+        return ResponseEntity.ok(null);
+    }
+
+    @Operation(summary = "리뷰 삭제", description = "작성한 리뷰를 삭제하는 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "리뷰 삭제 성공"),
+            @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
+            @ApiResponse(responseCode = "404(1700)", description = "리뷰 정보가 없음", content = @Content(schema = @Schema(implementation = ReviewException.class)))
+    })
+    @DeleteMapping
+    public ResponseEntity<?> deleteReview(@RequestBody ReviewDeleteReq reviewDeleteReq, @AuthenticationPrincipal User user) {
+        reviewService.deleteReview(reviewDeleteReq, user);
+        return ResponseEntity.ok(null);
+    }
 }

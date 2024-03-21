@@ -64,4 +64,44 @@ public class ReviewService {
 
         return new ReviewCreateRes(save.getId());
     }
+
+    /**
+     * 리뷰 업데이트
+     */
+    public void updateReview(ReviewUpdateReq reviewUpdateReq, User user) {
+        Review review = getReview(reviewUpdateReq.getReviewId());
+        checkRole(user, review);
+
+        if (reviewUpdateReq.getContent() != null)
+            review.setContent(reviewUpdateReq.getContent());
+        if (reviewUpdateReq.getRating() != null)
+            review.setRating(reviewUpdateReq.getRating());
+        if (reviewUpdateReq.getImgUrl() != null)
+            review.setImgUrl(reviewUpdateReq.getImgUrl());
+    }
+
+    /**
+     * 리뷰 삭제
+     */
+    public void deleteReview(ReviewDeleteReq reviewDeleteReq, User user) {
+        Review review = getReview(reviewDeleteReq.getReviewId());
+        checkRole(user, review);
+
+        reviewRepository.deleteById(review.getId());
+    }
+
+    /**
+     * 리뷰 주인 Check
+     */
+    private void checkRole(User user, Review review) {
+        if (!user.getId().equals(review.getReviewer().getId()))
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+    }
+
+    /**
+     * 리뷰 DB 조회
+     */
+    private Review getReview(Long reviewId) {
+        return reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewException(ReviewExceptionType.NOT_FOUND_REVIEW));
+    }
 }
