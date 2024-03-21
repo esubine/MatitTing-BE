@@ -1,8 +1,12 @@
 package com.kr.matitting.scheduler;
 
+import com.kr.matitting.constant.NotificationType;
 import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.constant.Role;
 import com.kr.matitting.entity.Party;
+import com.kr.matitting.entity.Team;
 import com.kr.matitting.repository.PartyRepository;
+import com.kr.matitting.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,6 +23,7 @@ import java.util.List;
 public class PartyScheduler {
 
     private final PartyRepository partyRepository;
+    private final NotificationService notificationService;
 
     @Scheduled(cron = "0 0 */1 * * ?", zone = "Asia/Seoul")
     public void checkEndParty() {
@@ -36,6 +41,14 @@ public class PartyScheduler {
                 party.setStatus(PartyStatus.PARTY_FINISH);
                 changeCount++;
                 partyRepository.save(party);
+
+                //후기 알림
+                List<Team> teamList = party.getTeamList();
+                teamList.stream()
+                        .filter(team -> team.getRole().equals(Role.VOLUNTEER))
+                        .forEach(receiver ->
+                                notificationService.send(receiver.getUser(), NotificationType.REVIEW, "방장에 대한 리뷰를 남겨주세요.", "리뷰 요청")
+                        );
             }
         }
         log.info("=== party 상태 "+ changeCount +"개 변경 완료 ===");
