@@ -54,28 +54,22 @@ public class UserService {
         if (userUpdateDto.imgUrl() != null) findUser.setImgUrl(userUpdateDto.imgUrl());
     }
 
-    public void logout(String accessToken, User user) {
+    public void logout(String accessToken) {
         log.info("=== logout() start ===");
 
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
         String socialId = decodedJWT.getClaim("socialId").asString();
 
-        if (socialId != user.getSocialId())
-            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
-
         //expired 시간 check
         tokenRemove(accessToken, socialId);
     }
 
-    public void withdraw(String accessToken, User user) {
+    public void withdraw(String accessToken) {
         //TODO: 현재 로그인 사용자와 비교 필요
         log.info("=== withdraw() start ===");
 
         DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
         String socialId = decodedJWT.getClaim("socialId").asString();
-
-        if (socialId != user.getSocialId())
-            throw new TokenException(TokenExceptionType.INVALID_ACCESS_TOKEN);
 
         tokenRemove(accessToken, socialId);
 
@@ -119,7 +113,7 @@ public class UserService {
             return parties;
         }
         else if(role == Role.USER){
-            teams = partyTeamRepository.findByUserId(user.getId() );
+            teams = partyTeamRepository.findByUserId(user.getId());
             parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.PARTY_FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
             return parties;
             }
