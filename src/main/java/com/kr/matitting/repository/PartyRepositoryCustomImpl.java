@@ -30,6 +30,14 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
         return getPartyList(partySearchCondDto, pageable, lastPartyId);
     }
 
+    @Override
+    public Page<Party> searchPage(Pageable pageable, PartySearchCondDto partySearchCondDto) {
+        List<Party> partyList = getPartyList(pageable, partySearchCondDto);
+        Long count = getCount(partySearchCondDto);
+
+        return new PageImpl<>(partyList, pageable, count);
+    }
+
     private Slice<Party> getPartyList(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId) {
         List<Party> partyList = queryFactory
                 .select(party)
@@ -41,6 +49,25 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
                 .orderBy(partySort(pageable))
                 .fetch();
         return checkLastPage(partyList, pageable);
+    }
+
+    private List<Party> getPartyList(Pageable pageable, PartySearchCondDto partySearchCondDto) {
+        return  queryFactory
+                .select(party)
+                .from(party)
+                .where(ticketSearchPredicate(partySearchCondDto.keyword()), stateEq(partySearchCondDto.status()))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(partySort(pageable))
+                .fetch();
+    }
+
+    private Long getCount(PartySearchCondDto partySearchCondDto) {
+        return queryFactory
+                .select(party.count())
+                .from(party)
+                .where(ticketSearchPredicate(partySearchCondDto.keyword()), stateEq(partySearchCondDto.status()))
+                .fetchOne();
     }
 
     private BooleanBuilder ticketSearchPredicate(String keyword) {
