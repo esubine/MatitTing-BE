@@ -50,15 +50,15 @@ public class OauthService {
 
     private UserLoginDto saveNewUser(OauthMember request) {
         Random random = new Random();
-        User newUser = User.builder()
-                .email(request.getEmail())
-                .socialId(request.getSocialId())
-                .oauthProvider(request.getOauthProvider())
-                .nickname(NICKNAME[random.nextInt(18)] + random.nextInt(0, 999))
-                .age(-1)
-                .gender(Gender.UNKNOWN)
-                .role(Role.GUEST)
-                .build();
+        User newUser = new User(request.getEmail(),
+                request.getOauthProvider(),
+                request.getEmail(),
+                NICKNAME[random.nextInt(18)] + random.nextInt(0, 999),
+                -1,
+                null,
+                Gender.UNKNOWN,
+                Role.GUEST
+        );
         User saved = userRepository.save(newUser);
         return new UserLoginDto(saved.getId(), saved.getRole(), null, null);
     }
