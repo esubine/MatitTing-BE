@@ -169,10 +169,14 @@ public class PartyService {
     public void deleteParty(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
 
+        checkRole(user, party);
+        partyRepository.delete(party);
+    }
+
+    private void checkRole(User user, Party party) {
         if (!user.getId().equals(party.getUser().getId())) {
             throw new UserException(UserExceptionType.INVALID_ROLE_USER);
         }
-        partyRepository.delete(party);
     }
 
     // address, deadline, thumbnail와 같이 변환이나 null인 경우 처리가 필요한 필드는 제외하고 나머지 필드는 빌더패턴으로 생성
