@@ -47,28 +47,8 @@ public class PartyService {
     public ResponsePartyDetailDto getPartyInfo(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         increaseHit(partyId);
-        return ResponsePartyDetailDto.builder()
-                .userId(party.getUser().getId())
-                .isLeader((user != null) && (user.getId() == party.getUser().getId()) ? true : false)
-                .partyId(party.getId())
-                .partyTitle(party.getPartyTitle())
-                .partyContent(party.getPartyContent())
-                .address(party.getAddress())
-                .longitude(party.getLongitude())
-                .latitude(party.getLatitude())
-                .partyPlaceName(party.getPartyPlaceName())
-                .status(party.getStatus())
-                .gender(party.getGender())
-                .age(party.getAge())
-                .deadline(party.getDeadline())
-                .partyTime(party.getPartyTime())
-                .totalParticipant(party.getTotalParticipant())
-                .participate(party.getParticipantCount())
-                .menu(party.getMenu())
-                .category(party.getCategory())
-                .thumbnail(party.getThumbnail())
-                .hit(party.getHit())
-                .build();
+
+        return ResponsePartyDetailDto.from(party, user);
     }
 
     @Transactional
