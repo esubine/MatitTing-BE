@@ -262,23 +262,28 @@ public class PartyService {
 
     public List<InvitationRequestDto> getJoinList(User user, Role role) {
         List<PartyJoin> partyJoinList;
-        List<InvitationRequestDto> invitationRequestDtos;
-        if (role.equals(Role.HOST)) {
-            partyJoinList = partyJoinRepository.findAllByLeaderId(user.getId());
-            invitationRequestDtos = partyJoinList.stream().map(partyJoin -> {
-                User volunteerUser = userRepository.findById(partyJoin.getUserId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-                return InvitationRequestDto.toDto(partyJoin, volunteerUser, role);
-            }).toList();
-        } else if (role.equals(Role.VOLUNTEER)) {
-            partyJoinList = partyJoinRepository.findAllByUserId(user.getId());
-            invitationRequestDtos = partyJoinList.stream().map(partyJoin -> {
-                User leaderUser = userRepository.findById(partyJoin.getLeaderId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-                return InvitationRequestDto.toDto(partyJoin, leaderUser, role);
-            }).toList();
-        } else {
-            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
-        }
 
-        return invitationRequestDtos;
+        switch (role) {
+            case HOST:
+                partyJoinList = partyJoinRepository.findAllByLeaderId(user.getId());
+                return partyJoinList.stream()
+                        .map(partyJoin -> {
+                            User volunteerUser = userRepository.findById(partyJoin.getUserId())
+                                    .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+                            return InvitationRequestDto.toDto(partyJoin, volunteerUser, role);
+                        })
+                        .toList();
+            case VOLUNTEER:
+                partyJoinList = partyJoinRepository.findAllByUserId(user.getId());
+                return partyJoinList.stream()
+                        .map(partyJoin -> {
+                            User leaderUser = userRepository.findById(partyJoin.getLeaderId())
+                                    .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+                            return InvitationRequestDto.toDto(partyJoin, leaderUser, role);
+                        })
+                        .toList();
+            default:
+                throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+        }
     }
 }
