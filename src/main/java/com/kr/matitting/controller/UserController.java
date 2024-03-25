@@ -3,7 +3,6 @@ package com.kr.matitting.controller;
 import com.kr.matitting.dto.ResponseMyInfo;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,8 +41,7 @@ public class UserController {
                                                         "2. Dto에 들어있는 값을 확인하여 사용자 정보를 업데이트 한다."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "프로필 업데이트 성공", content = @Content(schema = @Schema(implementation = String.class))),
-        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class)))
+        @ApiResponse(responseCode = "200", description = "프로필 업데이트 성공", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PatchMapping
     public ResponseEntity<String> myProfileUpdate(@RequestBody UserUpdateDto userUpdateDto, @AuthenticationPrincipal User user) {

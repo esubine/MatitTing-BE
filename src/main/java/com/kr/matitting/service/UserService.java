@@ -45,10 +45,8 @@ public class UserService {
     }
 
     public void update(User user, UserUpdateDto userUpdateDto) {
-        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-
-        if (userUpdateDto.nickname() != null) findUser.setNickname(userUpdateDto.nickname());
-        if (userUpdateDto.imgUrl() != null) findUser.setImgUrl(userUpdateDto.imgUrl());
+        if (userUpdateDto.nickname() != null) user.setNickname(userUpdateDto.nickname());
+        if (userUpdateDto.imgUrl() != null) user.setImgUrl(userUpdateDto.imgUrl());
     }
 
     public void logout(String accessToken, User user) {
