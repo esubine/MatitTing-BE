@@ -54,27 +54,20 @@ public class UserService {
         if (userUpdateDto.imgUrl() != null) findUser.setImgUrl(userUpdateDto.imgUrl());
     }
 
-    public void logout(String accessToken) {
+    public void logout(String accessToken, User user) {
         log.info("=== logout() start ===");
 
-        DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
-        String socialId = decodedJWT.getClaim("socialId").asString();
-
+        jwtService.isTokenValid(accessToken);
         //expired 시간 check
-        tokenRemove(accessToken, socialId);
+        tokenRemove(accessToken, user.getSocialId());
     }
 
-    public void withdraw(String accessToken) {
-        //TODO: 현재 로그인 사용자와 비교 필요
+
+    public void withdraw(String accessToken, User user) {
         log.info("=== withdraw() start ===");
 
-        DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
-        String socialId = decodedJWT.getClaim("socialId").asString();
-
-        tokenRemove(accessToken, socialId);
-
-        User findUser = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-        userRepository.delete(findUser);
+        tokenRemove(accessToken, user.getSocialId());
+        userRepository.delete(user);
     }
 
     private void tokenRemove(String accessToken, String socialId) {
