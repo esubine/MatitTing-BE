@@ -205,28 +205,23 @@ public class PartyService {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
-
         if (party.getUser().getId().equals(user.getId())) throw new UserException(UserExceptionType.INVALID_ROLE_USER);
 
-        PartyJoin partyJoin = PartyJoin.builder().party(party).leaderId(party.getUser().getId()).userId(user.getId()).build();
-        Optional<PartyJoin> byPartyIdAndLeaderIdAndUserId = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(partyJoin.getParty().getId(), partyJoin.getLeaderId(), partyJoin.getUserId());
-        if (!party.getUser().getId().equals(party.getUser().getId())) {
-            throw new UserException(UserExceptionType.NOT_FOUND_USER);
-        }
+        Optional<PartyJoin> existingJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(party.getId(), party.getUser().getId(), user.getId());
         if (partyJoinDto.status() == PartyJoinStatus.APPLY) {
-            if (!byPartyIdAndLeaderIdAndUserId.isEmpty()) {
+            if (existingJoin.isPresent()) {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
             }
-            PartyJoin savedpartyJoin = partyJoinRepository.save(partyJoin);
-            notificationService.send(party.getUser(), NotificationType.PARTICIPATION_REQUEST, "파티 신청이 도착했어요.", "파티 신청했습니다.");
+            PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId()));
+            notificationService.send(user, NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
 
             return new ResponsePartyJoinDto(savedpartyJoin.getId());
         } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
-            if (byPartyIdAndLeaderIdAndUserId.isEmpty()) {
+            if (existingJoin.isEmpty()) {
                 throw new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN);
             }
-            partyJoinRepository.delete(byPartyIdAndLeaderIdAndUserId.get());
-            return new ResponsePartyJoinDto(byPartyIdAndLeaderIdAndUserId.get().getId());
+            partyJoinRepository.delete(existingJoin.get());
+            return new ResponsePartyJoinDto(existingJoin.get().getId());
         }
         return null;
     }
