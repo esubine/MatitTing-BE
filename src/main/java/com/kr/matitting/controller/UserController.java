@@ -27,8 +27,7 @@ public class UserController {
                                                     "1. URI에서 받아온 userId와 Token 값에서의 userId와 비교하여 본인인지 판단한다. \n\n" +
                                                     "2. 본인일 경우에는 DB에서 나의 정보를 가져와서 response")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "내 프로필 조회 성공", content = @Content(schema = @Schema(implementation = ResponseMyInfo.class))),
-        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class)))
+        @ApiResponse(responseCode = "200", description = "내 프로필 조회 성공", content = @Content(schema = @Schema(implementation = ResponseMyInfo.class)))
     })
     @GetMapping
     public ResponseEntity<ResponseMyInfo> myProfile(@AuthenticationPrincipal User user) {

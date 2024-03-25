@@ -1,6 +1,5 @@
 package com.kr.matitting.service;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.ResponseMyInfo;
@@ -9,8 +8,6 @@ import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.token.TokenException;
-import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
@@ -23,8 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -82,17 +79,16 @@ public class UserService {
     }
 
     public ResponseMyInfo getMyInfo(User user) {
-        User myInfo = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         return new ResponseMyInfo(
-                myInfo.getId(),
-                myInfo.getSocialId(),
-                myInfo.getOauthProvider(),
-                myInfo.getEmail(),
-                myInfo.getNickname(),
-                myInfo.getAge(),
-                myInfo.getImgUrl(),
-                myInfo.getGender(),
-                myInfo.getRole()
+                user.getId(),
+                user.getSocialId(),
+                user.getOauthProvider(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getAge(),
+                user.getImgUrl(),
+                user.getGender(),
+                user.getRole()
         );
     }
 
