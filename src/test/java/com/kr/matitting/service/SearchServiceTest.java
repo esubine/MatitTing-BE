@@ -9,12 +9,18 @@ import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.UserRepository;
+import com.querydsl.core.types.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -87,7 +93,7 @@ class SearchServiceTest {
                 .longitude(126.90970359894729)
                 .latitude(37.55045202364851)
                 .status(RECRUIT)
-                .deadline(LocalDateTime.now().plusDays(3))
+                .deadline(LocalDateTime.now().plusDays(1))
                 .partyTime(LocalDateTime.now().plusDays(3).plusHours(1))
                 .totalParticipant(4)
                 .participantCount(1)
@@ -109,7 +115,7 @@ class SearchServiceTest {
                 .longitude(126.9854393172053)
                 .latitude(37.545685580653476)
                 .status(RECRUIT)
-                .deadline(LocalDateTime.now().plusDays(3))
+                .deadline(LocalDateTime.now().plusDays(2))
                 .partyTime(LocalDateTime.now().plusDays(3).plusHours(1))
                 .totalParticipant(4)
                 .participantCount(1)
@@ -153,7 +159,7 @@ class SearchServiceTest {
                 .longitude(126.9854393172053)
                 .latitude(37.545685580653476)
                 .status(RECRUIT)
-                .deadline(LocalDateTime.now().plusDays(3))
+                .deadline(LocalDateTime.now().plusDays(4))
                 .partyTime(LocalDateTime.now().plusDays(3).plusHours(1))
                 .totalParticipant(4)
                 .participantCount(1)
@@ -174,18 +180,25 @@ class SearchServiceTest {
         //given
         PartySearchCondDto partySearchCondDto = new PartySearchCondDto("맛있팅", RECRUIT, new SortDto(Sorts.HIT, Orders.DESC));
 
+        int pageNumber = 0;
+        int pageSize = 2;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+        int pageNumber2 = 1;
+        int pageSize2 = 2;
+        Pageable pageable2 = PageRequest.of(pageNumber2, pageSize2);
+
         //when
-        ResponseSearchPageDto partyPage = searchService.getPartyPage(partySearchCondDto, 2, 0L);
-        ResponseSearchPageDto partyPage1 = searchService.getPartyPage(partySearchCondDto, 2, partyPage.getLastPartyId());
+        ResponseSearchPageDto partyPage = searchService.getPartyPage(pageable, partySearchCondDto);
+        ResponseSearchPageDto partyPage1 = searchService.getPartyPage(pageable2, partySearchCondDto);
 
         //then
-        assertThat(partyPage.getPartyList().size()).isEqualTo(4);
-        assertThat(partyPage.getHasNext()).isFalse();
-        assertThat(partyPage.getLastPartyId()).isEqualTo(party4.getId());
+        assertThat(partyPage.getPartyList().size()).isEqualTo(2);
+        assertThat(partyPage.getPartyList().get(0).partyId()).isEqualTo(party4.getId());
+        assertThat(partyPage.getPartyList().get(1).partyId()).isEqualTo(party2.getId());
         assertThat(partyPage1.getPartyList().size()).isEqualTo(2);
-        assertThat(partyPage1.getHasNext()).isTrue();
-        assertThat(partyPage1.getLastPartyId()).isEqualTo(party3.getId());
-
+        assertThat(partyPage1.getPartyList().get(0).partyId()).isEqualTo(party3.getId());
+        assertThat(partyPage1.getPartyList().get(1).partyId()).isEqualTo(party1.getId());
     }
 
     @DisplayName("인기 검색어 조회 성공")
@@ -198,12 +211,15 @@ class SearchServiceTest {
         PartySearchCondDto partySearchCondDto4 = new PartySearchCondDto("우수", RECRUIT, new SortDto(Sorts.HIT, Orders.ASC));
         PartySearchCondDto partySearchCondDto5 = new PartySearchCondDto("우수", RECRUIT, new SortDto(Sorts.HIT, Orders.ASC));
         PartySearchCondDto partySearchCondDto6 = new PartySearchCondDto("양양", RECRUIT, new SortDto(Sorts.HIT, Orders.ASC));
-        searchService.getPartyPage(partySearchCondDto1, 4, 0L);
-        searchService.getPartyPage(partySearchCondDto2, 4, 0L);
-        searchService.getPartyPage(partySearchCondDto3, 4, 0L);
-        searchService.getPartyPage(partySearchCondDto4, 4, 0L);
-        searchService.getPartyPage(partySearchCondDto5, 4, 0L);
-        searchService.getPartyPage(partySearchCondDto6, 4, 0L);
+        int pageNumber = 0;
+        int pageSize = 2;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        searchService.getPartyPage(pageable, partySearchCondDto1);
+        searchService.getPartyPage(pageable, partySearchCondDto2);
+        searchService.getPartyPage(pageable, partySearchCondDto3);
+        searchService.getPartyPage(pageable, partySearchCondDto4);
+        searchService.getPartyPage(pageable, partySearchCondDto5);
+        searchService.getPartyPage(pageable, partySearchCondDto6);
 
         //when
         List<ResponseRankingDto> responseRankingDtos = searchService.searchRankList();
