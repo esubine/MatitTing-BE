@@ -229,10 +229,6 @@ public class PartyService {
     public String decideUser(PartyDecisionDto partyDecisionDto, User user) {
         log.info("=== decideUser() start ===");
 
-        if (!(partyDecisionDto.getStatus() == PartyDecision.ACCEPT || partyDecisionDto.getStatus() == PartyDecision.REFUSE)) {
-            log.error("=== Party Join Status was requested incorrectly ===");
-            throw new PartyJoinException(PartyJoinExceptionType.WRONG_STATUS);
-        }
         User volunteerUser = userRepository.findByNickname(partyDecisionDto.getNickname()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndUserId(
                 partyDecisionDto.getPartyId(),
@@ -243,25 +239,23 @@ public class PartyService {
 
         partyJoinRepository.delete(findPartyJoin);
 
+        Party party = partyRepository.findById(partyDecisionDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
         if (partyDecisionDto.getStatus() == PartyDecision.ACCEPT) {
             log.info("=== ACCEPT ===");
 
-            Party party = partyRepository.findById(partyDecisionDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
             party.increaseUser();
-            if (party.getTotalParticipant() == party.getParticipantCount()) {
-                party.setStatus(PartyStatus.RECRUIT_FINISH);
-            }
-            Team member = Team.builder().user(volunteerUser).party(party).role(Role.VOLUNTEER).build();
+            Team member = new Team(volunteerUser, party, Role.VOLUNTEER);
             teamRepository.save(member);
 
+            //TODO: 이것 또한 party와 user를 매개변수로 보내는 것이 좋다고 생각합니다! 검증돈 객체를 매개변수로 보내 불필요한 findBy를 줄일 수 있다고 생각합니다.
             // 참가신청 수락된 유저 ~ 채팅방에 초대
             chatService.addParticipant(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
 
-            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.", "참가신청 수락");
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가 되셨습니다.");
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");
-            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부가 도착했습니다.", "참가신청 거절");
+            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가가 거절되었습니다.");
             return "Refuse Request Completed";
         }
     }
