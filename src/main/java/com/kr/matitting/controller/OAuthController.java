@@ -128,9 +128,9 @@ public class OAuthController {
         @ApiResponse(responseCode = "401(1102)", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public ResponseEntity<String> logout(HttpServletRequest request) {
         String accessToken = jwtService.extractToken(request, "accessToken");
-        userService.logout(accessToken, user);
+        userService.logout(accessToken);
         return ResponseEntity.ok("logout Success");
     }
 
@@ -150,9 +150,9 @@ public class OAuthController {
         @ApiResponse(responseCode = "401(1102)", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @DeleteMapping("/withdraw")
-    public ResponseEntity<String> withdraw(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public ResponseEntity<String> withdraw(HttpServletRequest request) {
         String accessToken = jwtService.extractToken(request, "accessToken");
-        userService.withdraw(accessToken, user);
+        userService.withdraw(accessToken);
         return ResponseEntity.ok("withdraw Success");
     }
 

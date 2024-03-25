@@ -94,6 +94,9 @@ public class Party extends BaseTimeEntity {
     @OneToOne(mappedBy = "party", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatRoom chatRoom;
 
+    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews;
+
     public void increaseUser() {
         this.participantCount++;
     }
