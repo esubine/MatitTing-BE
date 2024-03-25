@@ -122,9 +122,7 @@ public class PartyService {
 
     public void partyUpdate(User user, PartyUpdateDto partyUpdateDto, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
-        if (!user.getId().equals(party.getUser().getId())) {
-            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
-        }
+        checkRole(user, party);
         if (partyUpdateDto.partyTitle() != null) {
             party.setPartyTitle(partyUpdateDto.partyTitle());
         }
