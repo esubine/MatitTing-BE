@@ -6,9 +6,7 @@ import com.kr.matitting.entity.Party;
 import com.kr.matitting.repository.PartyRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -26,26 +24,39 @@ public class SearchService {
     private final RedisTemplate<String, String> redisTemplate;
     private final PartyRepositoryCustom partyRepositoryCustom;
 
-    public ResponseSearchPageDto getPartyPage(PartySearchCondDto partySearchCondDto, Integer size, Long lastPartyId) {
-        if (partySearchCondDto.keyword() == null) {
-            return new ResponseSearchPageDto(null, null, null);
-        }
-        else{
-            increaseKeyWordScore(partySearchCondDto.keyword());
-        }
+//    public ResponseSearchPageDto getPartyPage(PartySearchCondDto partySearchCondDto, Integer size, Long lastPartyId) {
+//        if (partySearchCondDto.keyword() == null) {
+//            return new ResponseSearchPageDto(null, null, null);
+//        }
+//        else{
+//            increaseKeyWordScore(partySearchCondDto.keyword());
+//        }
+//
+//        Sort sort = partySearchCondDto.sortDto().getOrders() == Orders.DESC
+//                ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending()
+//                : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending();
+//
+//        PageRequest pageable = PageRequest.of(0, size, sort);
+//
+//        Slice<Party> partySlice = partyRepositoryCustom.searchPage(partySearchCondDto, pageable, lastPartyId);
+//        List<ResponsePartyDto> responsePartyList = partySlice.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList());
+//        Long newLastPartyId = getLastPartyId(responsePartyList);
+//
+//        return new ResponseSearchPageDto(responsePartyList, newLastPartyId, partySlice.hasNext());
+//    }
 
-        Sort sort = partySearchCondDto.sortDto().getOrders() == Orders.DESC
-                ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending()
-                : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending();
+    public ResponseSearchPageDto getPartyPage(Pageable pageable, PartySearchCondDto partySearchCondDto) {
+        if (partySearchCondDto.keyword() == null) return new ResponseSearchPageDto(null);
+        else increaseKeyWordScore(partySearchCondDto.keyword());
 
-        PageRequest pageable = PageRequest.of(0, size, sort);
 
-        Slice<Party> partySlice = partyRepositoryCustom.searchPage(partySearchCondDto, pageable, lastPartyId);
-        List<ResponsePartyDto> responsePartyList = partySlice.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList());
-        Long newLastPartyId = getLastPartyId(responsePartyList);
-
-        return new ResponseSearchPageDto(responsePartyList, newLastPartyId, partySlice.hasNext());
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                partySearchCondDto.sortDto().getOrders().equals(Orders.DESC) ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending() : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending()
+        );
+        Page<Party> parties = partyRepositoryCustom.searchPage(pageRequest, partySearchCondDto);
+        return new ResponseSearchPageDto(parties.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList()));
     }
+
     public void increaseKeyWordScore(String keyWord) {
         log.info("=== increaseKeyWordScore() start ===");
 
