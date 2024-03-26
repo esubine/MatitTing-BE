@@ -1,6 +1,5 @@
 package com.kr.matitting.service;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.ResponseMyInfo;
@@ -9,8 +8,6 @@ import com.kr.matitting.dto.UserSignUpDto;
 import com.kr.matitting.dto.UserUpdateDto;
 import com.kr.matitting.entity.Team;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.token.TokenException;
-import com.kr.matitting.exception.token.TokenExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
@@ -23,8 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -48,33 +45,24 @@ public class UserService {
     }
 
     public void update(User user, UserUpdateDto userUpdateDto) {
-        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-
-        if (userUpdateDto.nickname() != null) findUser.setNickname(userUpdateDto.nickname());
-        if (userUpdateDto.imgUrl() != null) findUser.setImgUrl(userUpdateDto.imgUrl());
+        if (userUpdateDto.nickname() != null) user.setNickname(userUpdateDto.nickname());
+        if (userUpdateDto.imgUrl() != null) user.setImgUrl(userUpdateDto.imgUrl());
     }
 
-    public void logout(String accessToken) {
+    public void logout(String accessToken, User user) {
         log.info("=== logout() start ===");
 
-        DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
-        String socialId = decodedJWT.getClaim("socialId").asString();
-
+        jwtService.isTokenValid(accessToken);
         //expired 시간 check
-        tokenRemove(accessToken, socialId);
+        tokenRemove(accessToken, user.getSocialId());
     }
 
-    public void withdraw(String accessToken) {
-        //TODO: 현재 로그인 사용자와 비교 필요
+
+    public void withdraw(String accessToken, User user) {
         log.info("=== withdraw() start ===");
 
-        DecodedJWT decodedJWT = jwtService.isTokenValid(accessToken);
-        String socialId = decodedJWT.getClaim("socialId").asString();
-
-        tokenRemove(accessToken, socialId);
-
-        User findUser = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-        userRepository.delete(findUser);
+        tokenRemove(accessToken, user.getSocialId());
+        userRepository.delete(user);
     }
 
     private void tokenRemove(String accessToken, String socialId) {
@@ -89,34 +77,32 @@ public class UserService {
     }
 
     public ResponseMyInfo getMyInfo(User user) {
-        User myInfo = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         return new ResponseMyInfo(
-                myInfo.getId(),
-                myInfo.getSocialId(),
-                myInfo.getOauthProvider(),
-                myInfo.getEmail(),
-                myInfo.getNickname(),
-                myInfo.getAge(),
-                myInfo.getImgUrl(),
-                myInfo.getGender(),
-                myInfo.getRole()
+                user.getId(),
+                user.getSocialId(),
+                user.getOauthProvider(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getAge(),
+                user.getImgUrl(),
+                user.getGender(),
+                user.getRole()
         );
     }
 
     public List<ResponsePartyDto> getMyPartyList(User user, Role role) {
-        List<ResponsePartyDto> parties;
-        List<Team> teams;
+        List<Team> teams = new ArrayList<>();
 
         if (role == Role.HOST || role == Role.VOLUNTEER) {
             teams = partyTeamRepository.findByUserIdAndRole(user.getId(), role);
-            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() != PartyStatus.PARTY_FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
-            return parties;
-        }
-        else if(role == Role.USER){
+        } else if (role == Role.USER) {
             teams = partyTeamRepository.findByUserId(user.getId());
-            parties = teams.stream().map(team -> team.getParty()).filter(party -> party.getStatus() == PartyStatus.PARTY_FINISH).map(party -> ResponsePartyDto.toDto(party)).sorted(Comparator.comparing(ResponsePartyDto::partyTime)).toList();
-            return parties;
-            }
-        return new LinkedList<ResponsePartyDto>();
+        }
+        return teams.stream()
+                .map(Team::getParty)
+                .filter(party -> role == Role.USER ? party.getStatus() == PartyStatus.PARTY_FINISH : party.getStatus() != PartyStatus.PARTY_FINISH)
+                .map(ResponsePartyDto::toDto)
+                .sorted(Comparator.comparing(ResponsePartyDto::partyTime))
+                .toList();
     }
 }

@@ -227,7 +227,7 @@ class UserServiceTest {
         String accessToken = jwtService.createAccessToken(user1);
 
         //when
-        userService.logout(accessToken);
+        userService.logout(accessToken, user1);
 
         //then
         assertThat(redisUtil.getData(accessToken)).isEqualTo("logout");
@@ -240,7 +240,7 @@ class UserServiceTest {
         String accessToken = "Bearer sfdlkjfsejklfsekjlfesjlkjlksfejlsfeljsljse.fesjisfejifsfesiljsfeljifsjielefs.sfelijsfejilfesjilefsjils";
 
         //when, then
-        assertThrows(TokenException.class, () -> userService.logout(accessToken));
+        assertThrows(TokenException.class, () -> userService.logout(accessToken, user1));
     }
 
     //회원탈퇴
@@ -251,7 +251,7 @@ class UserServiceTest {
         String accessToken = jwtService.createAccessToken(user1);
 
         //when
-        userService.withdraw(accessToken);
+        userService.withdraw(accessToken, user1);
 
         //then
         assertThat(redisUtil.getData(accessToken)).isEqualTo("logout");
@@ -265,7 +265,7 @@ class UserServiceTest {
         String accessToken = "Bearer sfdlkjfsejklfsekjlfesjlkjlksfejlsfeljsljse.fesjisfejifsfesiljsfeljifsjielefs.sfelijsfejilfesjilefsjils";
 
         //when, then
-        assertThrows(TokenException.class, () -> userService.withdraw(accessToken));
+        assertThrows(TokenException.class, () -> userService.withdraw(accessToken, user1));
     }
 
     @DisplayName("내 정보 조회 성공")
@@ -284,15 +284,6 @@ class UserServiceTest {
         assertThat(myInfo.getImgUrl()).isEqualTo(user1.getImgUrl());
         assertThat(myInfo.getGender()).isEqualTo(user1.getGender());
         assertThat(myInfo.getRole()).isEqualTo(user1.getRole());
-    }
-
-    @DisplayName("내 정보 조회 실패 잘못된 유저 ID")
-    @Test
-    void 내정보조회_실패_잘못된_유저ID() {
-        //given
-        user1.setId(100L);
-        //when, then
-        assertThrows(UserException.class, () -> userService.getMyInfo(user1));
     }
 
     @DisplayName("내 파티 리스트 조회 성공")

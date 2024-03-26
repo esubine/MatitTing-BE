@@ -28,4 +28,10 @@ public class Team {
 
     @Enumerated(EnumType.STRING)
     private Role role; //방장 or 참여자
+
+    public Team(User user, Party party, Role role) {
+        this.user = user;
+        this.party = party;
+        this.role = role;
+    }
 }

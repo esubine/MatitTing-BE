@@ -23,4 +23,10 @@ public class PartyJoin extends BaseTimeEntity {
     private Long leaderId;
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    public PartyJoin(Party party, Long leaderid, Long userId) {
+        this.party = party;
+        this.leaderId = leaderid;
+        this.userId = userId;
+    }
 }

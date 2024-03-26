@@ -128,9 +128,9 @@ public class OAuthController {
         @ApiResponse(responseCode = "401(1102)", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        String accessToken = jwtService.extractToken(request, "accessToken");
-        userService.logout(accessToken);
+    public ResponseEntity<String> logout(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        String accessToken = jwtService.extractToken(request);
+        userService.logout(accessToken, user);
         return ResponseEntity.ok("logout Success");
     }
 
@@ -145,14 +145,14 @@ public class OAuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "호원 탈퇴 성공", content = @Content(schema = @Schema(implementation = String.class))),
-        @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
         @ApiResponse(responseCode = "400(1100)", description = "AccessToken이 존재하지 않음", content = @Content(schema = @Schema(implementation = TokenException.class))),
         @ApiResponse(responseCode = "401(1102)", description = "AccessToken 검증 실패\n\n AccessToken 값이 유효하지 않거나 Expired 됐을 때 발생", content = @Content(schema = @Schema(implementation = TokenException.class)))
     })
     @DeleteMapping("/withdraw")
-    public ResponseEntity<String> withdraw(HttpServletRequest request) {
-        String accessToken = jwtService.extractToken(request, "accessToken");
-        userService.withdraw(accessToken);
+    public ResponseEntity<String> withdraw(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        String accessToken = jwtService.extractToken(request);
+        userService.withdraw(accessToken, user);
+        
         return ResponseEntity.ok("withdraw Success");
     }
 
@@ -173,7 +173,7 @@ public class OAuthController {
     })
     @GetMapping("/renew-token")
     public ResponseEntity<String> renewToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = jwtService.extractToken(request, "refreshToken");
+        String refreshToken = jwtService.extractToken(request);
         String accessToken = jwtService.renewToken(refreshToken);
         response.setHeader(jwtService.getAccessHeader(), "Bearer "+accessToken);
         return ResponseEntity.status(HttpStatus.CREATED).body("Success");

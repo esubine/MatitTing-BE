@@ -13,7 +13,8 @@ public enum TokenExceptionType implements BaseExceptionType {
     VERIFICATION_ACCESS_TOKEN(1102, HttpStatus.UNAUTHORIZED, "Access Token 검증을 실패했습니다."),
     BLACK_LIST_ACCESS_TOKEN(1103, HttpStatus.FORBIDDEN, "Black List Access Token 입니다."),
     INVALID_SOCIAL_TOKEN(1104, HttpStatus.BAD_REQUEST, "소셜 Token이 유효하지 않습니다."),
-    NOT_FOUND_REFRESH_TOKEN(1200, HttpStatus.BAD_REQUEST, "Refresh Token이 없습니다.");
+    NOT_FOUND_REFRESH_TOKEN(1105, HttpStatus.BAD_REQUEST, "Refresh Token이 없습니다."),
+    NOT_FOUND_TOKEN(1106, HttpStatus.NOT_FOUND, "Token이 Header에 없습니다.");
 
     private int errorCode;
     private HttpStatus httpStatus;

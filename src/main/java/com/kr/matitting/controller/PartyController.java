@@ -76,7 +76,7 @@ public class PartyController {
     @PatchMapping("/{partyId}")
     public ResponseEntity<String> updateParty(@AuthenticationPrincipal User user, @RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
         partyService.partyUpdate(user, partyUpdateDto, partyId);
-        return ResponseEntity.ok().body("Success Party update");
+        return ResponseEntity.ok("Success Party update");
     }
 
     @Operation(summary = "파티 세부정보", description = "파티의 세부정보 API \n\n" +
@@ -92,7 +92,7 @@ public class PartyController {
     @GetMapping("/{partyId}")
     public ResponseEntity<ResponsePartyDetailDto> partyDetail(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
         ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user, partyId);
-        return ResponseEntity.ok().body(partyInfo);
+        return ResponseEntity.ok(partyInfo);
     }
 
     @Operation(summary = "파티 삭제", description = "파티를 삭제하는 API 입니다.")
@@ -104,7 +104,7 @@ public class PartyController {
     @DeleteMapping("/{partyId}")
     public ResponseEntity<String> partyDelete(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
         partyService.deleteParty(user, partyId);
-        return ResponseEntity.ok().body("Success Party Delete");
+        return ResponseEntity.ok("Success Party Delete");
     }
 
     @Operation(summary = "파티 참가 신청", description = "파티 참가 신청 API \n\n" +
@@ -123,7 +123,6 @@ public class PartyController {
         @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PostMapping("/participation")
-    //TODO: 이거 dto로 response하기
     public ResponseEntity<ResponsePartyJoinDto> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(partyService.joinParty(partyJoinDto, user));
     }
@@ -146,7 +145,7 @@ public class PartyController {
     @PostMapping("/decision")
     public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyDecisionDto partyDecisionDto, @AuthenticationPrincipal User user) {
         String result = partyService.decideUser(partyDecisionDto, user);
-        return ResponseEntity.ok().body(result);
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "파티 현황", description = "내 파티 현황 API \n\n" +
@@ -159,7 +158,7 @@ public class PartyController {
     @GetMapping("/party-status")
     public ResponseEntity<List<ResponsePartyDto>> myPartyList(@AuthenticationPrincipal User user,@NotNull @RequestParam Role role) {
         List<ResponsePartyDto> myPartyList = userService.getMyPartyList(user, role);
-        return ResponseEntity.ok().body(myPartyList);
+        return ResponseEntity.ok(myPartyList);
     }
 
     @Operation(summary = "파티 신청 현황", description = "실시간 파티 현황 API \n\n" +
@@ -178,6 +177,4 @@ public class PartyController {
         List<InvitationRequestDto> invitationRequestDtos = partyService.getJoinList(user, role);
         return ResponseEntity.ok(invitationRequestDtos);
     }
-
-
 }

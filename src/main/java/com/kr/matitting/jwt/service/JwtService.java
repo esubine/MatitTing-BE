@@ -14,7 +14,6 @@ import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.redis.RedisUtil;
 import com.kr.matitting.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +49,6 @@ public class JwtService {
      */
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
@@ -59,8 +57,7 @@ public class JwtService {
      * AccessToken 생성 메소드
      */
     public String createAccessToken(User user) {
-        if (user.getRole() == Role.GUEST)
-            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+        checkRole(user);
 
         return JWT.create() //JWT 토큰 생성 빌더 반환
                 .withSubject(ACCESS_TOKEN_SUBJECT) //JWT Subject 지정 -> AccessToken
@@ -74,8 +71,7 @@ public class JwtService {
      * RefreshToken 생성
      */
     public String createRefreshToken(User user) {
-        if (user.getRole() == Role.GUEST)
-            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+        checkRole(user);
 
         Date now = new Date();
         String refreshToken = JWT.create()
@@ -88,24 +84,32 @@ public class JwtService {
         return refreshToken;
     }
 
+    private void checkRole(User user) {
+        if (user.getRole() == Role.GUEST)
+            throw new UserException(UserExceptionType.INVALID_ROLE_USER);
+    }
+
     /**
      * Request Header token Get
      */
-    public String extractToken(HttpServletRequest request, String tokenType) {
-        Optional<String> token = null;
-
-        if (tokenType == "accessToken") {
-             token = Optional.ofNullable(request.getHeader(accessHeader))
-                    .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                    .map(refreshToken -> refreshToken.replace(BEARER, ""));
-            token.orElseThrow(() -> new TokenException(TokenExceptionType.NOT_FOUND_ACCESS_TOKEN));
-        } else if (tokenType == "refreshToken") {
-            token = Optional.ofNullable(request.getHeader(refreshHeader))
-                    .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                    .map(refreshToken -> refreshToken.replace(BEARER, ""));
-            token.orElseThrow(() -> new TokenException(TokenExceptionType.NOT_FOUND_REFRESH_TOKEN));
+    public String extractToken(HttpServletRequest request) {
+        Optional<String> accessToken = extractTokenFromHeader(request, accessHeader);
+        if (accessToken.isPresent()) {
+            return accessToken.get();
         }
-        return token.get();
+
+        Optional<String> refreshToken = extractTokenFromHeader(request, refreshHeader);
+        if (refreshToken.isPresent()) {
+            return refreshToken.get();
+        }
+
+        throw new TokenException(TokenExceptionType.NOT_FOUND_TOKEN);
+    }
+
+    private Optional<String> extractTokenFromHeader(HttpServletRequest request, String headerName) {
+        return Optional.ofNullable(request.getHeader(headerName))
+                .filter(header -> header.startsWith(BEARER))
+                .map(header -> header.replace(BEARER, ""));
     }
 
     public void updateRefreshToken(User user, String refreshToken) {
@@ -116,12 +120,6 @@ public class JwtService {
         redisUtil.setDateExpire(user.getSocialId(), refreshToken, refreshTokenExpirationPeriod);
     }
 
-    private void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
-        response.setHeader(accessHeader, accessToken);
-    }
-    private void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
-        response.setHeader(refreshHeader, refreshToken);
-    }
     public DecodedJWT isTokenValid(String token) throws TokenExpiredException {
         try {
             return JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
@@ -136,7 +134,6 @@ public class JwtService {
     }
 
     public String renewToken(String refreshToken) {
-        //request refreshToken -> User SocialId를 get -> redis refreshToken 유효한지 찾아서 검사
         DecodedJWT decodedJWT = isTokenValid(refreshToken);
         String socialId = decodedJWT.getClaim("socialId").asString();
         String findToken = redisUtil.getData(socialId);
@@ -157,6 +154,4 @@ public class JwtService {
         Long now = new Date().getTime();
         return (expiration.getTime() - now);
     }
-
-
 }

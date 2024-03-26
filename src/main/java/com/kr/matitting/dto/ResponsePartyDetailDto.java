@@ -4,6 +4,8 @@ import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.entity.Party;
+import com.kr.matitting.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -18,9 +20,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponsePartyDetailDto {
-    @Schema(description = "유저 id", example = "10")
-    private Long userId;
-
     @Schema(description = "방장 여부", example = "true or false")
     private Boolean isLeader;
     @Schema(description = "파티 id", nullable = false, example = "1")
@@ -75,4 +74,28 @@ public class ResponsePartyDetailDto {
     @Schema(description = "조회수", nullable = false, example = "1")
     @NotNull
     private Integer hit;
+
+    public static ResponsePartyDetailDto from(Party party, User user) {
+        return ResponsePartyDetailDto.builder()
+                .isLeader(user != null && user.getId().equals(party.getUser().getId()))
+                .partyId(party.getId())
+                .partyTitle(party.getPartyTitle())
+                .partyContent(party.getPartyContent())
+                .address(party.getAddress())
+                .longitude(party.getLongitude())
+                .latitude(party.getLatitude())
+                .partyPlaceName(party.getPartyPlaceName())
+                .status(party.getStatus())
+                .gender(party.getGender())
+                .age(party.getAge())
+                .deadline(party.getDeadline())
+                .partyTime(party.getPartyTime())
+                .totalParticipant(party.getTotalParticipant())
+                .participate(party.getParticipantCount())
+                .menu(party.getMenu())
+                .category(party.getCategory())
+                .thumbnail(party.getThumbnail())
+                .hit(party.getHit())
+                .build();
+    }
 }
