@@ -1,5 +1,6 @@
 package com.kr.matitting.service;
 
+import com.kr.matitting.constant.MessageType;
 import com.kr.matitting.dto.*;
 import com.kr.matitting.entity.ChatRoom;
 import com.kr.matitting.entity.ChatUser;
@@ -10,6 +11,7 @@ import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -31,10 +33,12 @@ import static com.kr.matitting.exception.user.UserExceptionType.NOT_FOUND_USER;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatService {
     private final ChatUserRepository chatUserRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomRepositoryImpl chatRoomRepositoryImpl;
+    private final ChatRepositoryCustomImpl chatRepositoryCustomImpl;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final SimpMessageSendingOperations messagingTemplate;
@@ -60,19 +64,11 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<ResponseChatDto> getChats(Long userId, Long roomId, Long lastChatId, Pageable pageable) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+    public ResponseChatListDto getChats(Long userId, Long roomId, Long lastChatId, Pageable pageable) {
+        chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
 
-        return chatRoom.getChatList().stream()
-                .map(chat -> {
-                    ChatUser user = chat.getSendUser();
-                    return ResponseChatDto.builder()
-                            .senderId(user.getId())
-                            .nickname(user.getNickname())
-                            .message(chat.getMessage())
-                            .createAt(chat.getCreateDate())
-                            .build();
-                }).toList();
+        return chatRepositoryCustomImpl.getChatList(roomId, pageable, lastChatId);
     }
 
     // 채팅방 유저 강퇴 - 방장만 가능
@@ -129,13 +125,21 @@ public class ChatService {
     }
 
     @Transactional
-    public void sendMessage(Long userId, ChatMessage chatMessage) {
-        Long roomId = chatMessage.getRoomId();
+    public void sendMessage(User user, ChatMessageDto chatMessageDto) {
+        Long roomId = chatMessageDto.getRoomId();
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
         chatRoom.setModifiedDate(LocalDateTime.now());
-        chatRoom.getChatUserList().stream().map(user -> user.getUser().getId().equals(userId)).findAny().orElseThrow(() -> new UserException(INVALID_ROLE_USER));
 
-        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getRoomId(), chatMessage);
+        chatRoom.getChatUserList().stream()
+                .filter(chatUser -> chatUser.getUser().equals(user))
+                .findAny()
+                .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
+
+        if (MessageType.ENTER.equals(chatMessageDto.getType())) {
+            chatMessageDto.setMessage(chatMessageDto.getChatUserId() + "님이 입장하였습니다.");
+        }
+
+        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessageDto.getRoomId(), chatMessageDto);
     }
 
     // 파티 참가 요청 수락 시 채팅유저에 정보 추가
@@ -151,7 +155,7 @@ public class ChatService {
         chatUserRepository.save(chatUser);
     }
 
-    public ResponseChatRoomInfoDto getChatRoomInfo(Long chatRoomId){
+    public ResponseChatRoomInfoDto getChatRoomInfo(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
 
         return new ResponseChatRoomInfoDto(chatRoom);

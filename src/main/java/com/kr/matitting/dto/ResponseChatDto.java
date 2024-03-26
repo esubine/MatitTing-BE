@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponseChatDto {
+    private Long chatId;
     private Long senderId;
     private String nickname;
     private String message;
