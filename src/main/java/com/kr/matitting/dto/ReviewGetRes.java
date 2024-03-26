@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import static java.lang.Math.*;
+
 @Getter
 @AllArgsConstructor
 public class ReviewGetRes {
@@ -28,7 +30,7 @@ public class ReviewGetRes {
                 user.getImgUrl(),
                 user.getNickname(),
                 review.getRating(),
-                review.getContent().substring(0, Math.max(review.getContent().length(),9)) + " ...",
+                review.getContent().substring(0, min(review.getContent().length(),9)) + " ...",
                 review.getImgUrl());
     }
 }
