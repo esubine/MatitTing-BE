@@ -68,6 +68,8 @@ class ReviewServiceTest {
                 .imgUrl("왈왈.jpg")
                 .gender(MALE)
                 .role(Role.USER)
+                .receivedReviews(new ArrayList<>())
+                .sendReviews(new ArrayList<>())
                 .build();
         user1.setReceivedReviews(new ArrayList<>());
         user1.setSendReviews(new ArrayList<>());
@@ -339,6 +341,35 @@ class ReviewServiceTest {
         assertThat(findReview.getIsSelfReview()).isTrue();
         assertThat(findReview1.getNickname()).isEqualTo(user2.getNickname());
         assertThat(findReview1.getIsSelfReview()).isFalse();
+    }
+
+    @DisplayName("방장 후기 조회 성공")
+    @Test
+    void 방장_후기조회_성공() {
+        //given
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, "추억사진.jpg");
+        ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3);
+
+        //when
+        List<ReviewGetRes> hostReviewList = reviewService.getHostReviewList(user1.getId());
+
+        //then
+        assertThat(hostReviewList.size()).isEqualTo(2);
+        assertThat(hostReviewList.get(0).getReviewId()).isEqualTo(review2.getReviewId());
+        assertThat(hostReviewList.get(1).getReviewId()).isEqualTo(review1.getReviewId());
+    }
+
+    @DisplayName("방장 후기 조회 실패 없는 유저ID")
+    @Test
+    void 방장_후기조회_실패_없는_유저ID() {
+        //given
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, "추억사진.jpg");
+        ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3);
+
+        //when, then
+        assertThrows(UserException.class, () -> reviewService.getHostReviewList(user1.getId() + 100L));
     }
 }
 
