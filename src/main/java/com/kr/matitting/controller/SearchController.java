@@ -43,7 +43,9 @@ public class SearchController {
 //    }
 
     @Operation(summary = "파티 검색", description = "파티 검색 API \n\n" +
-            "파티 검색 시 해당 Text가 포함된 파티방 정보를 불러온다. => 포함되는 속성 값 : 제목, 메뉴, 파티 소개글, 주소"
+            "파티 검색 시 해당 Text가 포함된 파티방 정보를 불러온다. => 포함되는 속성 값 : 제목, 메뉴, 파티 소개글, 주소\n\n" +
+            "Request(query parameter) : page(int), size(int) \n\n" +
+            "Request(form-data) : keyword(string), status(string), sortDto.sorts(string), sortDto.orders(string)"
     )
     @ApiResponse(responseCode = "200", description = "파티 검색 성공", content = @Content(schema = @Schema(implementation = ResponseSearchDto.class)))
     @GetMapping
