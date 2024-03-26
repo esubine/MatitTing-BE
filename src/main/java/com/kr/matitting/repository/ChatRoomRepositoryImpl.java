@@ -36,7 +36,6 @@ public class ChatRoomRepositoryImpl {
                 .from(chatUser)
                 .where(chatUser.user.id.eq(userId))
                 .orderBy(chatRoom.modifiedDate.desc())
-                .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1);
 
         if (time != null) {

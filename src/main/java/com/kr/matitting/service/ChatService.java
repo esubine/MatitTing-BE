@@ -66,6 +66,7 @@ public class ChatService {
     @Transactional(readOnly = true)
     public ResponseChatListDto getChats(Long userId, Long roomId, Long lastChatId, Pageable pageable) {
         chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
 
         return chatRepositoryCustomImpl.getChatList(roomId, pageable, lastChatId);
     }
@@ -124,15 +125,15 @@ public class ChatService {
     }
 
     @Transactional
-    public void sendMessage(Long userId, ChatMessageDto chatMessageDto) {
+    public void sendMessage(User user, ChatMessageDto chatMessageDto) {
         Long roomId = chatMessageDto.getRoomId();
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
         chatRoom.setModifiedDate(LocalDateTime.now());
 
         chatRoom.getChatUserList().stream()
-                .filter(user -> user.getUser().getId().equals(userId))
+                .filter(chatUser -> chatUser.getUser().equals(user))
                 .findAny()
-                .orElseThrow(() -> new UserException(INVALID_ROLE_USER));
+                .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
 
         if (MessageType.ENTER.equals(chatMessageDto.getType())) {
             chatMessageDto.setMessage(chatMessageDto.getChatUserId() + "님이 입장하였습니다.");
@@ -154,7 +155,7 @@ public class ChatService {
         chatUserRepository.save(chatUser);
     }
 
-    public ResponseChatRoomInfoDto getChatRoomInfo(Long chatRoomId){
+    public ResponseChatRoomInfoDto getChatRoomInfo(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
 
         return new ResponseChatRoomInfoDto(chatRoom);

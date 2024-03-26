@@ -2,6 +2,7 @@ package com.kr.matitting.handler;
 
 import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.jwt.service.JwtService;
+import com.kr.matitting.redis.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -11,15 +12,14 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 
-import static com.kr.matitting.exception.token.TokenExceptionType.VERIFICATION_ACCESS_TOKEN;
+import static com.kr.matitting.exception.token.TokenExceptionType.*;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class StompHandler implements ChannelInterceptor {
-    //    private final ChatHandler chatHandler;
     private final JwtService jwtService;
-//    private final AtomicInteger atomicInteger = new AtomicInteger(0);
+    private final RedisUtil redisUtil;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -28,12 +28,22 @@ public class StompHandler implements ChannelInterceptor {
 
             if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                 String header = accessor.getFirstNativeHeader("Authorization");
+
+                if (header == null || !header.startsWith("Bearer ")) {
+                    throw new TokenException(NOT_FOUND_ACCESS_TOKEN);
+                }
                 String token = header.replace("Bearer ", "");
-                jwtService.isTokenValid(token);
+
+                if (redisUtil.getData(token) == null) {
+                    jwtService.isTokenValid(token);
+                } else {
+                    log.error(BLACK_LIST_ACCESS_TOKEN.getErrorMessage());
+                    throw new TokenException(BLACK_LIST_ACCESS_TOKEN);
+                }
             }
         } catch (Exception e) {
-            log.error("토큰 유효성 검사 에러 발생 ", e);
-            throw new TokenException(VERIFICATION_ACCESS_TOKEN);
+            log.error(INVALID_ACCESS_TOKEN.getErrorMessage());
+            throw new TokenException(INVALID_ACCESS_TOKEN);
         }
         return message;
     }

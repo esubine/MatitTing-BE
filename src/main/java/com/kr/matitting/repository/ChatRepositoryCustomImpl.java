@@ -21,16 +21,14 @@ public class ChatRepositoryCustomImpl {
 
     public ResponseChatListDto getChatList(Long roomId, Pageable pageable, Long lastChatId){
 
-        JPAQuery<Chat> query = queryFactory
+        List<Chat> chatList = queryFactory
                 .select(chat)
                 .from(chat)
                 .where(chat.chatRoom.id.eq(roomId),
                         chat.id.lt(lastChatId))
                 .orderBy(chat.createDate.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize()+1);
-
-        List<Chat> chatList = query.fetch();
+                .limit(pageable.getPageSize()+1)
+                .fetch();
 
         List<ResponseChatDto> responseChatDtos = chatList.stream()
                 .map(chat -> ResponseChatDto.builder()

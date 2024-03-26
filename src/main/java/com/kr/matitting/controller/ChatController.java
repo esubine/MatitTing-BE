@@ -16,8 +16,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.kr.matitting.dto.ChatRoomDto.ChatResponse;
-
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
@@ -33,8 +31,7 @@ public class ChatController {
                                                         @AuthenticationPrincipal User user,
                                                         @RequestParam(value = "size", defaultValue = "5", required = false) Integer size,
                                                         @RequestParam(value = "lastChatId") Long lastChatId) {
-        Pageable pageable = PageRequest.of(0, size ,Sort.Direction.DESC, "createDate" );
-
+        PageRequest pageable = PageRequest.of(0, size);
         ResponseChatListDto responseChatListDto = chatService.getChats(user.getId(), roomId, lastChatId, pageable);
         return ResponseEntity.ok(responseChatListDto);
     }
@@ -44,7 +41,7 @@ public class ChatController {
                                                         "")
     @MessageMapping("/message")
     public void message(ChatMessageDto chatMessageDto, @AuthenticationPrincipal User user) {
-        chatService.sendMessage(user.getId(), chatMessageDto);
+        chatService.sendMessage(user, chatMessageDto);
     }
 
     //유저 강제 퇴장
