@@ -10,6 +10,7 @@ import com.kr.matitting.exception.partyjoin.PartyJoinException;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.repository.PartyJoinRepository;
 import com.kr.matitting.repository.PartyRepository;
+import com.kr.matitting.repository.ReviewRepository;
 import com.kr.matitting.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.kr.matitting.constant.Gender.*;
@@ -39,6 +41,8 @@ class PartyServiceTest {
     private PartyRepository partyRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ReviewService reviewService;
 
     //사용자 1
     public User user1;
@@ -49,17 +53,18 @@ class PartyServiceTest {
 
     @BeforeEach
     void setup() {
-        User user1 = User.builder()
-                .socialId("1123213321")
-                .oauthProvider(OauthProvider.NAVER)
-                .email("test@naver.com")
-                .nickname("안경잡이개발자")
-                .age(20)
-                .imgUrl("왈왈.jpg")
-                .gender(MALE)
-                .role(Role.USER)
-                .build();
+        User user1 = new User("1123213321",
+                OauthProvider.NAVER,
+                "test@naver.com",
+                "안경잡이개발자",
+                20,
+                null,
+                MALE,
+                Role.USER
+        );
         this.user1 = userRepository.save(user1);
+
+
 
         User user2 = User.builder()
                 .socialId("113929292")
@@ -70,6 +75,8 @@ class PartyServiceTest {
                 .imgUrl("야옹.jpg")
                 .gender(FEMALE)
                 .role(Role.USER)
+                .receivedReviews(new ArrayList<>())
+                .sendReviews(new ArrayList<>())
                 .build();
         this.user2 = userRepository.save(user2);
 
@@ -146,12 +153,15 @@ class PartyServiceTest {
     @Test
     void 파티_조회_성공() {
         //when
+        party1.setPartyTime(LocalDateTime.now().minusHours(5));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "멋져요", 50, "단체사진.jpg");
+        reviewService.createReview(reviewCreateReq, user2);
+
         ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user1, party1.getId());
         ResponsePartyDetailDto partyInfo1 = partyService.getPartyInfo(user1, party2.getId());
 
         //then
         assertThat(partyInfo.getPartyId()).isEqualTo(party1.getId());
-        assertThat(partyInfo.getUserId()).isEqualTo(user1.getId());
         assertThat(partyInfo.getIsLeader()).isTrue();
         assertThat(partyInfo.getPartyTitle()).isEqualTo("새싹개발자와 돈까스를 먹자!");
         assertThat(partyInfo.getPartyContent()).isEqualTo("치즈 돈까스 vs 생선 돈까스!");
@@ -165,6 +175,8 @@ class PartyServiceTest {
         assertThat(partyInfo.getMenu()).isEqualTo("돈까스");
         assertThat(partyInfo.getCategory()).isEqualTo(JAPANESE);
         assertThat(partyInfo.getHit()).isEqualTo(0);
+        assertThat(partyInfo.getReviewInfoRes().size()).isEqualTo(1);
+        assertThat(partyInfo.getReviewInfoRes().get(0).getRating()).isEqualTo(50);
 
         assertThat(partyInfo1.getIsLeader()).isFalse();
     }
