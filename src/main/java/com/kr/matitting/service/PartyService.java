@@ -79,18 +79,14 @@ public class PartyService {
     public ResponseCreatePartyDto createParty(User user, PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
-        //TODO: 수정필요!! -> @AuthenticationPrincipal을 통해서 User 정보를 가져올 때 이미 사용자 검사를 진행하기 때문에 아래 로직은 필요 없다!!
-        Long userId = user.getId();
-        User findUser = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-
         checkParticipant(request.getTotalParticipant());
 
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
-        Party party = createBasePartyBuilder(request, findUser);
+        Party party = createBasePartyBuilder(request, user);
         Party savedParty = partyRepository.save(party);
 
         Team team = Team.builder()
-                .user(findUser)
+                .user(user)
                 .party(savedParty)
                 .role(Role.HOST)
                 .build();
