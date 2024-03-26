@@ -36,6 +36,16 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewList(user, reviewType));
     }
 
+    @Operation(summary = "방장 리뷰 리스트 조회", description = "방장의 리뷰 리스트를 불러오는 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "방장 리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ReviewGetRes.class))),
+            @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class)))
+    })
+    @GetMapping("/host")
+    public ResponseEntity<List<ReviewGetRes>> getHostReviewList(@RequestParam Long hostId) {
+        return ResponseEntity.ok(reviewService.getHostReviewList(hostId));
+    }
+
     @Operation(summary = "리뷰 상세 조회", description = "리뷰 상세 정보를 불러오는 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "리뷰 상세 조회 성공", content = @Content(schema = @Schema(implementation = ReviewInfoRes.class))),
