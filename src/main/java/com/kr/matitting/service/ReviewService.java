@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,14 @@ public class ReviewService {
                 return user.getSendReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReceiver())).toList();
         }
         return null;
+    }
+
+    /**
+     * 방장 리뷰 조회
+     */
+    public List<ReviewGetRes> getHostReviewList(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        return user.getReceivedReviews().stream().map(review -> ReviewGetRes.toDto(review, user)).sorted(Comparator.comparing(ReviewGetRes::getReviewId).reversed()).toList();
     }
 
     /**

@@ -50,7 +50,7 @@ public class OauthService {
 
     private UserLoginDto saveNewUser(OauthMember request) {
         Random random = new Random();
-        User newUser = new User(request.getEmail(),
+        User newUser = new User(request.getSocialId(),
                 request.getOauthProvider(),
                 request.getEmail(),
                 NICKNAME[random.nextInt(18)] + random.nextInt(0, 999),

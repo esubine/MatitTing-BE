@@ -5,6 +5,7 @@ import com.kr.matitting.constant.PartyAge;
 import com.kr.matitting.constant.PartyCategory;
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.entity.Party;
+import com.kr.matitting.entity.Review;
 import com.kr.matitting.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -14,12 +15,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static java.lang.Math.min;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponsePartyDetailDto {
+    @Schema(description = "파티 방장 id", example = "1")
+    private Long hostId;
+
     @Schema(description = "방장 여부", example = "true or false")
     private Boolean isLeader;
     @Schema(description = "파티 id", nullable = false, example = "1")
@@ -75,9 +84,14 @@ public class ResponsePartyDetailDto {
     @NotNull
     private Integer hit;
 
+    private List<ReviewInfoRes> reviewInfoRes = new ArrayList<>();
     public static ResponsePartyDetailDto from(Party party, User user) {
+        User host = party.getUser();
+        List<Review> reviews = host.getReceivedReviews().stream().sorted(Comparator.comparing(Review::getCreateDate).reversed()).toList().subList(0, min(3, host.getReceivedReviews().size()));
+        List<ReviewInfoRes> reviewInfoResStream = reviews.stream().map(review -> ReviewInfoRes.toDto(review, host)).toList();
         return ResponsePartyDetailDto.builder()
-                .isLeader(user != null && user.getId().equals(party.getUser().getId()))
+                .hostId(host.getId())
+                .isLeader(user != null && user.getId().equals(host.getId()))
                 .partyId(party.getId())
                 .partyTitle(party.getPartyTitle())
                 .partyContent(party.getPartyContent())
@@ -96,6 +110,7 @@ public class ResponsePartyDetailDto {
                 .category(party.getCategory())
                 .thumbnail(party.getThumbnail())
                 .hit(party.getHit())
+                .reviewInfoRes(reviewInfoResStream)
                 .build();
     }
 }
