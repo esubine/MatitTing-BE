@@ -46,7 +46,7 @@ public class SearchService {
 //    }
 
     public ResponseSearchPageDto getPartyPage(Pageable pageable, PartySearchCondDto partySearchCondDto) {
-        if (partySearchCondDto.keyword() == null) return new ResponseSearchPageDto(null);
+        if (partySearchCondDto.keyword() == null) return new ResponseSearchPageDto();
         else increaseKeyWordScore(partySearchCondDto.keyword());
 
 
@@ -54,7 +54,7 @@ public class SearchService {
                 partySearchCondDto.sortDto().getOrders().equals(Orders.DESC) ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending() : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending()
         );
         Page<Party> parties = partyRepositoryCustom.searchPage(pageRequest, partySearchCondDto);
-        return new ResponseSearchPageDto(parties.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList()));
+        return new ResponseSearchPageDto(parties.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList()), pageable.getPageNumber(), parties.hasNext());
     }
 
     public void increaseKeyWordScore(String keyWord) {

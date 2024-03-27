@@ -65,7 +65,7 @@ public class PartyService {
         Party party = createBasePartyBuilder(request, user);
         Party savedParty = partyRepository.save(party);
 
-        Team team = new Team(findUser, savedParty, Role.HOST);
+        Team team = new Team(user, savedParty, Role.HOST);
         teamRepository.save(team);
 
         // 채팅방 생성
