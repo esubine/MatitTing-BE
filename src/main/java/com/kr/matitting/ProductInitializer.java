@@ -1,18 +1,19 @@
 package com.kr.matitting;
 
 import com.kr.matitting.constant.*;
-import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.Team;
+import com.kr.matitting.entity.*;
 import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import com.kr.matitting.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+
+import static com.kr.matitting.constant.Role.HOST;
+import static com.kr.matitting.constant.Role.VOLUNTEER;
 
 @RequiredArgsConstructor
 @Component
@@ -21,11 +22,15 @@ public class ProductInitializer implements ApplicationRunner {
     private final UserRepository userRepository;
     private final PartyJoinRepository partyJoinRepository;
     private final PartyTeamRepository teamRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatUserRepository chatUserRepository;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         List<User> userList = createUser();
         List<Party> partyList = createParty(userList);
         List<Team> teamList = createTeam(partyList, userList);
+        List<ChatRoom> chatRoomList = createChatRoom(partyList, userList);
+        List<ChatUser> chatUserList = createChatUser(chatRoomList, userList);
     }
 
     private List<User> createUser() {
@@ -489,5 +494,90 @@ public class ProductInitializer implements ApplicationRunner {
         teamRepository.save(team4_3);
 
         return teamRepository.findAll();
+    }
+
+    private List<ChatRoom> createChatRoom(List<Party> partyList, List<User> userList) {
+        ChatRoom room1 = new ChatRoom(partyList.get(0), userList.get(0), partyList.get(0).getPartyTitle());
+        ChatRoom room2 = new ChatRoom(partyList.get(1), userList.get(1), partyList.get(1).getPartyTitle());
+        ChatRoom room3 = new ChatRoom(partyList.get(2), userList.get(2), partyList.get(2).getPartyTitle());
+        ChatRoom room4 = new ChatRoom(partyList.get(3), userList.get(3), partyList.get(3).getPartyTitle());
+        ChatRoom room5 = new ChatRoom(partyList.get(4), userList.get(4), partyList.get(4).getPartyTitle());
+        ChatRoom room6 = new ChatRoom(partyList.get(5), userList.get(5), partyList.get(5).getPartyTitle());
+        ChatRoom room7 = new ChatRoom(partyList.get(6), userList.get(6), partyList.get(6).getPartyTitle());
+        ChatRoom room8 = new ChatRoom(partyList.get(7), userList.get(7), partyList.get(7).getPartyTitle());
+        ChatRoom room9 = new ChatRoom(partyList.get(8), userList.get(8), partyList.get(8).getPartyTitle());
+        ChatRoom room10 = new ChatRoom(partyList.get(9), userList.get(9), partyList.get(9).getPartyTitle());
+
+        chatRoomRepository.save(room1);
+        chatRoomRepository.save(room2);
+        chatRoomRepository.save(room3);
+        chatRoomRepository.save(room4);
+        chatRoomRepository.save(room5);
+        chatRoomRepository.save(room6);
+        chatRoomRepository.save(room7);
+        chatRoomRepository.save(room8);
+        chatRoomRepository.save(room9);
+        chatRoomRepository.save(room10);
+
+        return chatRoomRepository.findAll();
+    }
+
+    private List<ChatUser> createChatUser(List<ChatRoom> chatRoomList, List<User> userList){
+
+        ChatUser chatUser1 = new ChatUser(chatRoomList.get(0), userList.get(0), HOST);
+        ChatUser chatUser1_1 = new ChatUser(chatRoomList.get(0), userList.get(1), VOLUNTEER);
+        ChatUser chatUser1_2 = new ChatUser(chatRoomList.get(0), userList.get(2), VOLUNTEER);
+        ChatUser chatUser1_3 = new ChatUser(chatRoomList.get(0), userList.get(3), VOLUNTEER);
+
+        ChatUser chatUser2 = new ChatUser(chatRoomList.get(1), userList.get(1), HOST);
+        ChatUser chatUser2_1 = new ChatUser(chatRoomList.get(1), userList.get(2), VOLUNTEER);
+        ChatUser chatUser2_2 = new ChatUser(chatRoomList.get(1), userList.get(3), VOLUNTEER);
+        ChatUser chatUser2_3 = new ChatUser(chatRoomList.get(1), userList.get(4), VOLUNTEER);
+
+        ChatUser chatUser3 = new ChatUser(chatRoomList.get(2), userList.get(2), HOST);
+        ChatUser chatUser3_1 = new ChatUser(chatRoomList.get(2), userList.get(3), VOLUNTEER);
+        ChatUser chatUser3_2 = new ChatUser(chatRoomList.get(2), userList.get(4), VOLUNTEER);
+        ChatUser chatUser3_3 = new ChatUser(chatRoomList.get(2), userList.get(5), VOLUNTEER);
+
+        ChatUser chatUser4 = new ChatUser(chatRoomList.get(3), userList.get(3), HOST);
+        ChatUser chatUser4_1 = new ChatUser(chatRoomList.get(3), userList.get(4), VOLUNTEER);
+        ChatUser chatUser4_2 = new ChatUser(chatRoomList.get(3), userList.get(5), VOLUNTEER);
+        ChatUser chatUser4_3 = new ChatUser(chatRoomList.get(3), userList.get(6), VOLUNTEER);
+
+        ChatUser chatUser5 = new ChatUser(chatRoomList.get(4), userList.get(4), HOST);
+        ChatUser chatUser6 = new ChatUser(chatRoomList.get(5), userList.get(5), HOST);
+        ChatUser chatUser7 = new ChatUser(chatRoomList.get(6), userList.get(6), HOST);
+        ChatUser chatUser8 = new ChatUser(chatRoomList.get(7), userList.get(7), HOST);
+        ChatUser chatUser9 = new ChatUser(chatRoomList.get(8), userList.get(8), HOST);
+        ChatUser chatUser10 = new ChatUser(chatRoomList.get(9), userList.get(9), HOST);
+
+        chatUserRepository.save(chatUser1);
+        chatUserRepository.save(chatUser1_1);
+        chatUserRepository.save(chatUser1_2);
+        chatUserRepository.save(chatUser1_3);
+
+        chatUserRepository.save(chatUser2);
+        chatUserRepository.save(chatUser2_1);
+        chatUserRepository.save(chatUser2_2);
+        chatUserRepository.save(chatUser2_3);
+
+        chatUserRepository.save(chatUser3);
+        chatUserRepository.save(chatUser3_1);
+        chatUserRepository.save(chatUser3_2);
+        chatUserRepository.save(chatUser3_3);
+
+        chatUserRepository.save(chatUser4);
+        chatUserRepository.save(chatUser4_1);
+        chatUserRepository.save(chatUser4_2);
+        chatUserRepository.save(chatUser4_3);
+
+        chatUserRepository.save(chatUser5);
+        chatUserRepository.save(chatUser6);
+        chatUserRepository.save(chatUser7);
+        chatUserRepository.save(chatUser8);
+        chatUserRepository.save(chatUser9);
+        chatUserRepository.save(chatUser10);
+
+        return chatUserRepository.findAll();
     }
 }
