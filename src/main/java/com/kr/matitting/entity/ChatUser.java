@@ -6,11 +6,13 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "chat_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class ChatUser extends BaseTimeEntity{
+public class ChatUser extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_user_id")
@@ -30,13 +32,11 @@ public class ChatUser extends BaseTimeEntity{
     @Enumerated(EnumType.STRING)
     private Role userRole;
 
-    public static ChatUser createChatUser(ChatRoom chatRoom, User user, Role userRole) {
-        ChatUser chatUser = new ChatUser();
-        chatUser.chatRoom = chatRoom;
-        chatUser.user = user;
-        chatUser.userRole = userRole;
-        chatUser.nickname = user.getNickname();
-        return chatUser;
+    public ChatUser(ChatRoom chatRoom, User user, Role userRole) {
+        this.chatRoom = chatRoom;
+        this.user = user;
+        this.userRole = userRole;
+        this.nickname = user.getNickname();
     }
 }
 

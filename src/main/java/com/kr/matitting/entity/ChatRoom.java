@@ -38,13 +38,11 @@ public class ChatRoom extends BaseTimeEntity {
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chat> chatList = new ArrayList<>();
 
-    public static ChatRoom createRoom(Party party, User user, String title) {
-        ChatRoom chatRoom = new ChatRoom();
-        chatRoom.party = party;
-        chatRoom.master = user;
-        chatRoom.setModifiedDate(LocalDateTime.now());
-        chatRoom.title = title;
+    public ChatRoom(Party party, User user, String title) {
+        this.party = party;
+        this.master = user;
+        this.setModifiedDate(LocalDateTime.now());
+        this.title = title;
 
-        return chatRoom;
     }
 }
