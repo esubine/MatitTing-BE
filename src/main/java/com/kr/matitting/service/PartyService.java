@@ -185,6 +185,7 @@ public class PartyService {
                 .longitude(setLocationFunc(request.getLatitude(), request.getLongitude()).y)
                 .partyTime(request.getPartyTime())
                 .totalParticipant(request.getTotalParticipant())
+                .participantCount(1)
                 .gender(request.getGender())
                 .age(request.getAge())
                 .menu(request.getMenu())
