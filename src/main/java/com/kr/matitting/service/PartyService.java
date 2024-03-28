@@ -51,15 +51,12 @@ public class PartyService {
         return ResponsePartyDetailDto.from(party, user);
     }
 
-    @Transactional
     public void increaseHit(Long partyId) {
         partyRepository.increaseHit(partyId);
     }
 
     public ResponseCreatePartyDto createParty(User user, PartyCreateDto request) {
         log.info("=== createParty() start ===");
-
-        checkParticipant(request.getTotalParticipant());
 
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
         Party party = createBasePartyBuilder(request, user);
@@ -69,8 +66,7 @@ public class PartyService {
         teamRepository.save(team);
 
         // 채팅방 생성
-        CreateRoomEvent createRoomEvent = new CreateRoomEvent(savedParty.getId(), user.getId());
-        ChatRoom createdChatRoom = chatService.createChatRoom(createRoomEvent);
+        ChatRoom createdChatRoom = chatService.createChatRoom(party, user);
 
         return new ResponseCreatePartyDto(savedParty, createdChatRoom);
     }
@@ -79,12 +75,6 @@ public class PartyService {
         Point2D.Double now = new Point2D.Double();
         now.setLocation(latitude, longitude);
         return now;
-    }
-
-    private void checkParticipant(int totalParticipant) {
-        if (totalParticipant < 2) {
-            throw new PartyException(PartyExceptionType.NOT_MINIMUM_PARTICIPANT);
-        }
     }
 
     private String getThumbnail(PartyCategory category, String thumbnail) {
@@ -185,6 +175,7 @@ public class PartyService {
                 .longitude(setLocationFunc(request.getLatitude(), request.getLongitude()).y)
                 .partyTime(request.getPartyTime())
                 .totalParticipant(request.getTotalParticipant())
+                .participantCount(1)
                 .gender(request.getGender())
                 .age(request.getAge())
                 .menu(request.getMenu())
@@ -243,9 +234,8 @@ public class PartyService {
             Team member = new Team(volunteerUser, party, Role.VOLUNTEER);
             teamRepository.save(member);
 
-            //TODO: 이것 또한 party와 user를 매개변수로 보내는 것이 좋다고 생각합니다! 검증돈 객체를 매개변수로 보내 불필요한 findBy를 줄일 수 있다고 생각합니다.
-            // 참가신청 수락된 유저 ~ 채팅방에 초대
-            chatService.addParticipant(new JoinRoomEvent(party.getId(), volunteerUser.getId()));
+            //참가 수락된 유저를 채팅방에 추가
+            chatService.addParticipant(party, volunteerUser);
 
             notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가 되셨습니다.");
             return "Accept Request Completed";

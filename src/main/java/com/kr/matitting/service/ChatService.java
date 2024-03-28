@@ -7,8 +7,6 @@ import com.kr.matitting.entity.ChatUser;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.chat.ChatException;
-import com.kr.matitting.exception.party.PartyException;
-import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +21,7 @@ import java.util.Optional;
 
 import static com.kr.matitting.constant.Role.HOST;
 import static com.kr.matitting.constant.Role.VOLUNTEER;
-import static com.kr.matitting.dto.ChatRoomDto.CreateRoomEvent;
-import static com.kr.matitting.dto.ChatRoomDto.JoinRoomEvent;
-import static com.kr.matitting.entity.ChatRoom.createRoom;
 import static com.kr.matitting.exception.chat.ChatExceptionType.*;
-import static com.kr.matitting.exception.party.PartyExceptionType.NOT_FOUND_PARTY;
-import static com.kr.matitting.exception.user.UserExceptionType.INVALID_ROLE_USER;
 import static com.kr.matitting.exception.user.UserExceptionType.NOT_FOUND_USER;
 
 @Service
@@ -102,17 +95,11 @@ public class ChatService {
 
     //파티방 생성 - 파티 글 생성 완료 시 실행
     @Transactional
-    public ChatRoom createChatRoom(CreateRoomEvent createRoomEvent) {
-        Party party = partyRepository.findById(createRoomEvent.getPartyId()).orElseThrow(
-                () -> new PartyException(NOT_FOUND_PARTY)
-        );
-        User user = userRepository.findById(createRoomEvent.getUserId()).orElseThrow(
-                () -> new UserException(NOT_FOUND_USER)
-        );
-        ChatRoom room = createRoom(party, user, party.getPartyTitle());
+    public ChatRoom createChatRoom(Party party, User user) {
+        ChatRoom room = new ChatRoom(party, user, party.getPartyTitle());
         chatRoomRepository.save(room);
 
-        ChatUser chatUser = ChatUser.createChatUser(room, user, HOST);
+        ChatUser chatUser = new ChatUser(room, user, HOST);
         chatUserRepository.save(chatUser);
 
         return room;
@@ -144,13 +131,11 @@ public class ChatService {
 
     // 파티 참가 요청 수락 시 채팅유저에 정보 추가
     @Transactional
-    public void addParticipant(JoinRoomEvent joinRoomEvent) {
+    public void addParticipant(Party party, User volunteer) {
 
-        ChatRoom chatRoom = chatRoomRepository.findByPartyId(joinRoomEvent.getPartyId()).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
-
-        User user = userRepository.findById(joinRoomEvent.getUserId()).orElseThrow(() -> new UserException(NOT_FOUND_USER));
-
-        ChatUser chatUser = ChatUser.createChatUser(chatRoom, user, VOLUNTEER);
+        ChatRoom chatRoom = chatRoomRepository.findByPartyId(party.getId())
+                .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        ChatUser chatUser = new ChatUser(chatRoom, volunteer, VOLUNTEER);
 
         chatUserRepository.save(chatUser);
     }
