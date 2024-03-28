@@ -30,13 +30,11 @@ public class ChatUser extends BaseTimeEntity{
     @Enumerated(EnumType.STRING)
     private Role userRole;
 
-    public static ChatUser createChatUser(ChatRoom chatRoom, User user, Role userRole) {
-        ChatUser chatUser = new ChatUser();
-        chatUser.chatRoom = chatRoom;
-        chatUser.user = user;
-        chatUser.userRole = userRole;
-        chatUser.nickname = user.getNickname();
-        return chatUser;
+    public ChatUser(ChatRoom chatRoom, User user, Role userRole) {
+        this.chatRoom = chatRoom;
+        this.user = user;
+        this.userRole = userRole;
+        this.nickname = user.getNickname();
     }
 }
 
