@@ -26,29 +26,11 @@ public class PartyRepositoryCustomImpl implements PartyRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<Party> searchPage(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId) {
-        return getPartyList(partySearchCondDto, pageable, lastPartyId);
-    }
-
-    @Override
     public Page<Party> searchPage(Pageable pageable, PartySearchCondDto partySearchCondDto) {
         List<Party> partyList = getPartyList(pageable, partySearchCondDto);
         Long count = getCount(partySearchCondDto);
 
         return new PageImpl<>(partyList, pageable, count);
-    }
-
-    private Slice<Party> getPartyList(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId) {
-        List<Party> partyList = queryFactory
-                .select(party)
-                .from(party)
-                .where(ticketSearchPredicate(partySearchCondDto.keyword()),
-                        stateEq(partySearchCondDto.status()),
-                        ltPartyId(lastPartyId))
-                .limit(pageable.getPageSize()+1)
-                .orderBy(partySort(pageable))
-                .fetch();
-        return checkLastPage(partyList, pageable);
     }
 
     private List<Party> getPartyList(Pageable pageable, PartySearchCondDto partySearchCondDto) {

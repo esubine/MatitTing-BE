@@ -7,7 +7,5 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 public interface PartyRepositoryCustom {
-    Slice<Party> searchPage(PartySearchCondDto partySearchCondDto, Pageable pageable, Long lastPartyId);
-
     Page<Party> searchPage(Pageable pageable, PartySearchCondDto partySearchCondDto);
 }

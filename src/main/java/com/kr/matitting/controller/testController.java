@@ -7,14 +7,13 @@ import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.PartyJoin;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.jwt.service.JwtService;
-import com.kr.matitting.repository.PartyJoinRepository;
-import com.kr.matitting.repository.PartyRepository;
-import com.kr.matitting.repository.UserRepository;
+import com.kr.matitting.repository.*;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
@@ -27,6 +26,11 @@ public class testController {
     private final UserRepository userRepository;
     private final PartyRepository partyRepository;
     private final PartyJoinRepository partyJoinRepository;
+    private final PartyTeamRepository teamRepository;
+    private final ReviewRepository reviewRepository;
+    private final ChatRepository chatRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatUserRepository chatUserRepository;
     private final JwtService jwtService;
 
     @GetMapping("/home")
@@ -208,5 +212,18 @@ public class testController {
                 .build();
         partyJoinRepository.save(partyJoin2);
         return ResponseEntity.ok(new ResponseDummyDataDto(saved1AccessToken, saved1refreshToken, saved2AccessToken, saved2refreshToken, party1Id, party2Id));
+    }
+    @Operation(summary = "DB 데이터 초기화", description = "모든 데이터를 삭제하는 API 테스트 시에만 사용 예정")
+    @DeleteMapping("/matitting")
+    public ResponseEntity<?> deleteAll() {
+        partyRepository.deleteAll();
+        userRepository.deleteAll();
+        teamRepository.deleteAll();
+        reviewRepository.deleteAll();
+        chatRepository.deleteAll();
+        chatRoomRepository.deleteAll();
+        chatUserRepository.deleteAll();
+
+        return ResponseEntity.ok("success");
     }
 }

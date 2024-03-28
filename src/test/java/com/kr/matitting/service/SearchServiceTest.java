@@ -196,13 +196,13 @@ class SearchServiceTest {
         assertThat(partyPage.getPartyList().size()).isEqualTo(2);
         assertThat(partyPage.getPartyList().get(0).partyId()).isEqualTo(party4.getId());
         assertThat(partyPage.getPartyList().get(1).partyId()).isEqualTo(party2.getId());
-        assertThat(partyPage.getPage()).isEqualTo(0);
-        assertThat(partyPage.getHasNext()).isTrue();
+        assertThat(partyPage.getPageInfo().getPage()).isEqualTo(0);
+        assertThat(partyPage.getPageInfo().isHasNext()).isTrue();
         assertThat(partyPage1.getPartyList().size()).isEqualTo(2);
         assertThat(partyPage1.getPartyList().get(0).partyId()).isEqualTo(party3.getId());
         assertThat(partyPage1.getPartyList().get(1).partyId()).isEqualTo(party1.getId());
-        assertThat(partyPage1.getPage()).isEqualTo(1);
-        assertThat(partyPage1.getHasNext()).isFalse();
+        assertThat(partyPage1.getPageInfo().getPage()).isEqualTo(1);
+        assertThat(partyPage1.getPageInfo().isHasNext()).isFalse();
     }
 
     @DisplayName("인기 검색어 조회 성공")

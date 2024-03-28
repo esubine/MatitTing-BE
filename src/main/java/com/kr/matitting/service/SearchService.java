@@ -24,27 +24,6 @@ public class SearchService {
     private final RedisTemplate<String, String> redisTemplate;
     private final PartyRepositoryCustom partyRepositoryCustom;
 
-//    public ResponseSearchPageDto getPartyPage(PartySearchCondDto partySearchCondDto, Integer size, Long lastPartyId) {
-//        if (partySearchCondDto.keyword() == null) {
-//            return new ResponseSearchPageDto(null, null, null);
-//        }
-//        else{
-//            increaseKeyWordScore(partySearchCondDto.keyword());
-//        }
-//
-//        Sort sort = partySearchCondDto.sortDto().getOrders() == Orders.DESC
-//                ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending()
-//                : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending();
-//
-//        PageRequest pageable = PageRequest.of(0, size, sort);
-//
-//        Slice<Party> partySlice = partyRepositoryCustom.searchPage(partySearchCondDto, pageable, lastPartyId);
-//        List<ResponsePartyDto> responsePartyList = partySlice.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList());
-//        Long newLastPartyId = getLastPartyId(responsePartyList);
-//
-//        return new ResponseSearchPageDto(responsePartyList, newLastPartyId, partySlice.hasNext());
-//    }
-
     public ResponseSearchPageDto getPartyPage(Pageable pageable, PartySearchCondDto partySearchCondDto) {
         if (partySearchCondDto.keyword() == null) return new ResponseSearchPageDto();
         else increaseKeyWordScore(partySearchCondDto.keyword());
@@ -54,7 +33,7 @@ public class SearchService {
                 partySearchCondDto.sortDto().getOrders().equals(Orders.DESC) ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending() : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending()
         );
         Page<Party> parties = partyRepositoryCustom.searchPage(pageRequest, partySearchCondDto);
-        return new ResponseSearchPageDto(parties.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList()), pageable.getPageNumber(), parties.hasNext());
+        return new ResponseSearchPageDto(parties.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList()), new ResponsePageDto(pageable.getPageNumber(), parties.hasNext()));
     }
 
     public void increaseKeyWordScore(String keyWord) {
