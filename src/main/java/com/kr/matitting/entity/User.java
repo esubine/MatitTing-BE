@@ -62,10 +62,10 @@ public class User extends BaseTimeEntity{
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Party> partyList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "reviewer")
+    @OneToMany(mappedBy = "reviewer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Review> sendReviews = new ArrayList<>();
 
-    @OneToMany(mappedBy = "receiver")
+    @OneToMany(mappedBy = "receiver", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Review> receivedReviews = new ArrayList<>();
 
     public User(String socialId, OauthProvider oauthProvider, String email, String nickname, Integer age, String imgUrl, Gender gender, Role role) {

@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 import static java.lang.Math.*;
 
 @Getter
@@ -23,6 +25,8 @@ public class ReviewGetRes {
     private String content;
     @Schema(description = "리뷰 첨부사진", example = "돈까스사진.jpg")
     private String reviewImg;
+    @Schema(description = "리뷰 생성일자", example = "2024-03-28T14:45:30.123456789")
+    private LocalDateTime createAt;
 
     public static ReviewGetRes toDto(Review review, User user) {
         return new ReviewGetRes(
@@ -30,7 +34,8 @@ public class ReviewGetRes {
                 user.getImgUrl(),
                 user.getNickname(),
                 review.getRating(),
-                review.getContent().substring(0, min(review.getContent().length(),9)) + " ...",
-                review.getImgUrl());
+                review.getContent(),
+                review.getImgUrl(),
+                review.getCreateDate());
     }
 }
