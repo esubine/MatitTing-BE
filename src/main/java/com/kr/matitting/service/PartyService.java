@@ -128,6 +128,14 @@ public class PartyService {
             party.setPartyPlaceName(partyUpdateDto.partyPlaceName());
         }
         if (partyUpdateDto.status() != null) {
+            if (partyUpdateDto.status().equals(PartyStatus.PARTY_FINISH)){
+                party.getTeamList()
+                        .stream()
+                        .map(Team::getUser)
+                        .filter(teamUser -> teamUser.getId() != user.getId())
+                        .forEach(teamUser -> notificationService.send(teamUser, NotificationType.PARTY_FINISH, "파티 모집 완료", party.getPartyTitle() + " 파티 모집이 완료되었습니다."));
+            }
+
             party.setStatus(partyUpdateDto.status());
         }
         if (partyUpdateDto.thumbnail() != null) {
