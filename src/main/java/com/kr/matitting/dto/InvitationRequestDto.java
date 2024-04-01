@@ -14,8 +14,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Builder
 @NoArgsConstructor
@@ -46,8 +44,6 @@ public class InvitationRequestDto {
     @Schema(description = "사용자 나이", nullable = false, example = "26")
     @NotNull
     private Integer userAge;
-    @Schema(description = "신청 일자", example = "2024-03-29T10:15:30.123456789")
-    private LocalDateTime createAt;
 
     public static InvitationRequestDto toDto(PartyJoin partyJoin, User user, Role role) {
         Party party = partyJoin.getParty();
@@ -61,7 +57,6 @@ public class InvitationRequestDto {
                 .partyAge(party.getAge())
                 .userGender(user.getGender())
                 .userAge(user.getAge())
-                .createAt(partyJoin.getCreateDate())
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package com.kr.matitting.repository;
 
 import com.kr.matitting.dto.ResponseChatDto;
 import com.kr.matitting.dto.ResponseChatListDto;
+import com.kr.matitting.dto.ResponseChatPageInfoDto;
 import com.kr.matitting.dto.ResponsePageInfoDto;
 import com.kr.matitting.entity.Chat;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -38,17 +39,17 @@ public class ChatRepositoryCustomImpl {
                         .createAt(chat.getCreateDate())
                         .build())
                 .toList();
-        ResponsePageInfoDto pageInfo = checkLastChat(chatList, responseChatDtos, pageable);
+        ResponseChatPageInfoDto pageInfo = checkLastChat(chatList, responseChatDtos, pageable);
 
         return new ResponseChatListDto(responseChatDtos, pageInfo);
     }
 
-    private ResponsePageInfoDto checkLastChat(List<Chat> chats, List<ResponseChatDto> ResponseChatDtos, Pageable pageable) {
+    private ResponseChatPageInfoDto checkLastChat(List<Chat> chats, List<ResponseChatDto> ResponseChatDtos, Pageable pageable) {
 
         boolean hasNext = chats.size() > pageable.getPageSize();
         Long lastChatId = chats.isEmpty() ? null : ResponseChatDtos.get(chats.size() - 1).getChatId();
 
-        return new ResponsePageInfoDto(lastChatId, hasNext);
+        return new ResponseChatPageInfoDto(lastChatId, hasNext);
 
     }
 

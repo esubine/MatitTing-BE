@@ -10,6 +10,7 @@ import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.redis.RedisUtil;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.UserRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -168,7 +169,7 @@ class UserServiceTest {
         this.party4 = partyRepository.save(party4);
     }
 
-    ResponseCreatePartyJoinDto partyJoin(Long partyId, User volunteer, PartyJoinStatus status) {
+    ResponsePartyJoinDto partyJoin(Long partyId, User volunteer, PartyJoinStatus status) {
         PartyJoinDto partyJoinDto = new PartyJoinDto(partyId, status);
         return partyService.joinParty(partyJoinDto, volunteer);
     }
@@ -295,8 +296,8 @@ class UserServiceTest {
         ResponseCreatePartyDto responseCreatePartyDto3 = partyCreate(user2);
         ResponseCreatePartyDto responseCreatePartyDto4 = partyCreate(user2);
 
-        ResponseCreatePartyJoinDto responseCreatePartyJoinDto1 = partyJoin(responseCreatePartyDto3.getPartyId(), user1, PartyJoinStatus.APPLY);
-        ResponseCreatePartyJoinDto responseCreatePartyJoinDto2 = partyJoin(responseCreatePartyDto4.getPartyId(), user1, PartyJoinStatus.APPLY);
+        ResponsePartyJoinDto responsePartyJoinDto1 = partyJoin(responseCreatePartyDto3.getPartyId(), user1, PartyJoinStatus.APPLY);
+        ResponsePartyJoinDto responsePartyJoinDto2 = partyJoin(responseCreatePartyDto4.getPartyId(), user1, PartyJoinStatus.APPLY);
         PartyDecisionDto partyDecisionDto1 = new PartyDecisionDto(responseCreatePartyDto3.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
         PartyDecisionDto partyDecisionDto2 = new PartyDecisionDto(responseCreatePartyDto4.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
         partyService.decideUser(partyDecisionDto1, user2);

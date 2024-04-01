@@ -3,11 +3,15 @@ package com.kr.matitting.dto;
 import com.kr.matitting.constant.Gender;
 import com.kr.matitting.constant.OauthProvider;
 import com.kr.matitting.constant.Role;
+import com.kr.matitting.entity.Review;
+import com.kr.matitting.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.OptionalDouble;
 
 @Getter
 @Builder
@@ -40,4 +44,21 @@ public class ResponseMyInfo {
 
         @Schema(description = "사용자 role", nullable = false, example = "USER")
         private Role role; //신규유저 or 기존유저
+
+        @Schema(description = "사용자 평균 Rating", example = "80")
+        private Integer rating;
+
+        public static ResponseMyInfo toDto(User user) {
+                OptionalDouble average = user.getReceivedReviews().stream().mapToInt(Review::getRating).average();
+                return new ResponseMyInfo(user.getId(),
+                        user.getSocialId(),
+                        user.getOauthProvider(),
+                        user.getEmail(),
+                        user.getNickname(),
+                        user.getAge(),
+                        user.getImgUrl(),
+                        user.getGender(),
+                        user.getRole(),
+                        (int) average.orElse(0));
+        }
 }

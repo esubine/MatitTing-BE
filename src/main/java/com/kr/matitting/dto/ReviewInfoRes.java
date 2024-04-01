@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -22,7 +21,7 @@ public class ReviewInfoRes {
     @Schema(description = "review rating", example = "50")
     private Integer rating;
     @Schema(description = "리뷰 첨부사진", example = "돈까스사진.jpg")
-    private List<String> reviewImg;
+    private String reviewImg;
     @Schema(description = "리뷰 쓴 날짜", example = "2024-02-28")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createAt;
@@ -30,7 +29,7 @@ public class ReviewInfoRes {
     private Boolean isSelfReview;
 
     public static ReviewInfoRes toDto(Review review, User user) {
-        Boolean selfReview = user != null && review.getReviewer().getId().equals(user.getId());
+        Boolean selfReview = user == null ? false : review.getReviewer().getId().equals(user.getId());
 
         return new ReviewInfoRes(
                 review.getId(),
