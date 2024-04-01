@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
 import static java.lang.Math.*;
 
 @Getter
@@ -22,7 +23,7 @@ public class ReviewGetRes {
     @Schema(description = "리뷰 내용", example = "방장님 멋져요.")
     private String content;
     @Schema(description = "리뷰 첨부사진", example = "돈까스사진.jpg")
-    private String reviewImg;
+    private List<String> reviewImg;
 
     public static ReviewGetRes toDto(Review review, User user) {
         return new ReviewGetRes(

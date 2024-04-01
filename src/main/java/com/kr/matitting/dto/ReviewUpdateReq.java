@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,5 +15,5 @@ public class ReviewUpdateReq {
     private Long reviewId;
     private String content;
     private Integer rating;
-    private String imgUrl;
+    private List<String> imgUrl;
 }
