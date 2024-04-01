@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.OptionalDouble;
 
 @Getter
@@ -47,9 +48,17 @@ public class ResponseMyInfo {
 
         @Schema(description = "사용자 평균 Rating", example = "80")
         private Integer rating;
+        
+        @Schema(description = "3점 이상 리뷰의 개수", example = "10")
+        private Long positiveReviewCount;
+        @Schema(description = "3점 미만 리뷰의 개수", example = "10")
+        private Long negativeReviewCount;
 
         public static ResponseMyInfo toDto(User user) {
                 OptionalDouble average = user.getReceivedReviews().stream().mapToInt(Review::getRating).average();
+                List<Review> receivedReviews = user.getReceivedReviews();
+                long positiveReviewCount = receivedReviews.stream().filter(review -> review.getRating() >= 3).count();
+                long negativeReviewCount = receivedReviews.stream().filter(review -> review.getRating() < 3).count();
                 return new ResponseMyInfo(user.getId(),
                         user.getSocialId(),
                         user.getOauthProvider(),
@@ -59,6 +68,9 @@ public class ResponseMyInfo {
                         user.getImgUrl(),
                         user.getGender(),
                         user.getRole(),
-                        (int) average.orElse(0));
+                        (int) average.orElse(0),
+                        positiveReviewCount,
+                        negativeReviewCount
+                        );
         }
 }
