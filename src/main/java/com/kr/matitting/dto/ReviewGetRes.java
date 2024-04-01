@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static java.lang.Math.*;
 
@@ -24,7 +25,7 @@ public class ReviewGetRes {
     @Schema(description = "리뷰 내용", example = "방장님 멋져요.")
     private String content;
     @Schema(description = "리뷰 첨부사진", example = "돈까스사진.jpg")
-    private String reviewImg;
+    private List<String> reviewImg;
     @Schema(description = "리뷰 생성일자", example = "2024-03-28T14:45:30.123456789")
     private LocalDateTime createAt;
 

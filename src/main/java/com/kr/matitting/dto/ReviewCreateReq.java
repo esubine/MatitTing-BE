@@ -22,7 +22,7 @@ public class ReviewCreateReq {
     @NotBlank
     private String content; //리뷰 내용
     @NotNull
-    @Max(100) @Min(0)
+    @Max(5) @Min(0)
     private Integer rating; //온도
     private List<String> imgUrl; //리뷰 이미지
 }
