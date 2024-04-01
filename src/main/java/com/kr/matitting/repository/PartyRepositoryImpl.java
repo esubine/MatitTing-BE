@@ -2,16 +2,19 @@ package com.kr.matitting.repository;
 
 import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Sorts;
+import com.kr.matitting.dto.MainPageDto;
 import com.kr.matitting.entity.Party;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static com.kr.matitting.entity.QParty.party;
@@ -21,59 +24,50 @@ import static com.kr.matitting.entity.QParty.party;
 public class PartyRepositoryImpl {
     private final JPAQueryFactory queryFactory;
 
-    public Slice<Party> getPartyList(double userLatitude, double userLongitude, PartyStatus partyStatus, Sorts sorts, Long lastPartyId, Pageable pageable) {
-        List<Party> parties;
+    public Page<Party> mainPage(MainPageDto mainPageDto, Pageable pageable) {
+        List<Party> partyList = getPartyList(mainPageDto, pageable);
+        Long count = getCount(mainPageDto);
 
-        if (sorts == Sorts.LATEST) {
-            parties = queryFactory
-                    .select(party)
-                    .from(party)
-                    .where(
-                            eqPartyStatus(partyStatus),
-                            getBuilder(userLatitude, userLongitude),
-                            ltPartyId(lastPartyId))
-                    .limit(pageable.getPageSize()+1)
-                    .orderBy(party.id.desc())
-                    .fetch();
-        } else {
-            parties = queryFactory
-                    .select(party)
-                    .from(party)
-                    .where(
-                            eqPartyStatus(partyStatus),
-                            getBuilder(userLatitude, userLongitude),
-                            ltPartyId(lastPartyId))
-                    .limit(pageable.getPageSize()+1)
-                    .fetch();
-
-            parties.sort((party1, party2) -> {
-                double distance1 = calculateHaversine(userLatitude, userLongitude, party1.getLatitude(), party1.getLongitude());
-                double distance2 = calculateHaversine(userLatitude, userLongitude, party2.getLatitude(), party2.getLongitude());
-                return Double.compare(distance1, distance2);
-            });
-        }
-        return checkLastPage(parties, pageable);
+        return new PageImpl<>(partyList, pageable, count);
     }
 
-    private BooleanExpression ltPartyId(Long lastPartyId) {
-        return lastPartyId == 0L ? null : party.id.lt(lastPartyId);
-    }
+    private List<Party> getPartyList(MainPageDto mainPageDto, Pageable pageable) {
+        JPAQuery<Party> partyJPAQuery = queryFactory
+                .select(party)
+                .from(party)
+                .where(
+                        eqPartyStatus(mainPageDto.getPartyStatus()),
+                        getBuilder(mainPageDto.getLatitude(), mainPageDto.getLongitude()));
 
-    private Slice<Party> checkLastPage(List<Party> results, Pageable pageable) {
-
-        boolean hasNext = false;
-
-        // 조회한 결과 개수가 요청한 페이지 사이즈보다 크면 뒤에 더 있음, hasNext = true
-        if (results.size() > pageable.getPageSize()) {
-            hasNext = true;
-            results.remove(pageable.getPageSize());
+        if (mainPageDto.getSort() == Sorts.LATEST) {
+            partyJPAQuery.orderBy(party.id.desc());
+            partyJPAQuery.offset(pageable.getOffset());
+            partyJPAQuery.limit(pageable.getPageSize());
         }
 
-        return new SliceImpl<>(results, pageable, hasNext);
+        List<Party> partyList = partyJPAQuery.fetch();
+
+        if (mainPageDto.getSort() != Sorts.LATEST) {
+            partyList.sort(Comparator.comparingDouble(party ->
+                    calculateHaversine(mainPageDto.getLatitude(), mainPageDto.getLongitude(), party.getLatitude(), party.getLongitude())));
+
+            int start = pageable.getPageNumber() * pageable.getPageSize();
+            int end = Math.min((start + pageable.getPageSize()), partyList.size());
+            partyList = partyList.subList(start, end);
+        }
+        return partyList;
+    }
+
+    private Long getCount(MainPageDto mainPageDto) {
+        return queryFactory
+                .select(party.count())
+                .from(party)
+                .where(eqPartyStatus(mainPageDto.getPartyStatus()), getBuilder(mainPageDto.getLatitude(), mainPageDto.getLongitude()))
+                .fetchOne();
     }
 
     private BooleanBuilder getBuilder(double userLatitude, double userLongitude){
-        double radius = 0.045;
+        double radius = 0.45;
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(party.latitude.between(userLatitude - radius, userLatitude + radius));
@@ -83,12 +77,9 @@ public class PartyRepositoryImpl {
     }
 
     private BooleanExpression eqPartyStatus(PartyStatus partyStatus) {
-        if (partyStatus == null) {
-            partyStatus = PartyStatus.RECRUIT;
-        } else if (partyStatus == PartyStatus.PARTY_FINISH) {
+        if (partyStatus != PartyStatus.RECRUIT) {
             return null;
         }
-
         return party.status.eq(partyStatus);
     }
 

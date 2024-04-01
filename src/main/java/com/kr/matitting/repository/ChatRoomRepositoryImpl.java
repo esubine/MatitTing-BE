@@ -1,5 +1,6 @@
 package com.kr.matitting.repository;
 
+import com.kr.matitting.dto.ResponseChatPageInfoDto;
 import com.kr.matitting.dto.ResponseChatRoomDto;
 import com.kr.matitting.dto.ResponseChatRoomListDto;
 import com.kr.matitting.dto.ResponsePageInfoDto;
@@ -52,17 +53,17 @@ public class ChatRoomRepositoryImpl {
                         .build())
                 .toList();
 
-        ResponsePageInfoDto pageInfo = checkLastPage(chatRooms, responseChatRoomDtos, pageable);
+        ResponseChatPageInfoDto pageInfo = checkLastPage(chatRooms, responseChatRoomDtos, pageable);
 
         return new ResponseChatRoomListDto(responseChatRoomDtos, pageInfo);
     }
 
-    private ResponsePageInfoDto checkLastPage(List<ChatRoom> chatRooms, List<ResponseChatRoomDto> responseChatRoomDtos, Pageable pageable) {
+    private ResponseChatPageInfoDto checkLastPage(List<ChatRoom> chatRooms, List<ResponseChatRoomDto> responseChatRoomDtos, Pageable pageable) {
 
         boolean hasNext = chatRooms.size() > pageable.getPageSize();
         Long lastPartyId = chatRooms.isEmpty() ? null : responseChatRoomDtos.get(chatRooms.size() - 1).getRoomId();
 
-        return new ResponsePageInfoDto(lastPartyId, hasNext);
+        return new ResponseChatPageInfoDto(lastPartyId, hasNext);
 
     }
 }
