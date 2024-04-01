@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ResponsePartyJoinDto {
+public class ResponseCreatePartyJoinDto {
     @Schema(description = "파티 신청 ID", example = "1")
     private Long partyJoinId;
 }
