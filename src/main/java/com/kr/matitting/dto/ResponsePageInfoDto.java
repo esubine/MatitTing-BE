@@ -6,12 +6,12 @@ import lombok.Getter;
 @Getter
 public class ResponsePageInfoDto {
     @Schema(description = "이전에 조회한 party id", nullable = false, example = "10")
-    private Long lastPartyId;
+    private Long lastId;
     @Schema(description = "다음 페이지 유무", nullable = false, example = "true")
     private boolean hasNext;
 
-    public ResponsePageInfoDto(Long newLastPartyId, boolean hasNext) {
-        this.lastPartyId = newLastPartyId;
+    public ResponsePageInfoDto(Long lastId, boolean hasNext) {
+        this.lastId = lastId;
         this.hasNext = hasNext;
     }
 }
