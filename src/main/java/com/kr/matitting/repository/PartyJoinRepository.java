@@ -10,11 +10,8 @@ import java.util.Optional;
 
 @Repository
 public interface PartyJoinRepository extends JpaRepository<PartyJoin, Long> {
-    List<PartyJoin> findByLeaderId(Long leaderId);
-    List<PartyJoin> findByPartyIdAndLeaderId(Long partyId, Long leaderId);
     Optional<PartyJoin> findByPartyIdAndUserId(Long partyId, Long userId);
     Optional<PartyJoin> findByPartyIdAndLeaderIdAndUserId(Long partyId, Long leaderId, Long userId);
-
     List<PartyJoin> findAllByLeaderId(Long userId);
     List<PartyJoin> findAllByUserId(Long userId);
 }
