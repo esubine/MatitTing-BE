@@ -116,14 +116,14 @@ public class PartyController {
                                                     "※ ACCEPT or CANCEL 입력이 아닐 시에는 Exception"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "파티 참가 신청 성공", content = @Content(schema = @Schema(implementation = ResponsePartyJoinDto.class))),
+        @ApiResponse(responseCode = "200", description = "파티 참가 신청 성공", content = @Content(schema = @Schema(implementation = ResponseCreatePartyJoinDto.class))),
         @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
         @ApiResponse(responseCode = "404(700)", description = "참가 신청 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyJoinException.class))),
         @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class))),
         @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PostMapping("/participation")
-    public ResponseEntity<ResponsePartyJoinDto> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
+    public ResponseEntity<ResponseCreatePartyJoinDto> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(partyService.joinParty(partyJoinDto, user));
     }
 
@@ -167,14 +167,16 @@ public class PartyController {
             "1. HOST => 내가 방장으로 존재하는 파티에 사용자들이 참가 요청을 보낸 리스트를 반환 \n\n" +
             "2. VOLUNTEER => 내가 상대방의 파티에 참가 요청을 보낸 리스트를 반환")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "파티 신청 현황 조회 성공", content = @Content(schema = @Schema(implementation = InvitationRequestDto.class))),
+        @ApiResponse(responseCode = "200", description = "파티 신청 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponseGetPartyJoinDto.class))),
         @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
         @ApiResponse(responseCode = "403(602)", description = "권한이 없는 사용자, Role이 유효하지 않음", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @GetMapping("/party-join")
-    public ResponseEntity<List<InvitationRequestDto>> getJoinList(@AuthenticationPrincipal User user,
-                                         @NotNull @RequestParam Role role) {
-        List<InvitationRequestDto> invitationRequestDtos = partyService.getJoinList(user, role);
-        return ResponseEntity.ok(invitationRequestDtos);
+    public ResponseEntity<ResponseGetPartyJoinDto> getJoinList(@AuthenticationPrincipal User user,
+                                                                  @RequestParam(defaultValue = "5") Integer size,
+                                                                  @RequestParam Long lastId,
+                                                                  @NotNull @RequestParam Role role) {
+        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user, role, size, lastId);
+        return ResponseEntity.ok(joinList);
     }
 }

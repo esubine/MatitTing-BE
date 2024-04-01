@@ -77,7 +77,17 @@ public class UserService {
     }
 
     public ResponseMyInfo getMyInfo(User user) {
-        return ResponseMyInfo.toDto(user);
+        return new ResponseMyInfo(
+                user.getId(),
+                user.getSocialId(),
+                user.getOauthProvider(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getAge(),
+                user.getImgUrl(),
+                user.getGender(),
+                user.getRole()
+        );
     }
 
     public List<ResponsePartyDto> getMyPartyList(User user, Role role) {

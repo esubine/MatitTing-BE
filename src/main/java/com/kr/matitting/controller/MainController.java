@@ -1,5 +1,7 @@
 package com.kr.matitting.controller;
 
+import com.kr.matitting.constant.PartyStatus;
+import com.kr.matitting.constant.Sorts;
 import com.kr.matitting.dto.MainPageDto;
 import com.kr.matitting.dto.ResponseMainPageDto;
 import com.kr.matitting.service.MainService;
@@ -9,15 +11,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,9 +37,9 @@ public class MainController {
     })
     @GetMapping
     public ResponseEntity<ResponseMainPageDto> getPartyList(
-            @PageableDefault Pageable pageable,
-            @Valid @ModelAttribute MainPageDto mainPageDto
+            @ModelAttribute MainPageDto mainPageDto
     ) {
+        Pageable pageable = PageRequest.of(0, mainPageDto.size());
         ResponseMainPageDto mainPageList = mainService.getPartyList(mainPageDto, pageable);
         return ResponseEntity.ok().body(mainPageList);
     }

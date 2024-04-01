@@ -33,7 +33,7 @@ public class SearchService {
                 partySearchCondDto.sortDto().getOrders().equals(Orders.DESC) ? Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).descending() : Sort.by(partySearchCondDto.sortDto().getSorts().getKey()).ascending()
         );
         Page<Party> parties = partyRepositoryCustom.searchPage(pageRequest, partySearchCondDto);
-        return new ResponseSearchPageDto(parties.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList()), new ResponsePageInfoDto(pageable.getPageNumber(), parties.hasNext()));
+        return new ResponseSearchPageDto(parties.stream().map(ResponsePartyDto::toDto).collect(Collectors.toList()), new ResponsePageDto(pageable.getPageNumber(), parties.hasNext()));
     }
 
     public void increaseKeyWordScore(String keyWord) {
