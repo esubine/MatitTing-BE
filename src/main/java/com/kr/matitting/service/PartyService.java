@@ -11,13 +11,12 @@ import com.kr.matitting.exception.partyjoin.PartyJoinException;
 import com.kr.matitting.exception.partyjoin.PartyJoinExceptionType;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
-import com.kr.matitting.repository.PartyJoinRepository;
-import com.kr.matitting.repository.PartyRepository;
-import com.kr.matitting.repository.PartyTeamRepository;
-import com.kr.matitting.repository.UserRepository;
+import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +24,6 @@ import java.awt.geom.Point2D;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import static com.kr.matitting.dto.ChatRoomDto.CreateRoomEvent;
-import static com.kr.matitting.dto.ChatRoomDto.JoinRoomEvent;
 
 @Slf4j
 @Service
@@ -43,6 +39,7 @@ public class PartyService {
     private final MapService mapService;
     private final NotificationService notificationService;
     private final ChatService chatService;
+    private final PartyJoinRepositoryCustom partyJoinRepositoryCustom;
 
     public ResponsePartyDetailDto getPartyInfo(User user, Long partyId) {
         Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
@@ -188,7 +185,7 @@ public class PartyService {
                 .build();
     }
 
-    public ResponsePartyJoinDto joinParty(PartyJoinDto partyJoinDto, User user) {
+    public ResponseCreatePartyJoinDto joinParty(PartyJoinDto partyJoinDto, User user) {
         log.info("=== joinParty() start ===");
 
         Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
@@ -202,13 +199,13 @@ public class PartyService {
             PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId()));
             notificationService.send(user, NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
 
-            return new ResponsePartyJoinDto(savedpartyJoin.getId());
+            return new ResponseCreatePartyJoinDto(savedpartyJoin.getId());
         } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
             if (existingJoin.isEmpty()) {
                 throw new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN);
             }
             partyJoinRepository.delete(existingJoin.get());
-            return new ResponsePartyJoinDto(existingJoin.get().getId());
+            return new ResponseCreatePartyJoinDto(existingJoin.get().getId());
         }
         return null;
     }
@@ -246,28 +243,31 @@ public class PartyService {
         }
     }
 
-    public List<InvitationRequestDto> getJoinList(User user, Role role) {
-        List<PartyJoin> partyJoinList;
+    public ResponseGetPartyJoinDto getJoinList(User user, Role role, Integer size, Long lastPartyJoinId) {
+        PageRequest pageable = PageRequest.of(0, size);
+        Slice<PartyJoin> partyJoinSlice = partyJoinRepositoryCustom.getPartyJoin(pageable, lastPartyJoinId, user, role);
 
         switch (role) {
             case HOST:
-                partyJoinList = partyJoinRepository.findAllByLeaderId(user.getId());
-                return partyJoinList.stream()
+                List<InvitationRequestDto> hostInvitation = partyJoinSlice.getContent().stream()
                         .map(partyJoin -> {
                             User volunteerUser = userRepository.findById(partyJoin.getUserId())
                                     .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
                             return InvitationRequestDto.toDto(partyJoin, volunteerUser, role);
                         })
                         .toList();
+                ResponseNoOffsetDto hostPageInfo = new ResponseNoOffsetDto(partyJoinSlice.getContent().get(partyJoinSlice.getNumberOfElements() - 1).getId(), partyJoinSlice.hasNext());
+                return new ResponseGetPartyJoinDto(hostInvitation, hostPageInfo);
             case VOLUNTEER:
-                partyJoinList = partyJoinRepository.findAllByUserId(user.getId());
-                return partyJoinList.stream()
+                List<InvitationRequestDto> volunteerInvitation = partyJoinSlice.getContent().stream()
                         .map(partyJoin -> {
                             User leaderUser = userRepository.findById(partyJoin.getLeaderId())
                                     .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
                             return InvitationRequestDto.toDto(partyJoin, leaderUser, role);
                         })
                         .toList();
+                ResponseNoOffsetDto volunteerPageInfo = new ResponseNoOffsetDto(partyJoinSlice.getContent().get(partyJoinSlice.getNumberOfElements() - 1).getId(), partyJoinSlice.hasNext());
+                return new ResponseGetPartyJoinDto(volunteerInvitation, volunteerPageInfo);
             default:
                 throw new UserException(UserExceptionType.INVALID_ROLE_USER);
         }
