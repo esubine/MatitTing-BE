@@ -70,7 +70,7 @@ class PartyServiceTest {
                 .nickname("잔디 개발자")
                 .age(30)
                 .imgUrl("야옹.jpg")
-                .gender(FEMALE)
+                .gender(MALE)
                 .role(Role.USER)
                 .receivedReviews(new ArrayList<>())
                 .sendReviews(new ArrayList<>())
@@ -379,6 +379,7 @@ class PartyServiceTest {
         assertThat(joinList.getPartyList().get(0).getNickname()).isEqualTo("잔디 개발자");
         assertThat(joinList.getPartyList().get(0).getPartyGender()).isEqualTo(MALE);
         assertThat(joinList.getPartyList().get(0).getOneLineIntroduce()).isEqualTo("봉쥬르");
+        assertThat(joinList.getPartyList().get(0).getTypeMatch()).isTrue();
         assertThat(joinList.getPageInfo().isHasNext()).isFalse();
         assertThat(joinList.getPageInfo().getLastId()).isEqualTo(responseCreatePartyJoinDto.getPartyJoinId());
     }
