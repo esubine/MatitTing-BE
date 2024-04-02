@@ -204,7 +204,7 @@ public class PartyService {
             if (existingJoin.isPresent()) {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
             }
-            PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId()));
+            PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId(), partyJoinDto.oneLineIntroduce()));
             notificationService.send(user, NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
 
             return new ResponseCreatePartyJoinDto(savedpartyJoin.getId());

@@ -48,6 +48,8 @@ public class InvitationRequestDto {
     private Integer userAge;
     @Schema(description = "신청 일자", example = "2024-03-29T10:15:30.123456789")
     private LocalDateTime createAt;
+    @Schema(description = "한줄 소개", example = "안녕하세요")
+    private String oneLineIntroduce;
 
     public static InvitationRequestDto toDto(PartyJoin partyJoin, User user, Role role) {
         Party party = partyJoin.getParty();
@@ -62,6 +64,7 @@ public class InvitationRequestDto {
                 .userGender(user.getGender())
                 .userAge(user.getAge())
                 .createAt(partyJoin.getCreateDate())
+                .oneLineIntroduce(partyJoin.getOneLineIntroduce())
                 .build();
     }
 }

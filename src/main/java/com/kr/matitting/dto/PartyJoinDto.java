@@ -10,10 +10,11 @@ public record PartyJoinDto(
         Long partyId,
         @Schema(description = "파티 신청 수락/거절", example = "APPLY")
         @NotNull
-        PartyJoinStatus status
-
+        PartyJoinStatus status,
+        @Schema(description = "한줄 소개", example = "안녕하세요 저는 밝고 활발한 성격을 가진 27세 남자입니다.")
+        String oneLineIntroduce
 ) {
-    public PartyJoinDto PartyJoinDto(Long partyId, PartyJoinStatus status) {
-        return new PartyJoinDto(partyId, status);
+    public PartyJoinDto PartyJoinDto(Long partyId, PartyJoinStatus status, String oneLineIntroduce) {
+        return new PartyJoinDto(partyId, status, oneLineIntroduce);
     }
 }
