@@ -58,6 +58,6 @@ public class SearchService {
     }
 
     private Long getLastPartyId(List<ResponsePartyDto> responsePartyList){
-        return responsePartyList.isEmpty() ? null : responsePartyList.get(responsePartyList.size() - 1).partyId();
+        return responsePartyList.isEmpty() ? null : responsePartyList.get(responsePartyList.size() - 1).getPartyId();
     }
 }

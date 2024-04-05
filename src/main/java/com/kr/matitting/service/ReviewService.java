@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -85,8 +86,15 @@ public class ReviewService {
         Review save = reviewRepository.save(review);
 
         // 리뷰를 받는 사용자의 receivedReviews 리스트에 추가
+        if (party.getReviews() == null)
+            party.setReviews(new ArrayList<>());
+        party.getReviews().add(review);
+        if (receiver.getReceivedReviews() == null)
+            receiver.setReceivedReviews(new ArrayList<>());
         receiver.getReceivedReviews().add(save);
         userRepository.save(receiver);
+        if (user.getSendReviews() == null)
+            user.setSendReviews(new ArrayList<>());
         user.getSendReviews().add(save);
         userRepository.save(user);
 

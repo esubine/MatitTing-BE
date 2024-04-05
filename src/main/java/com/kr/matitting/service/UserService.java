@@ -1,28 +1,27 @@
 package com.kr.matitting.service;
 
-import com.kr.matitting.constant.PartyStatus;
 import com.kr.matitting.constant.Role;
-import com.kr.matitting.dto.ResponseMyInfo;
-import com.kr.matitting.dto.ResponsePartyDto;
-import com.kr.matitting.dto.UserSignUpDto;
-import com.kr.matitting.dto.UserUpdateDto;
-import com.kr.matitting.entity.Team;
+import com.kr.matitting.dto.*;
+import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.redis.RedisUtil;
+import com.kr.matitting.repository.PartyRepositoryImpl;
 import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -31,6 +30,7 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final PartyTeamRepository partyTeamRepository;
+    private final PartyRepositoryImpl partyRepository;
     private final JwtService jwtService;
     private final RedisUtil redisUtil;
 
@@ -80,19 +80,20 @@ public class UserService {
         return ResponseMyInfo.toDto(user);
     }
 
-    public List<ResponsePartyDto> getMyPartyList(User user, Role role) {
-        List<Team> teams = new ArrayList<>();
-
-        if (role == Role.HOST || role == Role.VOLUNTEER) {
-            teams = partyTeamRepository.findByUserIdAndRole(user.getId(), role);
-        } else if (role == Role.USER) {
-            teams = partyTeamRepository.findByUserId(user.getId());
-        }
-        return teams.stream()
-                .map(Team::getParty)
-                .filter(party -> role == Role.USER ? party.getStatus() == PartyStatus.PARTY_FINISH : party.getStatus() != PartyStatus.PARTY_FINISH)
-                .map(ResponsePartyDto::toDto)
-                .sorted(Comparator.comparing(ResponsePartyDto::partyTime))
+    public ResponseMyParty getMyPartyList(User user, PartyStatusReq partyStatusReq, Pageable pageable) {
+        Page<Party> myParty = partyRepository.getMyParty(user, partyStatusReq, pageable);
+        List<ResponsePartyDto> responsePartyDtos = myParty.stream()
+                .map(party -> {
+                    List<Long> userIdList = Optional.ofNullable(party.getReviews())
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .map(review -> review.getReviewer().getId())
+                            .toList();
+                    boolean reviewExist = userIdList.contains(user.getId());
+                    return ResponsePartyDto.toDto(party, reviewExist);
+                })
                 .toList();
+
+        return new ResponseMyParty(responsePartyDtos, new ResponsePageInfoDto(pageable.getPageNumber(), myParty.hasNext()));
     }
 }

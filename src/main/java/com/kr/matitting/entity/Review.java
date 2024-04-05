@@ -1,5 +1,6 @@
 package com.kr.matitting.entity;
 
+import com.kr.matitting.util.StringListConverter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,8 +12,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "REVIEW")
 @Entity
+@Table(name = "REVIEW")
 public class Review extends BaseTimeEntity {
     @Schema(description = "리뷰 id", example = "1")
     @Id
@@ -27,6 +28,7 @@ public class Review extends BaseTimeEntity {
     private Integer rating; //온도
 
     @Schema(description = "리뷰 사진", example = "파스타.jpg")
+    @Convert(converter = StringListConverter.class)
     private List<String> imgUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)

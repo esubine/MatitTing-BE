@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -154,11 +156,12 @@ public class PartyController {
                                                 "1. HOST => 내가 방장으로 있는 파티 리스트를 반환 \n\n" +
                                                 "2. VOLUNTEER => 내가 참여한 파티 리스트를 반환 \n\n" +
                                                 "3. USER => 내가 방장으로 있던 파티 + 내가 참여한 파티 들중 파티가 끝난 리스트를 반환")
-    @ApiResponse(responseCode = "200", description = "파티 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDto.class)))
+    @ApiResponse(responseCode = "200", description = "파티 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponseMyParty.class)))
     @GetMapping("/party-status")
-    public ResponseEntity<List<ResponsePartyDto>> myPartyList(@AuthenticationPrincipal User user,@NotNull @RequestParam Role role) {
-        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(user, role);
-        return ResponseEntity.ok(myPartyList);
+    public ResponseEntity<ResponseMyParty> myPartyList(@AuthenticationPrincipal User user,
+                                                       @PageableDefault Pageable pageable,
+                                                       @Valid PartyStatusReq partyStatusReq) {
+        return ResponseEntity.ok(userService.getMyPartyList(user, partyStatusReq, pageable));
     }
 
     @Operation(summary = "파티 신청 현황", description = "실시간 파티 현황 API \n\n" +
