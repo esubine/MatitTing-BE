@@ -15,19 +15,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static com.kr.matitting.constant.Gender.*;
-import static com.kr.matitting.constant.Gender.ALL;
 import static com.kr.matitting.constant.PartyCategory.JAPANESE;
 import static com.kr.matitting.constant.PartyCategory.WESTERN;
 import static com.kr.matitting.constant.PartyStatus.RECRUIT;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
@@ -45,6 +44,8 @@ class UserServiceTest {
     private JwtService jwtService;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private ReviewService reviewService;
 
     public User user1;
     public User user2;
@@ -88,7 +89,7 @@ class UserServiceTest {
                 .latitude(37.55045202364851)
                 .status(RECRUIT)
                 .deadline(LocalDateTime.now().plusDays(3))
-                .partyTime(LocalDateTime.now().plusDays(3).plusHours(1))
+                .partyTime(LocalDateTime.now().minusDays(3))
                 .totalParticipant(4)
                 .participantCount(1)
                 .gender(ALL)
@@ -289,32 +290,50 @@ class UserServiceTest {
     @Test
     void 파티_리스트_조회_성공() {
         //given
-        ResponseCreatePartyDto responseCreatePartyDto1 = partyCreate(user1);
-        ResponseCreatePartyDto responseCreatePartyDto2 = partyCreate(user1);
+        partyCreate(user1);
+        partyCreate(user1);
 
         ResponseCreatePartyDto responseCreatePartyDto3 = partyCreate(user2);
         ResponseCreatePartyDto responseCreatePartyDto4 = partyCreate(user2);
 
-        ResponseCreatePartyJoinDto responseCreatePartyJoinDto1 = partyJoin(responseCreatePartyDto3.getPartyId(), user1, PartyJoinStatus.APPLY);
-        ResponseCreatePartyJoinDto responseCreatePartyJoinDto2 = partyJoin(responseCreatePartyDto4.getPartyId(), user1, PartyJoinStatus.APPLY);
+        partyJoin(responseCreatePartyDto3.getPartyId(), user1, PartyJoinStatus.APPLY);
+        partyJoin(responseCreatePartyDto4.getPartyId(), user1, PartyJoinStatus.APPLY);
         PartyDecisionDto partyDecisionDto1 = new PartyDecisionDto(responseCreatePartyDto3.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
         PartyDecisionDto partyDecisionDto2 = new PartyDecisionDto(responseCreatePartyDto4.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
         partyService.decideUser(partyDecisionDto1, user2);
         partyService.decideUser(partyDecisionDto2, user2);
 
+        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(user2.getId(), responseCreatePartyDto3.getPartyId(), "잘먹었습니다", 5, null);
+        ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(user2.getId(), responseCreatePartyDto4.getPartyId(), "못먹었습니다", 1, null);
+
+        reviewService.createReview(reviewCreateReq1, user1);
+        reviewService.createReview(reviewCreateReq2, user1);
+
+        PageRequest pageRequest1 = PageRequest.of(0, 1);
+        PageRequest pageRequest2 = PageRequest.of(1, 1);
+
+        PartyStatusReq partyStatusReq1 = new PartyStatusReq(Role.HOST, RECRUIT);
+        PartyStatusReq partyStatusReq2 = new PartyStatusReq(Role.VOLUNTEER, RECRUIT);
+
         //when
-        List<ResponsePartyDto> myPartyList = userService.getMyPartyList(user1, Role.HOST);
-        List<ResponsePartyDto> myPartyList1 = userService.getMyPartyList(user1, Role.VOLUNTEER);
+        ResponseMyParty myPartyList1 = userService.getMyPartyList(user1, partyStatusReq1, pageRequest1);
+        ResponseMyParty myPartyList2 = userService.getMyPartyList(user1, partyStatusReq1, pageRequest2);
+        ResponseMyParty myPartyList3 = userService.getMyPartyList(user1, partyStatusReq2, pageRequest1);
+        ResponseMyParty myPartyList4 = userService.getMyPartyList(user1, partyStatusReq2, pageRequest2);
 
         //then
-        assertThat(myPartyList.size()).isEqualTo(2);
-        assertThat(myPartyList1.size()).isEqualTo(2);
-    }
+        assertThat(myPartyList1.getPartyList().size()).isEqualTo(1);
+        assertThat(myPartyList1.getPageInfo().isHasNext()).isTrue();
+        assertThat(myPartyList1.getPartyList().get(0).getReviewExist()).isFalse();
+        assertThat(myPartyList2.getPartyList().size()).isEqualTo(1);
+        assertThat(myPartyList2.getPageInfo().isHasNext()).isFalse();
+        assertThat(myPartyList2.getPartyList().get(0).getReviewExist()).isFalse();
 
-    @DisplayName("내 파티 리스트 조회 실패 유효하지 않은 Role")
-    @Test
-    void 파티_리스트_조회_실패_유효하지않은Role() {
-        //when, then
-        assertThrows(IllegalArgumentException.class, ()->userService.getMyPartyList(user1, Role.valueOf("test")));
+        assertThat(myPartyList3.getPartyList().size()).isEqualTo(1);
+        assertThat(myPartyList3.getPageInfo().isHasNext()).isTrue();
+        assertThat(myPartyList3.getPartyList().get(0).getReviewExist()).isTrue();
+        assertThat(myPartyList4.getPartyList().size()).isEqualTo(1);
+        assertThat(myPartyList4.getPageInfo().isHasNext()).isFalse();
+        assertThat(myPartyList4.getPartyList().get(0).getReviewExist()).isTrue();
     }
 }
