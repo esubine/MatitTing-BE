@@ -169,8 +169,8 @@ class UserServiceTest {
         this.party4 = partyRepository.save(party4);
     }
 
-    ResponseCreatePartyJoinDto partyJoin(Long partyId, User volunteer, PartyJoinStatus status) {
-        PartyJoinDto partyJoinDto = new PartyJoinDto(partyId, status);
+    ResponseCreatePartyJoinDto partyJoin(Long partyId, User volunteer, PartyJoinStatus status, String ondLineIntroduce) {
+        PartyJoinDto partyJoinDto = new PartyJoinDto(partyId, status, ondLineIntroduce);
         return partyService.joinParty(partyJoinDto, volunteer);
     }
 
@@ -296,8 +296,9 @@ class UserServiceTest {
         ResponseCreatePartyDto responseCreatePartyDto3 = partyCreate(user2);
         ResponseCreatePartyDto responseCreatePartyDto4 = partyCreate(user2);
 
-        partyJoin(responseCreatePartyDto3.getPartyId(), user1, PartyJoinStatus.APPLY);
-        partyJoin(responseCreatePartyDto4.getPartyId(), user1, PartyJoinStatus.APPLY);
+        ResponseCreatePartyJoinDto responseCreatePartyJoinDto1 = partyJoin(responseCreatePartyDto3.getPartyId(), user1, PartyJoinStatus.APPLY, "안녕하세요.");
+        ResponseCreatePartyJoinDto responseCreatePartyJoinDto2 = partyJoin(responseCreatePartyDto4.getPartyId(), user1, PartyJoinStatus.APPLY, "하이");
+
         PartyDecisionDto partyDecisionDto1 = new PartyDecisionDto(responseCreatePartyDto3.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
         PartyDecisionDto partyDecisionDto2 = new PartyDecisionDto(responseCreatePartyDto4.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
         partyService.decideUser(partyDecisionDto1, user2);

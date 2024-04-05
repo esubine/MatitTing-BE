@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -48,9 +49,31 @@ public class InvitationRequestDto {
     private Integer userAge;
     @Schema(description = "신청 일자", example = "2024-03-29T10:15:30.123456789")
     private LocalDateTime createAt;
+    @Schema(description = "한줄 소개", example = "안녕하세요")
+    private String oneLineIntroduce;
+    @Schema(description = "조건 일치 여부", example = "true")
+    private Boolean typeMatch;
 
     public static InvitationRequestDto toDto(PartyJoin partyJoin, User user, Role role) {
         Party party = partyJoin.getParty();
+
+        List<Gender> genderType = party.getGender().equals(Gender.ALL) ? List.of(Gender.MALE, Gender.FEMALE) : List.of(party.getGender());
+        boolean genderMatch = genderType.contains(user.getGender());
+        boolean ageMatch = false;
+        switch (party.getAge()) {
+            case ALL :
+                ageMatch = true;
+                break;
+            case TWENTY:
+                ageMatch = 20 <= user.getAge() && user.getAge() < 30;
+                break;
+            case THIRTY:
+                ageMatch = 30 <= user.getAge() && user.getAge() < 40;
+                break;
+            case FORTY:
+                ageMatch = 40 <= user.getAge() && user.getAge() < 50;
+                break;
+        }
 
         return InvitationRequestDto.builder()
                 .partyId(party.getId())
@@ -62,6 +85,8 @@ public class InvitationRequestDto {
                 .userGender(user.getGender())
                 .userAge(user.getAge())
                 .createAt(partyJoin.getCreateDate())
+                .oneLineIntroduce(partyJoin.getOneLineIntroduce())
+                .typeMatch(genderMatch&&ageMatch)
                 .build();
     }
 }

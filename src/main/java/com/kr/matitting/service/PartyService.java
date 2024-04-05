@@ -125,12 +125,12 @@ public class PartyService {
             party.setPartyPlaceName(partyUpdateDto.partyPlaceName());
         }
         if (partyUpdateDto.status() != null) {
-            if (partyUpdateDto.status().equals(PartyStatus.PARTY_FINISH)){
+            if (partyUpdateDto.status().equals(PartyStatus.RECRUIT_FINISH)){
                 party.getTeamList()
                         .stream()
                         .map(Team::getUser)
                         .filter(teamUser -> teamUser.getId() != user.getId())
-                        .forEach(teamUser -> notificationService.send(teamUser, NotificationType.PARTY_FINISH, "파티 모집 완료", party.getPartyTitle() + " 파티 모집이 완료되었습니다."));
+                        .forEach(teamUser -> notificationService.send(teamUser, NotificationType.RECRUIT_FINISH, "파티 모집 완료", party.getPartyTitle() + " 파티 모집이 완료되었습니다."));
             }
 
             party.setStatus(partyUpdateDto.status());
@@ -204,7 +204,7 @@ public class PartyService {
             if (existingJoin.isPresent()) {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
             }
-            PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId()));
+            PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId(), partyJoinDto.oneLineIntroduce()));
             notificationService.send(user, NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
 
             return new ResponseCreatePartyJoinDto(savedpartyJoin.getId());
