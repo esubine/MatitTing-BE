@@ -77,16 +77,17 @@ public class ReviewService {
      * 리뷰 생성
      */
     public ReviewCreateRes createReview(ReviewCreateReq reviewCreateReq, User user) {
-        Optional<Review> byReview = reviewRepository.findByParty_IdAndReceiver_IdAndReviewer_Id(reviewCreateReq.getPartyId(), reviewCreateReq.getUserId(), user.getId());
+        Party party = partyRepository.findById(reviewCreateReq.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+
+        Optional<Review> byReview = reviewRepository.findByParty_IdAndReceiver_IdAndReviewer_Id(party.getId(), party.getUser().getId(), user.getId());
         if (byReview.isPresent())
             throw new ReviewException(ReviewExceptionType.DUPLICATION_REVIEW);
 
-        Party party = partyRepository.findById(reviewCreateReq.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
 
         if (party.getPartyTime().isAfter(LocalDateTime.now()))
             throw new ReviewException(ReviewExceptionType.NOT_START_PARTY);
 
-        User receiver = userRepository.findById(reviewCreateReq.getUserId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        User receiver = userRepository.findById(party.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         Review review = Review.builder()
                 .content(reviewCreateReq.getContent())
                 .rating(reviewCreateReq.getRating())
