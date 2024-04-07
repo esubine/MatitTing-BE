@@ -42,8 +42,10 @@ public class ReviewController {
             @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class)))
     })
     @GetMapping("/host")
-    public ResponseEntity<List<ReviewGetRes>> getHostReviewList(@RequestParam Long hostId) {
-        return ResponseEntity.ok(reviewService.getHostReviewList(hostId));
+    public ResponseEntity<ReviewListRes> getHostReviewList(@RequestParam Long hostId,
+                                                           @RequestParam Long lastId,
+                                                           @RequestParam(defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(reviewService.getHostReviewList(hostId, lastId, size));
     }
 
     @Operation(summary = "리뷰 상세 조회", description = "리뷰 상세 정보를 불러오는 API")

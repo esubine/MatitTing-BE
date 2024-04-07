@@ -17,7 +17,6 @@ import java.util.List;
 @Schema(description = "리뷰 생성 DTO")
 public class ReviewCreateReq {
     @NotNull
-    private Long userId; //방장 id
     private Long partyId; //파티 id
     @NotBlank
     private String content; //리뷰 내용

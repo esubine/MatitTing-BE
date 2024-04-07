@@ -13,15 +13,17 @@ import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.repository.PartyRepository;
 import com.kr.matitting.repository.ReviewRepository;
+import com.kr.matitting.repository.ReviewRepositoryCustom;
 import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +35,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
+    private final ReviewRepositoryCustom reviewRepositoryCustom;
 
     /**
      * 리뷰 리스트 조회
@@ -42,15 +45,24 @@ public class ReviewService {
             return user.getReceivedReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).toList();
         else
             return user.getSendReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReceiver())).toList();
-
     }
-
     /**
      * 방장 리뷰 조회
      */
-    public List<ReviewGetRes> getHostReviewList(Long userId) {
+    public ReviewListRes getHostReviewList(Long userId, Long lastId, Integer size) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-        return user.getReceivedReviews().stream().map(review -> ReviewGetRes.toDto(review, user)).sorted(Comparator.comparing(ReviewGetRes::getReviewId).reversed()).toList();
+
+        PageRequest pageable = PageRequest.of(0, size);
+        Slice<Review> hostReview = reviewRepositoryCustom.getHostReview(pageable, lastId, user);
+
+        List<ReviewGetRes> reviewGetRes = hostReview.getContent().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).toList();
+        ResponseNoOffsetDto pageInfoDto = new ResponseNoOffsetDto(getLastId(reviewGetRes), hostReview.hasNext());
+
+        return new ReviewListRes(reviewGetRes, pageInfoDto);
+    }
+
+    private Long getLastId(List<ReviewGetRes> reviewGetRes) {
+        return reviewGetRes.isEmpty() ? null : reviewGetRes.get(reviewGetRes.size() - 1).getReviewId();
     }
 
     /**
@@ -65,16 +77,17 @@ public class ReviewService {
      * 리뷰 생성
      */
     public ReviewCreateRes createReview(ReviewCreateReq reviewCreateReq, User user) {
-        Optional<Review> byReview = reviewRepository.findByParty_IdAndReceiver_IdAndReviewer_Id(reviewCreateReq.getPartyId(), reviewCreateReq.getUserId(), user.getId());
+        Party party = partyRepository.findById(reviewCreateReq.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+
+        Optional<Review> byReview = reviewRepository.findByParty_IdAndReceiver_IdAndReviewer_Id(party.getId(), party.getUser().getId(), user.getId());
         if (byReview.isPresent())
             throw new ReviewException(ReviewExceptionType.DUPLICATION_REVIEW);
 
-        Party party = partyRepository.findById(reviewCreateReq.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
 
         if (party.getPartyTime().isAfter(LocalDateTime.now()))
             throw new ReviewException(ReviewExceptionType.NOT_START_PARTY);
 
-        User receiver = userRepository.findById(reviewCreateReq.getUserId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        User receiver = userRepository.findById(party.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         Review review = Review.builder()
                 .content(reviewCreateReq.getContent())
                 .rating(reviewCreateReq.getRating())
