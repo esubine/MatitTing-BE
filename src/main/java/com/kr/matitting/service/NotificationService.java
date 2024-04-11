@@ -74,8 +74,8 @@ public class NotificationService {
         try {
             emitter.send(SseEmitter.event()
                     .id(eventId)
-                    .name("event: sse")
-                    .data("data:" + data)
+                    .name("message")
+                    .data(data)
             );
         } catch (IOException exception) {
 //            emitterRepository.deleteById(emitterId);
