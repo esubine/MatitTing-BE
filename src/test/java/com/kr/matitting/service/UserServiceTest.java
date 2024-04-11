@@ -304,8 +304,8 @@ class UserServiceTest {
         partyService.decideUser(partyDecisionDto1, user2);
         partyService.decideUser(partyDecisionDto2, user2);
 
-        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(user2.getId(), responseCreatePartyDto3.getPartyId(), "잘먹었습니다", 5, null);
-        ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(user2.getId(), responseCreatePartyDto4.getPartyId(), "못먹었습니다", 1, null);
+        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(responseCreatePartyDto3.getPartyId(), "잘먹었습니다", 5, null);
+        ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(responseCreatePartyDto4.getPartyId(), "못먹었습니다", 1, null);
 
         reviewService.createReview(reviewCreateReq1, user1);
         reviewService.createReview(reviewCreateReq2, user1);
