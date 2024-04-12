@@ -25,7 +25,10 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @Operation(summary = "리뷰 리스트 조회", description = "나에게 온 리뷰 리스트를 불러오는 API \n\n" +
-            "ReviewType으로 내가 받은 리뷰 리스트 or 내가 보낸 리뷰 리스트를 조회")
+            "Request parameter : reviewType, page, size \n\n" +
+            "ReviewType : 내가 받은 리뷰 리스트 or 내가 보낸 리뷰 리스트를 조회 \n\n" +
+            "page : pageNumber \n\n" +
+            "size : limit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ResponseReviewList.class))),
     })
