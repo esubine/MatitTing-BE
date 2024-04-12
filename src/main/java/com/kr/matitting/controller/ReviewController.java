@@ -18,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/review")
@@ -27,13 +25,19 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @Operation(summary = "리뷰 리스트 조회", description = "나에게 온 리뷰 리스트를 불러오는 API \n\n" +
-            "ReviewType으로 내가 받은 리뷰 리스트 or 내가 보낸 리뷰 리스트를 조회")
+            "Request parameter : reviewType, page, size \n\n" +
+            "ReviewType : 내가 받은 리뷰 리스트 or 내가 보낸 리뷰 리스트를 조회 \n\n" +
+            "page : pageNumber \n\n" +
+            "size : limit")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ReviewGetRes.class))),
+            @ApiResponse(responseCode = "200", description = "리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ResponseReviewList.class))),
     })
     @GetMapping
-    public ResponseEntity<List<ReviewGetRes>> getReviewList(@AuthenticationPrincipal User user, @RequestParam ReviewType reviewType) {
-        return ResponseEntity.ok(reviewService.getReviewList(user, reviewType));
+    public ResponseEntity<ResponseReviewList> getReviewList(@AuthenticationPrincipal User user,
+                                                            @RequestParam ReviewType reviewType,
+                                                            @RequestParam(defaultValue = "0") Integer page,
+                                                            @RequestParam(defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(reviewService.getReviewList(user, reviewType, page, size));
     }
 
     @Operation(summary = "방장 리뷰 리스트 조회", description = "방장의 리뷰 리스트를 불러오는 API")

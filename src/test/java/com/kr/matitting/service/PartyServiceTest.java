@@ -151,7 +151,7 @@ class PartyServiceTest {
     void 파티_조회_성공() {
         //when
         party1.setPartyTime(LocalDateTime.now().minusHours(5));
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "멋져요", 50, List.of("단체사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "멋져요", 50, List.of("단체사진.jpg"));
         reviewService.createReview(reviewCreateReq, user2);
 
         ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user1, party1.getId());

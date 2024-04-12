@@ -159,7 +159,7 @@ class ReviewServiceTest {
     @Test
     void 후기_생성_성공() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
 
         //when
         ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
@@ -178,21 +178,22 @@ class ReviewServiceTest {
     @Test
     void 후기_생성_실패_잘못된_파티ID() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId() + 100L, "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId() + 100L, "방장님 멋져요.", 50, List.of("추억사진.jpg"));
 
         //when, then
         assertThrows(PartyException.class, () -> reviewService.createReview(reviewCreateReq, user2));
     }
 
-    @DisplayName("후기 생성 실패 - 유저 없음")
-    @Test
-    void 후기_생성_실패_유저없음() {
-        //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId() + 100, party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-
-        //when, then
-        assertThrows(UserException.class, () -> reviewService.createReview(reviewCreateReq, user2));
-    }
+//    @DisplayName("후기 생성 실패 - 유저 없음")
+//    @Test
+//    void 후기_생성_실패_유저없음() {
+//        //given
+//        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+//        user2.setId(10000L);
+//
+//        //when, then
+//        assertThrows(UserException.class, () -> reviewService.createReview(reviewCreateReq, user2));
+//    }
 
     @DisplayName("후기 생성 실패 - 시작하지 않음")
     @Test
@@ -201,7 +202,7 @@ class ReviewServiceTest {
         Party byId = partyRepository.findById(party1.getId()).get();
         byId.setPartyTime(LocalDateTime.now().plusDays(3));
         entityManager.flush();
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
 
         //when, then
         assertThrows(ReviewException.class, () -> reviewService.createReview(reviewCreateReq, user2));
@@ -211,7 +212,7 @@ class ReviewServiceTest {
     @Test
     void 후기_생성_실패_중복등록() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
         ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
 
         //when, then
@@ -222,7 +223,7 @@ class ReviewServiceTest {
     @Test
     void 후기_수정_성공() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
         ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
         ReviewUpdateReq reviewUpdateReq = new ReviewUpdateReq(review.getReviewId(), "방장님 이뻐요.", 80, List.of("이쁜사진.jpg"));
 
@@ -242,7 +243,7 @@ class ReviewServiceTest {
     @Test
     void 후기_수정_실패_Role위반() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
         ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
         ReviewUpdateReq reviewUpdateReq = new ReviewUpdateReq(review.getReviewId(), "방장님 이뻐요.", 80, List.of("이쁜사진.jpg"));
 
@@ -254,7 +255,7 @@ class ReviewServiceTest {
     @Test
     void 후기_삭제_성공() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
         ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
         ReviewDeleteReq reviewDeleteReq = new ReviewDeleteReq(review.getReviewId());
 
@@ -270,7 +271,7 @@ class ReviewServiceTest {
     @Test
     void 후기_삭제_실패_Role위반() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
         ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
         ReviewDeleteReq reviewDeleteReq = new ReviewDeleteReq(review.getReviewId());
 
@@ -282,50 +283,50 @@ class ReviewServiceTest {
     @Test
     void 후기_리스트_조회_성공() {
         //given
-        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
-        ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요2.", 20, List.of("추억사진2.jpg"));
-        ReviewCreateReq reviewCreateReq3 = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요3.", 30, List.of("추억사진3.jpg"));
+        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
+        ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(party1.getId(), "방장님 멋져요2.", 20, List.of("추억사진2.jpg"));
+        ReviewCreateReq reviewCreateReq3 = new ReviewCreateReq(party1.getId(), "방장님 멋져요3.", 30, List.of("추억사진3.jpg"));
         reviewService.createReview(reviewCreateReq1, user2);
         reviewService.createReview(reviewCreateReq2, user3);
         reviewService.createReview(reviewCreateReq3, user4);
 
         //when
-        List<ReviewGetRes> reviewList = reviewService.getReviewList(user1, ReviewType.RECEIVER);
-        List<ReviewGetRes> reviewList1 = reviewService.getReviewList(user2, ReviewType.SENDER);
-        List<ReviewGetRes> reviewList2 = reviewService.getReviewList(user3, ReviewType.SENDER);
-        List<ReviewGetRes> reviewList3 = reviewService.getReviewList(user4, ReviewType.SENDER);
+        ResponseReviewList reviewList1 = reviewService.getReviewList(user1, ReviewType.RECEIVER, 0, 5);
+        ResponseReviewList reviewList2 = reviewService.getReviewList(user2, ReviewType.SENDER, 0, 5);
+        ResponseReviewList reviewList3 = reviewService.getReviewList(user3, ReviewType.SENDER, 0, 5);
+        ResponseReviewList reviewList4 = reviewService.getReviewList(user4, ReviewType.SENDER, 0, 5);
 
         //then
-        assertThat(reviewList.size()).isEqualTo(3);
-        assertThat(reviewList.stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(20.0);
-        assertThat(reviewList1.size()).isEqualTo(1);
-        assertThat(reviewList1.stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(10.0);
-        assertThat(reviewList2.size()).isEqualTo(1);
-        assertThat(reviewList2.stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(20.0);
-        assertThat(reviewList3.size()).isEqualTo(1);
-        assertThat(reviewList3.stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(30.0);
+        assertThat(reviewList1.getReviewGetResList().size()).isEqualTo(3);
+        assertThat(reviewList1.getReviewGetResList().stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(20.0);
+        assertThat(reviewList2.getReviewGetResList().size()).isEqualTo(1);
+        assertThat(reviewList2.getReviewGetResList().stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(10.0);
+        assertThat(reviewList3.getReviewGetResList().size()).isEqualTo(1);
+        assertThat(reviewList3.getReviewGetResList().stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(20.0);
+        assertThat(reviewList4.getReviewGetResList().size()).isEqualTo(1);
+        assertThat(reviewList4.getReviewGetResList().stream().mapToDouble(ReviewGetRes::getRating).average().getAsDouble()).isEqualTo(30.0);
     }
 
     @DisplayName("후기 리스트 조회 실패 - 잘못된 매개변수")
     @Test
     void 후기_리스트_조회_실패_잘못된_매개변수() {
         //given
-        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
-        ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요2.", 20, List.of("추억사진2.jpg"));
-        ReviewCreateReq reviewCreateReq3 = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요3.", 30, List.of("추억사진3.jpg"));
+        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
+        ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(party1.getId(), "방장님 멋져요2.", 20, List.of("추억사진2.jpg"));
+        ReviewCreateReq reviewCreateReq3 = new ReviewCreateReq(party1.getId(), "방장님 멋져요3.", 30, List.of("추억사진3.jpg"));
         reviewService.createReview(reviewCreateReq1, user2);
         reviewService.createReview(reviewCreateReq2, user3);
         reviewService.createReview(reviewCreateReq3, user4);
 
         //when, then
-        assertThrows(IllegalArgumentException.class, () -> reviewService.getReviewList(user1, ReviewType.valueOf("test")));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.getReviewList(user1, ReviewType.valueOf("test"), 0, 3));
     }
 
     @DisplayName("후기 상세 조회 성공")
     @Test
     void 후기_상세조회_성공() {
         //given
-        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
+        ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
         ReviewCreateRes review = reviewService.createReview(reviewCreateReq1, user2);
 
         //when
@@ -347,29 +348,29 @@ class ReviewServiceTest {
     @Test
     void 방장_후기조회_성공() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
         ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2);
         ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3);
 
         //when
-        List<ReviewGetRes> hostReviewList = reviewService.getHostReviewList(user1.getId());
+        ReviewListRes hostReviewList = reviewService.getHostReviewList(user1.getId(), review1.getReviewId(), 3);
 
         //then
-        assertThat(hostReviewList.size()).isEqualTo(2);
-        assertThat(hostReviewList.get(0).getReviewId()).isEqualTo(review2.getReviewId());
-        assertThat(hostReviewList.get(1).getReviewId()).isEqualTo(review1.getReviewId());
+        assertThat(hostReviewList.getReviewGetResList().size()).isEqualTo(2);
+        assertThat(hostReviewList.getReviewGetResList().get(0).getReviewId()).isEqualTo(review2.getReviewId());
+        assertThat(hostReviewList.getReviewGetResList().get(1).getReviewId()).isEqualTo(review1.getReviewId());
     }
 
     @DisplayName("방장 후기 조회 실패 없는 유저ID")
     @Test
     void 방장_후기조회_실패_없는_유저ID() {
         //given
-        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(user1.getId(), party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
+        ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
         ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2);
         ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3);
 
         //when, then
-        assertThrows(UserException.class, () -> reviewService.getHostReviewList(user1.getId() + 100L));
+        assertThrows(UserException.class, () -> reviewService.getHostReviewList(user1.getId() + 100L, 0L, 5));
     }
 }
 

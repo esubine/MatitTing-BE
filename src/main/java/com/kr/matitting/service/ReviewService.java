@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,11 +41,18 @@ public class ReviewService {
     /**
      * 리뷰 리스트 조회
      */
-    public List<ReviewGetRes> getReviewList(User user, ReviewType reviewType) {
+    public ResponseReviewList getReviewList(User user, ReviewType reviewType, Integer page, Integer size) {
+        List<ReviewGetRes> list;
+
+        int start = page*size;
+        int end = start + size + 1;
+
         if (reviewType.equals(ReviewType.RECEIVER))
-            return user.getReceivedReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).toList();
+            list = user.getReceivedReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).sorted(Comparator.comparing(ReviewGetRes::getReviewId).reversed()).toList();
         else
-            return user.getSendReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReceiver())).toList();
+            list = user.getSendReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReceiver())).sorted(Comparator.comparing(ReviewGetRes::getReviewId).reversed()).toList();
+
+        return new ResponseReviewList(list.subList(start, Math.min(list.size(), end)), new ResponsePageInfoDto(page, end < list.size()));
     }
     /**
      * 방장 리뷰 조회
@@ -87,7 +95,7 @@ public class ReviewService {
         if (party.getPartyTime().isAfter(LocalDateTime.now()))
             throw new ReviewException(ReviewExceptionType.NOT_START_PARTY);
 
-        User receiver = userRepository.findById(party.getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        User receiver = userRepository.findById(party.getUser().getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         Review review = Review.builder()
                 .content(reviewCreateReq.getContent())
                 .rating(reviewCreateReq.getRating())
