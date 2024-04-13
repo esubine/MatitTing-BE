@@ -47,7 +47,7 @@ public class PartyScheduler {
                 teamList.stream()
                         .filter(team -> team.getRole().equals(Role.VOLUNTEER))
                         .forEach(receiver ->
-                                notificationService.send(receiver.getUser(), NotificationType.REVIEW, "방장에 대한 리뷰를 남겨주세요.", "리뷰 요청")
+                                notificationService.send(receiver.getUser(), receiver.getParty(), NotificationType.REVIEW, "방장에 대한 리뷰를 남겨주세요.", "리뷰 요청")
                         );
             }
         }

@@ -3,6 +3,7 @@ package com.kr.matitting.service;
 import com.kr.matitting.constant.NotificationType;
 import com.kr.matitting.dto.NotificationDto;
 import com.kr.matitting.entity.Notification;
+import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.repository.EmitterRepository;
 import com.kr.matitting.repository.NotificationRepository;
@@ -123,17 +124,17 @@ public class NotificationService {
      * @param title
      * @param content
      */
-    public void send(User receiver, NotificationType notificationType, String title, String content){
+    public void send(User receiver, Party party, NotificationType notificationType, String title, String content){
         Notification notification = notificationRepository.save(new Notification(receiver, notificationType, title, content));
 
         Long userId = receiver.getId();
         String eventId = makeTimeIncludeId(userId);
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(String.valueOf(userId));
-        emitterRepository.saveEventCache(eventId, NotificationDto.Response.createResponse(notification, eventId));
+        emitterRepository.saveEventCache(eventId, NotificationDto.Response.createResponse(notification, party, eventId));
 
         emitters.forEach(
                 (key, emitter) -> {
-                    sendNotification(emitter, eventId, key, NotificationDto.Response.createResponse(notification, eventId));
+                    sendNotification(emitter, eventId, key, NotificationDto.Response.createResponse(notification, party, eventId));
                 }
         );
     }

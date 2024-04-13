@@ -130,7 +130,7 @@ public class PartyService {
                         .stream()
                         .map(Team::getUser)
                         .filter(teamUser -> teamUser.getId() != user.getId())
-                        .forEach(teamUser -> notificationService.send(teamUser, NotificationType.RECRUIT_FINISH, "파티 모집 완료", party.getPartyTitle() + " 파티 모집이 완료되었습니다."));
+                        .forEach(teamUser -> notificationService.send(teamUser, party, NotificationType.RECRUIT_FINISH, "파티 모집 완료", party.getPartyTitle() + " 파티 모집이 완료되었습니다."));
             }
 
             party.setStatus(partyUpdateDto.status());
@@ -205,7 +205,7 @@ public class PartyService {
                 throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
             }
             PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId(), partyJoinDto.oneLineIntroduce()));
-            notificationService.send(party.getUser(), NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
+            notificationService.send(party.getUser(), party, NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
 
             return new ResponseCreatePartyJoinDto(savedpartyJoin.getId());
         } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
@@ -242,11 +242,11 @@ public class PartyService {
             //참가 수락된 유저를 채팅방에 추가
             chatService.addParticipant(party, volunteerUser);
 
-            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가 되셨습니다.");
+            notificationService.send(volunteerUser, party, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가 되셨습니다.");
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");
-            notificationService.send(volunteerUser, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가가 거절되었습니다.");
+            notificationService.send(volunteerUser, party, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가가 거절되었습니다.");
             return "Refuse Request Completed";
         }
     }
