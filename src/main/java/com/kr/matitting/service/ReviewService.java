@@ -17,7 +17,9 @@ import com.kr.matitting.repository.ReviewRepositoryCustom;
 import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,16 +59,15 @@ public class ReviewService {
     /**
      * 방장 리뷰 조회
      */
-    public ReviewListRes getHostReviewList(Long userId, Long lastId, Integer size) {
+    public ReviewListRes getHostReviewList(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
 
-        PageRequest pageable = PageRequest.of(0, size);
-        Slice<Review> hostReview = reviewRepositoryCustom.getHostReview(pageable, lastId, user);
+        Page<Review> hostReview = reviewRepositoryCustom.getHostReview(pageable, user);
 
         List<ReviewGetRes> reviewGetRes = hostReview.getContent().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).toList();
-        ResponseNoOffsetDto pageInfoDto = new ResponseNoOffsetDto(getLastId(reviewGetRes), hostReview.hasNext());
+        ResponsePageInfoDto responsePageInfoDto = new ResponsePageInfoDto(hostReview.getNumber(), hostReview.hasNext());
 
-        return new ReviewListRes(reviewGetRes, pageInfoDto);
+        return new ReviewListRes(reviewGetRes, responsePageInfoDto);
     }
 
     private Long getLastId(List<ReviewGetRes> reviewGetRes) {

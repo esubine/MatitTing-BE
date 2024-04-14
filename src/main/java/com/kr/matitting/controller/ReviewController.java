@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,9 +49,8 @@ public class ReviewController {
     })
     @GetMapping("/host")
     public ResponseEntity<ReviewListRes> getHostReviewList(@RequestParam Long hostId,
-                                                           @RequestParam Long lastId,
-                                                           @RequestParam(defaultValue = "5") Integer size) {
-        return ResponseEntity.ok(reviewService.getHostReviewList(hostId, lastId, size));
+                                                           @PageableDefault Pageable pageable) {
+        return ResponseEntity.ok(reviewService.getHostReviewList(hostId, pageable));
     }
 
     @Operation(summary = "리뷰 상세 조회", description = "리뷰 상세 정보를 불러오는 API")
