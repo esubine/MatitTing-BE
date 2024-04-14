@@ -20,7 +20,7 @@ public class ReviewGetRes {
     private String userProfileImg;
     @Schema(description = "Sender or Receiver 닉네임", example = "새싹개발자")
     private String nickname;
-    @Schema(description = "review rating", example = "50")
+    @Schema(description = "review rating", example = "5")
     private Integer rating;
     @Schema(description = "리뷰 내용", example = "방장님 멋져요.")
     private String content;

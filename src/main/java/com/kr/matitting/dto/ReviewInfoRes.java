@@ -19,9 +19,9 @@ public class ReviewInfoRes {
     private String nickname;
     @Schema(description = "리뷰 내용", example = "방장님 멋져요.")
     private String content;
-    @Schema(description = "review rating", example = "50")
+    @Schema(description = "review rating", example = "1")
     private Integer rating;
-    @Schema(description = "리뷰 첨부사진", example = "돈까스사진.jpg")
+    @Schema(description = "리뷰 첨부사진 리스트", example = "['돈까스사진.jpg', '셀카.jpg']")
     private List<String> reviewImg;
     @Schema(description = "리뷰 쓴 날짜", example = "2024-02-28")
     @JsonFormat(pattern = "yyyy-MM-dd")
