@@ -155,7 +155,10 @@ public class PartyController {
                                                 "로직 설명 \n\n" +
                                                 "1. HOST => 내가 방장으로 있는 파티 리스트를 반환 \n\n" +
                                                 "2. VOLUNTEER => 내가 참여한 파티 리스트를 반환 \n\n" +
-                                                "3. USER => 내가 방장으로 있던 파티 + 내가 참여한 파티 들중 파티가 끝난 리스트를 반환")
+            "Request \n\n" +
+            "page : 페이지 넘버 \n\n" +
+            "size : 받아올 객체 리스트 개수 \n\n" +
+            "sort : 최신순으로 정렬하여 response하도록 설정 request X \n\n")
     @ApiResponse(responseCode = "200", description = "파티 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponseMyParty.class)))
     @GetMapping("/party-status")
     public ResponseEntity<ResponseMyParty> myPartyList(@AuthenticationPrincipal User user,
