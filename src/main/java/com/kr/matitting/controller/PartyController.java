@@ -179,10 +179,9 @@ public class PartyController {
     })
     @GetMapping("/party-join")
     public ResponseEntity<ResponseGetPartyJoinDto> getJoinList(@AuthenticationPrincipal User user,
-                                                               @RequestParam(defaultValue = "5") Integer size,
-                                                               @RequestParam Long lastId,
+                                                               @PageableDefault Pageable pageable,
                                                                @NotNull @RequestParam Role role) {
-        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user, role, size, lastId);
+        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user, role, pageable);
         return ResponseEntity.ok(joinList);
     }
 }

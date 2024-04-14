@@ -9,5 +9,5 @@ import java.util.List;
 @AllArgsConstructor
 public class ResponseGetPartyJoinDto {
     private List<InvitationRequestDto> partyList;
-    private ResponseNoOffsetDto pageInfo;
+    private ResponsePageInfoDto pageInfo;
 }
