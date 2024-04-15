@@ -7,14 +7,13 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.kr.matitting.entity.QParty.party;
 import static com.kr.matitting.entity.QPartyJoin.partyJoin;
 
 @Repository
@@ -23,10 +22,30 @@ public class PartyJoinRepositoryCustomImpl implements PartyJoinRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<PartyJoin> getPartyJoin(Pageable pageable, Long lastPartyJoinId, User user, Role role) {
-        return getPartyJoinList(pageable, lastPartyJoinId, user, role);
+    public Page<PartyJoin> getPartyJoin(Pageable pageable, User user, Role role) {
+        List<PartyJoin> partyJoinList = getPartyJoinList(pageable, user, role);
+        Long count = getPartyJoinCount(pageable, user, role);
+        return new PageImpl<>(partyJoinList, pageable, count);
     }
-    private Slice<PartyJoin> getPartyJoinList(Pageable pageable, Long lastPartyJoinId, User user, Role role) {
+
+    private Long getPartyJoinCount(Pageable pageable, User user, Role role) {
+        JPAQuery<Long> jpaQuery = queryFactory
+                .select(partyJoin.count())
+                .from(partyJoin);
+
+        if (role.equals(Role.HOST))
+            jpaQuery.where(leaderIdEq(user.getId()));
+        else
+            jpaQuery.where(volunteerEq(user.getId()));
+
+        return jpaQuery
+                .limit(pageable.getPageSize())
+                .offset(pageable.getPageNumber())
+                .orderBy(partyJoin.createDate.desc())
+                .fetchOne();
+    }
+
+    private List<PartyJoin> getPartyJoinList(Pageable pageable, User user, Role role) {
         JPAQuery<PartyJoin> jpaQuery = queryFactory
                 .select(partyJoin)
                 .from(partyJoin);
@@ -35,13 +54,12 @@ public class PartyJoinRepositoryCustomImpl implements PartyJoinRepositoryCustom 
             jpaQuery.where(leaderIdEq(user.getId()));
         else
             jpaQuery.where(volunteerEq(user.getId()));
-        jpaQuery.where(ltPartyJoinId(lastPartyJoinId));
 
-        List<PartyJoin> partyJoinList = jpaQuery
+        return jpaQuery
                 .limit(pageable.getPageSize())
+                .offset(pageable.getPageNumber())
                 .orderBy(partyJoin.createDate.desc())
                 .fetch();
-        return checkLastPage(partyJoinList, pageable);
     }
 
     private BooleanExpression leaderIdEq(Long userId) {
@@ -50,19 +68,5 @@ public class PartyJoinRepositoryCustomImpl implements PartyJoinRepositoryCustom 
 
     private BooleanExpression volunteerEq(Long userId) {
         return partyJoin.userId.eq(userId);
-    }
-
-    private BooleanExpression ltPartyJoinId(Long lastPartyJoinId) {
-        return lastPartyJoinId == 0L ? null : party.id.lt(lastPartyJoinId);
-    }
-
-    private Slice<PartyJoin> checkLastPage(List<PartyJoin> partyJoinList, Pageable pageable) {
-        boolean hasNext = false;
-        if (partyJoinList.size() > pageable.getPageSize()) {
-            hasNext = true;
-            partyJoinList.remove(pageable.getPageSize());
-        }
-
-        return new SliceImpl<>(partyJoinList, pageable, hasNext);
     }
 }

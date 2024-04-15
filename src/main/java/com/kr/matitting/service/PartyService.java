@@ -15,7 +15,9 @@ import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -251,31 +253,30 @@ public class PartyService {
         }
     }
 
-    public ResponseGetPartyJoinDto getJoinList(User user, Role role, Integer size, Long lastPartyJoinId) {
-        PageRequest pageable = PageRequest.of(0, size);
-        Slice<PartyJoin> partyJoinSlice = partyJoinRepositoryCustom.getPartyJoin(pageable, lastPartyJoinId, user, role);
+    public ResponseGetPartyJoinDto getJoinList(User user, Role role, Pageable pageable) {
+        Page<PartyJoin> partyJoinPage = partyJoinRepositoryCustom.getPartyJoin(pageable, user, role);
 
         switch (role) {
             case HOST:
-                List<InvitationRequestDto> hostInvitation = partyJoinSlice.getContent().stream()
+                List<InvitationRequestDto> hostInvitation = partyJoinPage.getContent().stream()
                         .map(partyJoin -> {
                             User volunteerUser = userRepository.findById(partyJoin.getUserId())
                                     .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
                             return InvitationRequestDto.toDto(partyJoin, volunteerUser, role);
                         })
                         .toList();
-                ResponseNoOffsetDto hostPageInfo = new ResponseNoOffsetDto(partyJoinSlice.getContent().get(partyJoinSlice.getNumberOfElements() - 1).getId(), partyJoinSlice.hasNext());
-                return new ResponseGetPartyJoinDto(hostInvitation, hostPageInfo);
+                ResponsePageInfoDto hostPageInfoDto = new ResponsePageInfoDto(partyJoinPage.getPageable().getPageNumber(), partyJoinPage.hasNext());
+                return new ResponseGetPartyJoinDto(hostInvitation, hostPageInfoDto);
             case VOLUNTEER:
-                List<InvitationRequestDto> volunteerInvitation = partyJoinSlice.getContent().stream()
+                List<InvitationRequestDto> volunteerInvitation = partyJoinPage.getContent().stream()
                         .map(partyJoin -> {
                             User leaderUser = userRepository.findById(partyJoin.getLeaderId())
                                     .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
                             return InvitationRequestDto.toDto(partyJoin, leaderUser, role);
                         })
                         .toList();
-                ResponseNoOffsetDto volunteerPageInfo = new ResponseNoOffsetDto(partyJoinSlice.getContent().get(partyJoinSlice.getNumberOfElements() - 1).getId(), partyJoinSlice.hasNext());
-                return new ResponseGetPartyJoinDto(volunteerInvitation, volunteerPageInfo);
+                ResponsePageInfoDto volunteerPageInfoDto = new ResponsePageInfoDto(partyJoinPage.getPageable().getPageNumber(), partyJoinPage.hasNext());
+                return new ResponseGetPartyJoinDto(volunteerInvitation, volunteerPageInfoDto);
             default:
                 throw new UserException(UserExceptionType.INVALID_ROLE_USER);
         }
