@@ -27,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static com.kr.matitting.constant.PartyJoinStatus.*;
+
 @Slf4j
 @Service
 @Transactional
@@ -134,7 +136,6 @@ public class PartyService {
                         .filter(teamUser -> teamUser.getId() != user.getId())
                         .forEach(teamUser -> notificationService.send(teamUser, party, NotificationType.RECRUIT_FINISH, "파티 모집 완료", party.getPartyTitle() + " 파티 모집이 완료되었습니다."));
             }
-
             party.setStatus(partyUpdateDto.status());
         }
         if (partyUpdateDto.thumbnail() != null) {
@@ -202,22 +203,27 @@ public class PartyService {
         if (party.getUser().getId().equals(user.getId())) throw new UserException(UserExceptionType.INVALID_ROLE_USER);
 
         Optional<PartyJoin> existingJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(party.getId(), party.getUser().getId(), user.getId());
-        if (partyJoinDto.status() == PartyJoinStatus.APPLY) {
-            if (existingJoin.isPresent()) {
-                throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
-            }
-            PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId(), partyJoinDto.oneLineIntroduce()));
-            notificationService.send(party.getUser(), party, NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
 
-            return new ResponseCreatePartyJoinDto(savedpartyJoin.getId());
-        } else if (partyJoinDto.status() == PartyJoinStatus.CANCEL) {
-            if (existingJoin.isEmpty()) {
-                throw new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN);
-            }
-            partyJoinRepository.delete(existingJoin.get());
-            return new ResponseCreatePartyJoinDto(existingJoin.get().getId());
+        switch (partyJoinDto.status()) {
+            case APPLY:
+                if (existingJoin.isPresent())
+                    throw new PartyJoinException(PartyJoinExceptionType.DUPLICATION_PARTY_JOIN);
+
+                PartyJoin savedpartyJoin = partyJoinRepository.save(new PartyJoin(party, party.getUser().getId(), user.getId(), partyJoinDto.oneLineIntroduce()));
+                notificationService.send(party.getUser(), party, NotificationType.PARTICIPATION_REQUEST, "파티 신청", party.getPartyTitle() + " 파티에 참가 신청이 도착했어요.");
+
+                return new ResponseCreatePartyJoinDto(savedpartyJoin.getId());
+
+            case CANCEL:
+                if (existingJoin.isEmpty())
+                    throw new PartyJoinException(PartyJoinExceptionType.NOT_FOUND_PARTY_JOIN);
+
+                partyJoinRepository.delete(existingJoin.get());
+                return new ResponseCreatePartyJoinDto(existingJoin.get().getId());
+
+            default:
+                return null;
         }
-        return null;
     }
 
     public String decideUser(PartyDecisionDto partyDecisionDto, User user) {
