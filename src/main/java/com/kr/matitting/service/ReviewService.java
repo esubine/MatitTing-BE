@@ -43,18 +43,18 @@ public class ReviewService {
     /**
      * 리뷰 리스트 조회
      */
-    public ResponseReviewList getReviewList(User user, ReviewType reviewType, Integer page, Integer size) {
+    public ResponseReviewList getReviewList(User user, ReviewType reviewType, Pageable pageable) {
         List<ReviewGetRes> list;
 
-        int start = page*size;
-        int end = start + size + 1;
+        int start = pageable.getPageNumber() * pageable.getPageSize();
+        int end = start + pageable.getPageSize() + 1;
 
         if (reviewType.equals(ReviewType.RECEIVER))
             list = user.getReceivedReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).sorted(Comparator.comparing(ReviewGetRes::getReviewId).reversed()).toList();
         else
             list = user.getSendReviews().stream().map(review -> ReviewGetRes.toDto(review, review.getReceiver())).sorted(Comparator.comparing(ReviewGetRes::getReviewId).reversed()).toList();
 
-        return new ResponseReviewList(list.subList(start, Math.min(list.size(), end)), new ResponsePageInfoDto(page, end < list.size()));
+        return new ResponseReviewList(list.subList(start, Math.min(list.size(), end)), new ResponsePageInfoDto(pageable.getPageNumber(), end < list.size()));
     }
     /**
      * 방장 리뷰 조회

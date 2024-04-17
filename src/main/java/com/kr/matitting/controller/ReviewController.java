@@ -27,22 +27,24 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @Operation(summary = "리뷰 리스트 조회", description = "나에게 온 리뷰 리스트를 불러오는 API \n\n" +
-            "Request parameter : reviewType, page, size \n\n" +
-            "ReviewType : 내가 받은 리뷰 리스트 or 내가 보낸 리뷰 리스트를 조회 \n\n" +
-            "page : pageNumber \n\n" +
-            "size : limit")
+            "Request \n\n" +
+            "\t ReviewType : 내가 받은 리뷰 리스트 or 내가 보낸 리뷰 리스트를 조회 \n\n" +
+            "\t page : pageNumber \n\n" +
+            "\t size : limit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ResponseReviewList.class))),
     })
     @GetMapping
     public ResponseEntity<ResponseReviewList> getReviewList(@AuthenticationPrincipal User user,
                                                             @RequestParam ReviewType reviewType,
-                                                            @RequestParam(defaultValue = "0") Integer page,
-                                                            @RequestParam(defaultValue = "5") Integer size) {
-        return ResponseEntity.ok(reviewService.getReviewList(user, reviewType, page, size));
+                                                            @PageableDefault Pageable pageable) {
+        return ResponseEntity.ok(reviewService.getReviewList(user, reviewType, pageable));
     }
 
-    @Operation(summary = "방장 리뷰 리스트 조회", description = "방장의 리뷰 리스트를 불러오는 API")
+    @Operation(summary = "방장 리뷰 리스트 조회", description = "방장의 리뷰 리스트를 불러오는 API \n\n" +
+            "Request \n\n" +
+            "\t page : pageNumber \n\n" +
+            "\t size : limit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "방장 리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ReviewGetRes.class))),
             @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class)))

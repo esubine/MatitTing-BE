@@ -67,7 +67,8 @@ public class PartyController {
                                                     "2. request 값을 검사하고 값이 들어있는 경우 DB에서 해당 값을 수정하여 Update를 진행 \n\n" +
                                                     "※ 파티의 위도 경도를 수정 시 => 파티의 address 값은 kakao Map API를 기준으로 자동 Update 되게 됩니다. \n\n" +
                                                     "※ 파티의 시작 시간을 수정 시 => 파티의 모집 마감시간은 시작 시간 - 1시간으로 자동 Update 되게 됩니다. \n\n" +
-                                                    "※ 파티의 모집 인원을 수정 시 => 현재 파티에 참여한 인원보다 작은 인원으로 수정 시 Exception이 발생하게 됩니다."
+                                                    "※ 파티의 모집 인원을 수정 시 => 현재 파티에 참여한 인원보다 작은 인원으로 수정 시 Exception이 발생하게 됩니다.\n\n" +
+                                                    "※ 파티의 상태를 모집 완료로 수정 시 => 파티 참여자들에게 모집 완료 알림을 전송하게 됩니다."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "파티 업데이트 성공", content = @Content(schema = @Schema(implementation = String.class))),
@@ -85,7 +86,8 @@ public class PartyController {
                                                     "파티의 세부 정보를 보여주는 API \n\n \n\n" +
                                                     "로직 설명 \n\n" +
                                                     "1. 파티 ID로 DB에서 검색하여 파티 정보를 불러오게 됩니다. \n\n" +
-                                                    "2. 정보를 response 할 때 해당 파티에 대해서 내가 방장인지 아닌지에 대한 여부를 추가로 response"
+                                                    "2. 정보를 response 할 때 해당 파티에 대해서 내가 방장인지 아닌지에 대한 여부를 추가로 response \n\n" +
+                                                    "※ 해당 파티의 조회수 +1"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "파티 세부정보 조회 성공", content = @Content(schema = @Schema(implementation = ResponsePartyDetailDto.class))),
@@ -153,12 +155,17 @@ public class PartyController {
     @Operation(summary = "파티 현황", description = "내 파티 현황 API \n\n" +
                                                 "내가 속해있는 파티의 현황을 불러오는 API \n\n \n\n" +
                                                 "로직 설명 \n\n" +
-                                                "1. HOST => 내가 방장으로 있는 파티 리스트를 반환 \n\n" +
-                                                "2. VOLUNTEER => 내가 참여한 파티 리스트를 반환 \n\n" +
-            "Request \n\n" +
-            "page : 페이지 넘버 \n\n" +
-            "size : 받아올 객체 리스트 개수 \n\n" +
-            "sort : 최신순으로 정렬하여 response하도록 설정 request X \n\n")
+                                                "role \n\n" +
+                                                "\t HOST => 내가 방장으로 있는 파티 리스트를 반환 \n\n" +
+                                                "\t VOLUNTEER => 내가 참여한 파티 리스트를 반환 \n\n" +
+                                                "status \n\n" +
+                                                "\t RECRUIT => 모집중인 파티 리스트를 반환 \n\n" +
+                                                "\t RECRUIT_FINISH => 모집 완료 파티 리스트를 반환 \n\n" +
+                                                "\t PARTY_FINISH => 마감된 파티 리스트를 반환 \n\n" +
+                                                "pagealbe \n\n" +
+                                                "\t page : 페이지 넘버 \n\n" +
+                                                "\t size : 받아올 객체 리스트 개수 \n\n" +
+                                                "\t sort : 최신순으로 정렬하여 response하도록 설정 request X \n\n")
     @ApiResponse(responseCode = "200", description = "파티 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponseMyParty.class)))
     @GetMapping("/party-status")
     public ResponseEntity<ResponseMyParty> myPartyList(@AuthenticationPrincipal User user,
@@ -170,8 +177,9 @@ public class PartyController {
     @Operation(summary = "파티 신청 현황", description = "실시간 파티 현황 API \n\n" +
             "내가 파티 참가요청을 보냈거나, 내 파티에 참가 요청이 온 현황을 불러오는 API \n\n \n\n" +
             "로직 설명 \n\n" +
-            "1. HOST => 내가 방장으로 존재하는 파티에 사용자들이 참가 요청을 보낸 리스트를 반환 \n\n" +
-            "2. VOLUNTEER => 내가 상대방의 파티에 참가 요청을 보낸 리스트를 반환")
+            "role \n\n" +
+            "\t HOST => 내가 방장으로 존재하는 파티에 사용자들이 참가 요청을 보낸 리스트를 반환 \n\n" +
+            "\t VOLUNTEER => 내가 상대방의 파티에 참가 요청을 보낸 리스트를 반환")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "파티 신청 현황 조회 성공", content = @Content(schema = @Schema(implementation = InvitationRequestDto.class))),
         @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
