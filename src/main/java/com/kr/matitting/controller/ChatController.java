@@ -1,17 +1,24 @@
 package com.kr.matitting.controller;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kr.matitting.dto.ChatEvictDto;
 import com.kr.matitting.dto.ChatMessageDto;
 import com.kr.matitting.dto.ResponseChatListDto;
 import com.kr.matitting.entity.User;
+import com.kr.matitting.exception.user.UserException;
+import com.kr.matitting.exception.user.UserExceptionType;
+import com.kr.matitting.jwt.service.JwtService;
+import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.webresources.JarWarResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class ChatController {
     private final ChatService chatService;
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Operation(summary = "채팅 기록 가져오기", description = "채팅 기록 조회 API \n\n" +
             "[로직 설명] \n\n" +
@@ -40,7 +49,12 @@ public class ChatController {
     @Operation(summary = "채팅 메시지 전송", description = "메시지 전송 API \n\n" +
                                                         "")
     @MessageMapping("/message")
-    public void message(ChatMessageDto chatMessageDto, @AuthenticationPrincipal User user) {
+    public void message(ChatMessageDto chatMessageDto, @Header("Authorization") String authorization) {
+        String token = authorization.replace("Bearer ", "");
+        DecodedJWT decodedJWT = jwtService.isTokenValid(token);
+        String socialId = jwtService.getSocialId(decodedJWT);
+        User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+
         chatService.sendMessage(user, chatMessageDto);
     }
 
