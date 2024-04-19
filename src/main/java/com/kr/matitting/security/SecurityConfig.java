@@ -53,7 +53,7 @@ public class SecurityConfig {
                         getCustomizer(introspector,
                                 "/", "/matitting**", "/member/signupForm", "/oauth2/**", "/resources/**", "/demo-ui.html",
                                 "/swagger-ui/**", "/api-docs/**", "/api/main", "/api/search**", "/api/search/rank", "/api/party/{partyId}",
-                                "/webjars/**", "/favicon.ico")
+                                "/webjars/**", "/favicon.ico","/ws")
                 )
                 .formLogin((form) -> form
                         .loginPage("/")
