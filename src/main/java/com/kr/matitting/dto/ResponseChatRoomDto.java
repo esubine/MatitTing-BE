@@ -20,8 +20,15 @@ public class ResponseChatRoomDto {
     private Long roomId;
     @Schema(description = "채팅방 제목")
     private String title;
+    @Schema(description = "파티 썸네일")
+    private String thumbnail;
+    @Schema(description = "마지막 메시지")
+    private String lastMessage;
     @Schema(description = "채팅방 마지막 전송시간")
     private LocalDateTime lastUpdate;
+
+    @Schema(description = "채팅방 마지막 전송시간")
+    private LocalDateTime lastMessageTime;
 
     public ResponseChatRoomDto(ChatRoom chatRoom) {
         this.roomId = chatRoom.getId();

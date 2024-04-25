@@ -14,7 +14,6 @@ public class ResponseChatDto {
     private Long senderId;
     private String nickname;
     private String message;
+    private String imgUrl;
     private LocalDateTime createAt;
-
-
 }
