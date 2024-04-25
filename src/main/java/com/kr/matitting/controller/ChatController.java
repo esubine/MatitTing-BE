@@ -6,11 +6,14 @@ import com.kr.matitting.dto.ResponseChatListDto;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,8 +27,14 @@ public class ChatController {
     private final ChatService chatService;
 
     @Operation(summary = "채팅 기록 가져오기", description = "채팅 기록 조회 API \n\n" +
-            "[로직 설명] \n\n" +
-            "채팅방 id에 해당하는 채팅방의 채팅 기록을 조회하여 리턴합니다.")
+                                                        "[로직 설명] \n\n" +
+                                                        "채팅방 id에 해당하는 채팅방의 채팅 기록을 조회하여 리턴합니다.")
+
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = {
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatListDto.class)))})
+    })
     @GetMapping("/{roomId}")
     public ResponseEntity<ResponseChatListDto> getChats(@PathVariable Long roomId,
                                                         @AuthenticationPrincipal User user,
