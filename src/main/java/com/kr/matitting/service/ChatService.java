@@ -2,10 +2,7 @@ package com.kr.matitting.service;
 
 import com.kr.matitting.constant.MessageType;
 import com.kr.matitting.dto.*;
-import com.kr.matitting.entity.ChatRoom;
-import com.kr.matitting.entity.ChatUser;
-import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.User;
+import com.kr.matitting.entity.*;
 import com.kr.matitting.exception.chat.ChatException;
 import com.kr.matitting.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +27,9 @@ import static com.kr.matitting.exception.user.UserExceptionType.NOT_FOUND_USER;
 public class ChatService {
     private final ChatUserRepository chatUserRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatRepository chatRepository;
     private final ChatRoomRepositoryImpl chatRoomRepositoryImpl;
     private final ChatRepositoryCustomImpl chatRepositoryCustomImpl;
-    private final PartyRepository partyRepository;
-    private final UserRepository userRepository;
     private final SimpMessageSendingOperations messagingTemplate;
 
     // 내 전체 채팅방 조회
@@ -115,6 +111,7 @@ public class ChatService {
     public void sendMessage(User user, ChatMessageDto chatMessageDto) {
         Long roomId = chatMessageDto.getRoomId();
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        ChatUser sendUser = chatUserRepository.findByUserIdAndChatRoomId(user.getId(), chatRoom.getId()).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
         chatRoom.setModifiedDate(LocalDateTime.now());
 
         chatRoom.getChatUserList().stream()
@@ -124,6 +121,9 @@ public class ChatService {
 
         if (MessageType.ENTER.equals(chatMessageDto.getType())) {
             chatMessageDto.setMessage(chatMessageDto.getChatUserId() + "님이 입장하였습니다.");
+        } else {
+            Chat chat = new Chat(sendUser, chatRoom, chatMessageDto.getMessage());
+            chatRepository.save(chat);
         }
 
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessageDto.getRoomId(), chatMessageDto);
