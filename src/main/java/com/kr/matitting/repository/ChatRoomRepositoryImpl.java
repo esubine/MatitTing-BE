@@ -3,26 +3,20 @@ package com.kr.matitting.repository;
 import com.kr.matitting.dto.ResponseChatPageInfoDto;
 import com.kr.matitting.dto.ResponseChatRoomDto;
 import com.kr.matitting.dto.ResponseChatRoomListDto;
-import com.kr.matitting.dto.ResponsePageInfoDto;
-import com.kr.matitting.entity.*;
-import com.kr.matitting.exception.chat.ChatException;
-import com.querydsl.core.types.dsl.BooleanExpression;
+import com.kr.matitting.entity.Chat;
+import com.kr.matitting.entity.ChatRoom;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
+import static com.kr.matitting.entity.QChat.chat;
 import static com.kr.matitting.entity.QChatRoom.chatRoom;
 import static com.kr.matitting.entity.QChatUser.chatUser;
-import static com.kr.matitting.entity.QParty.party;
 
 @Repository
 @RequiredArgsConstructor
@@ -49,6 +43,9 @@ public class ChatRoomRepositoryImpl {
                 .map(chatRoom -> ResponseChatRoomDto.builder()
                         .roomId(chatRoom.getId())
                         .title(chatRoom.getTitle())
+                        .thumbnail(chatRoom.getParty().getThumbnail())
+                        .lastMessage(findLastMessage(chatRoom) == null ? null : findLastMessage(chatRoom).getMessage())
+                        .lastMessageTime(findLastMessage(chatRoom) == null ? null : findLastMessage(chatRoom).getCreateDate())
                         .lastUpdate(chatRoom.getModifiedDate())
                         .build())
                 .toList();
@@ -65,6 +62,15 @@ public class ChatRoomRepositoryImpl {
 
         return new ResponseChatPageInfoDto(lastPartyId, hasNext);
 
+    }
+
+    private Chat findLastMessage(ChatRoom chatRoom) {
+        return queryFactory
+                .select(chat)
+                .from(chat)
+                .where(chat.chatRoom.eq(chatRoom))
+                .orderBy(chat.createDate.desc())
+                .fetchFirst();
     }
 }
 

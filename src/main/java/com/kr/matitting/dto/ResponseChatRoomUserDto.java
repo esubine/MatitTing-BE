@@ -20,10 +20,16 @@ public class ResponseChatRoomUserDto {
     private Role role;
     @Schema(description = "채팅유저의 닉네임")
     private String nickname;
+    @Schema(description = "유저 프로필 사진")
+    private String userProfileImg;
+    @Schema(description = "방장여부")
+    private boolean isLeader;
 
     public ResponseChatRoomUserDto(ChatUser chatUser) {
         this.chatUserId = chatUser.getId();
         this.role = chatUser.getUserRole();
         this.nickname = chatUser.getNickname();
+        this.userProfileImg = chatUser.getUser().getImgUrl();
+        this.isLeader = chatUser.getUserRole().equals(Role.HOST);
     }
 }
