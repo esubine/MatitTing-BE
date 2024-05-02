@@ -181,7 +181,7 @@ public class PartyController {
             "\t HOST => 내가 방장으로 존재하는 파티에 사용자들이 참가 요청을 보낸 리스트를 반환 \n\n" +
             "\t VOLUNTEER => 내가 상대방의 파티에 참가 요청을 보낸 리스트를 반환")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "파티 신청 현황 조회 성공", content = @Content(schema = @Schema(implementation = InvitationRequestDto.class))),
+        @ApiResponse(responseCode = "200", description = "파티 신청 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponseGetPartyJoinDto.class))),
         @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
         @ApiResponse(responseCode = "403(602)", description = "권한이 없는 사용자, Role이 유효하지 않음", content = @Content(schema = @Schema(implementation = UserException.class))),
     })

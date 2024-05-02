@@ -15,7 +15,8 @@ public class NotificationDto {
     @Setter
     public static class Response {
         String id;
-        String name;
+        String receiver;
+        String sender;
         String title;
         String content;
         NotificationType type;
@@ -29,12 +30,25 @@ public class NotificationDto {
                     .title(notification.getTitle())
                     .content(notification.getContent())
                     .id(notification.getId().toString())
-                    .name(notification.getReceiver().getNickname())
+                    .receiver(notification.getReceiver().getNickname())
+                    .sender(notification.getSender().getNickname())
                     .type(notification.getNotificationType())
-                    .createdAt(LocalDate.from(notification.getCreateDate()).toString())
+                    .createdAt(notification.getCreateDate().toString())
                     .lastEventId(lastEventId)
                     .partyId(party.getId())
                     .hostId(party.getUser().getId())
+                    .build();
+        }
+
+        public static Response createResponse(Notification notification) {
+            return Response.builder()
+                    .title(notification.getTitle())
+                    .content(notification.getContent())
+                    .id(notification.getId().toString())
+                    .receiver(notification.getReceiver().getNickname())
+                    .sender(notification.getSender().getNickname())
+                    .type(notification.getNotificationType())
+                    .createdAt(notification.getCreateDate().toString())
                     .build();
         }
     }
