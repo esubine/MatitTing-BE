@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -46,10 +49,14 @@ public class NotificationService {
 
         //503 에러 방지를 위한 더미 이벤트 전송
         String eventId = makeTimeIncludeId(user.getId());
-        sendNotification(emitter, eventId, emitterId, "EventStream Created. [userId=" + user.getId() + "]");
+        sendNotification(emitter, emitterId, "EventStream Created. [userId=" + user.getId() + "]");
 
         if (hasLostData(lastEventId)) {
             sendLostData(lastEventId, user, emitterId, emitter);
+        } else {
+            List<Notification> allByReceiverId = notificationRepository.findAllByReceiver_Id(user.getId());
+            allByReceiverId.sort(Comparator.comparing(Notification::getId));
+            allByReceiverId.forEach(notification -> sendNotification(emitter, notification.getEventId(), NotificationDto.Response.createResponse(notification)));
         }
 
         return emitter;
@@ -68,10 +75,9 @@ public class NotificationService {
      * 알림 전송
      * @param emitter
      * @param eventId
-     * @param emitterId
      * @param data
      */
-    private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
+    private void sendNotification(SseEmitter emitter, String eventId, Object data) {
         try {
             emitter.send(SseEmitter.event()
                     .id(eventId)
@@ -107,9 +113,14 @@ public class NotificationService {
         /**
          * cache에 쌓인 데이터 send
          */
-        eventCaches.entrySet().stream()
+
+        List<Map.Entry<String, Object>> sortedEntries = eventCaches.entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
+                .toList();
+
+        sortedEntries.stream()
                 .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
-                .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
+                .forEach(entry -> sendNotification(emitter, entry.getKey(), entry.getValue()));
 
         /**
          * cache 비우기
@@ -124,17 +135,22 @@ public class NotificationService {
      * @param title
      * @param content
      */
-    public void send(User receiver, Party party, NotificationType notificationType, String title, String content){
-        Notification notification = notificationRepository.save(new Notification(receiver, notificationType, title, content));
-
+    public void send(User receiver, User sender, Party party, NotificationType notificationType, String title, String content){
         Long userId = receiver.getId();
         String eventId = makeTimeIncludeId(userId);
+
+        Notification notification = notificationRepository.save(new Notification(receiver, sender, notificationType, title, content, eventId));
+
+        if (receiver.getReceiveNotifications() == null)
+            receiver.setReceiveNotifications(new ArrayList<>());
+        receiver.getReceiveNotifications().add(notification);
+
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(String.valueOf(userId));
         emitterRepository.saveEventCache(eventId, NotificationDto.Response.createResponse(notification, party, eventId));
 
         emitters.forEach(
                 (key, emitter) -> {
-                    sendNotification(emitter, eventId, key, NotificationDto.Response.createResponse(notification, party, eventId));
+                    sendNotification(emitter, key, NotificationDto.Response.createResponse(notification, party, eventId));
                 }
         );
     }

@@ -68,6 +68,12 @@ public class User extends BaseTimeEntity{
     @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Review> receivedReviews = new ArrayList<>();
 
+    @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Notification> receiveNotifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Notification> sendNotifications = new ArrayList<>();
+
     public User(String socialId, OauthProvider oauthProvider, String email, String nickname, Integer age, String imgUrl, Gender gender, Role role) {
         this.socialId = socialId;
         this.oauthProvider = oauthProvider;
@@ -79,5 +85,7 @@ public class User extends BaseTimeEntity{
         this.role = role;
         this.sendReviews = new ArrayList<>();
         this.receivedReviews = new ArrayList<>();
+        this.receiveNotifications = new ArrayList<>();
+        this.sendNotifications = new ArrayList<>();
     }
 }
