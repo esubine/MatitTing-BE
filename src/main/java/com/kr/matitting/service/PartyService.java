@@ -254,7 +254,7 @@ public class PartyService {
             return "Accept Request Completed";
         } else {
             log.info("=== REFUSE ===");
-            notificationService.send(volunteerUser, party.getUser(), party, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가 되셨습니다.");
+            notificationService.send(volunteerUser, party.getUser(), party, NotificationType.REQUEST_DECISION, "참가신청 여부", party.getPartyTitle() + "파티에 참가가 거절되었습니다.");
             return "Refuse Request Completed";
         }
     }
