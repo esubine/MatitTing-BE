@@ -46,7 +46,7 @@ public class ReviewController {
             "\t page : pageNumber \n\n" +
             "\t size : limit")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "방장 리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ReviewGetRes.class))),
+            @ApiResponse(responseCode = "200", description = "방장 리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ReviewListRes.class))),
             @ApiResponse(responseCode = "404(600)", description = "회원 정보가 없습니다.", content = @Content(schema = @Schema(implementation = UserException.class)))
     })
     @GetMapping("/host")

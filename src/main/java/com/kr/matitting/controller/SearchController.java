@@ -47,7 +47,7 @@ public class SearchController {
             "Request(query parameter) : page(int), size(int) \n\n" +
             "Request(form-data) : keyword(string), status(string), sortDto.sorts(string), sortDto.orders(string)"
     )
-    @ApiResponse(responseCode = "200", description = "파티 검색 성공", content = @Content(schema = @Schema(implementation = ResponseSearchDto.class)))
+    @ApiResponse(responseCode = "200", description = "파티 검색 성공", content = @Content(schema = @Schema(implementation = ResponseSearchPageDto.class)))
     @GetMapping
     public ResponseEntity<ResponseSearchPageDto> partySearch(@PageableDefault Pageable pageable, PartySearchCondDto partySearchCondDto) {
         return ResponseEntity.ok().body(searchService.getPartyPage(pageable, partySearchCondDto));
