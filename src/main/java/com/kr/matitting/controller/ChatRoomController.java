@@ -53,7 +53,7 @@ public class ChatRoomController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
                     content = {
-                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatRoomUserDto.class)))})
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatUserList.class)))})
     })
     @GetMapping("/user/{roomId}")
     public ResponseEntity<ResponseChatUserList> getUserInfos(@PathVariable Long roomId,
