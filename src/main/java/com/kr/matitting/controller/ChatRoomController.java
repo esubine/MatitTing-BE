@@ -53,10 +53,10 @@ public class ChatRoomController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
                     content = {
-                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatRoomUserDto.class)))})
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatUserList.class)))})
     })
     @GetMapping("/user/{roomId}")
-    public ResponseEntity<List<ResponseChatRoomUserDto>> getUserInfos(@PathVariable Long roomId,
+    public ResponseEntity<ResponseChatUserList> getUserInfos(@PathVariable Long roomId,
                                                                       @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(chatService.getRoomUsers(roomId, user.getId()));
     }
