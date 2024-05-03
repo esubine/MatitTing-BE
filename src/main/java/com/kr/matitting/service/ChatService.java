@@ -125,7 +125,7 @@ public class ChatService {
                 .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
 
         if (MessageType.ENTER.equals(chatMessageDto.getType())) {
-            chatMessageDto.setMessage(chatMessageDto.getChatUserId() + "님이 입장하였습니다.");
+            chatMessageDto.setMessage(sendUser.getNickname() + "님이 입장하였습니다.");
         } else {
             Chat chat = new Chat(sendUser, chatRoom, chatMessageDto.getMessage());
             chatRepository.save(chat);
