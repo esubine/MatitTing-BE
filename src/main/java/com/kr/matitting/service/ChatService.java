@@ -70,6 +70,7 @@ public class ChatService {
                     () -> new ChatException(NOT_FOUND_CHAT_USER_INFO)
             );
             chatUserRepository.delete(participant);
+            messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, participant.getNickname()+"님이 퇴장했습니다.");
         } else {
             throw new ChatException(NO_PRINCIPAL);
         }
@@ -77,16 +78,20 @@ public class ChatService {
 
     // 채팅방 내 유저들의 정보 조회
     @Transactional(readOnly = true)
-    public List<ResponseChatRoomUserDto> getRoomUsers(Long roomId, Long userId) {
+    public ResponseChatUserList getRoomUsers(Long roomId, Long userId) {
         chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
 
-        chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_USER));
+        ChatUser requestChatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_USER));
 
         List<ChatUser> chatUsers = chatUserRepository.findByChatRoomId(roomId);
 
-        return chatUsers.stream()
+        List<ResponseChatRoomUserDto> responseChatRoomUserDtos = chatUsers.stream()
                 .map(ResponseChatRoomUserDto::new)
                 .toList();
+
+        ResponseMyChatUserInfo responseMyChatUserInfo = new ResponseMyChatUserInfo(requestChatUser);
+
+        return new ResponseChatUserList(responseChatRoomUserDtos, responseMyChatUserInfo);
     }
 
     //파티방 생성 - 파티 글 생성 완료 시 실행
@@ -136,6 +141,8 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findByPartyId(party.getId())
                 .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
         ChatUser chatUser = new ChatUser(chatRoom, volunteer, VOLUNTEER);
+
+        messagingTemplate.convertAndSend("/sub/chat/room/" + chatRoom.getId(), volunteer.getNickname()+"님이 초대되었습니다.");
 
         chatUserRepository.save(chatUser);
     }

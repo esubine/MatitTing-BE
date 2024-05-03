@@ -56,7 +56,7 @@ public class ChatRoomController {
                             @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatRoomUserDto.class)))})
     })
     @GetMapping("/user/{roomId}")
-    public ResponseEntity<List<ResponseChatRoomUserDto>> getUserInfos(@PathVariable Long roomId,
+    public ResponseEntity<ResponseChatUserList> getUserInfos(@PathVariable Long roomId,
                                                                       @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(chatService.getRoomUsers(roomId, user.getId()));
     }
