@@ -113,14 +113,14 @@ public class ChatService {
     }
 
     @Transactional
-    public void sendMessage(User user, ChatMessageDto chatMessageDto) {
+    public void sendMessage(ChatMessageDto chatMessageDto) {
         Long roomId = chatMessageDto.getRoomId();
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
-        ChatUser sendUser = chatUserRepository.findByUserIdAndChatRoomId(user.getId(), chatRoom.getId()).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
+        ChatUser sendUser = chatUserRepository.findByUserIdAndChatRoomId(chatMessageDto.getChatUserId(), chatRoom.getId()).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
         chatRoom.setModifiedDate(LocalDateTime.now());
 
         chatRoom.getChatUserList().stream()
-                .filter(chatUser -> chatUser.getUser().equals(user))
+                .filter(chatUser -> chatUser.equals(sendUser))
                 .findAny()
                 .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
 
