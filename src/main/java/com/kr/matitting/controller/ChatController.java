@@ -46,11 +46,10 @@ public class ChatController {
     }
 
     //채팅 메시지 전송
-    @Operation(summary = "채팅 메시지 전송", description = "메시지 전송 API \n\n" +
-                                                        "")
+    @Operation(summary = "채팅 메시지 전송", description = "메시지 전송 API")
     @MessageMapping("/message")
-    public void message(ChatMessageDto chatMessageDto, @AuthenticationPrincipal User user) {
-        chatService.sendMessage(user, chatMessageDto);
+    public void message(ChatMessageDto chatMessageDto) {
+        chatService.sendMessage(chatMessageDto);
     }
 
     //유저 강제 퇴장

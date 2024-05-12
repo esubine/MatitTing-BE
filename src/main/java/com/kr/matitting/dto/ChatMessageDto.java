@@ -10,11 +10,11 @@ import lombok.Setter;
 @Schema(description = "채팅 메시지 객체")
 public class ChatMessageDto {
     private MessageType type;
-
     private Long roomId;
-
+    private String userImage;
+    private String nickname;
     private Long chatUserId;
-
     private String message;
+    private String createAt;
 
 }
