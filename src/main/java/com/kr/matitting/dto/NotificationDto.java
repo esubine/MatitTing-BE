@@ -49,6 +49,8 @@ public class NotificationDto {
                     .sender(notification.getSender().getNickname())
                     .type(notification.getNotificationType())
                     .createdAt(notification.getCreateDate().toString())
+                    .partyId(notification.getParty().getId())
+                    .hostId(notification.getParty().getUser().getId())
                     .build();
         }
     }
