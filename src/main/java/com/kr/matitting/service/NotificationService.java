@@ -139,7 +139,7 @@ public class NotificationService {
         Long userId = receiver.getId();
         String eventId = makeTimeIncludeId(userId);
 
-        Notification notification = notificationRepository.save(new Notification(receiver, sender, notificationType, title, content, eventId));
+        Notification notification = notificationRepository.save(new Notification(receiver, sender, notificationType, title, content, eventId, party));
 
         if (receiver.getReceiveNotifications() == null)
             receiver.setReceiveNotifications(new ArrayList<>());

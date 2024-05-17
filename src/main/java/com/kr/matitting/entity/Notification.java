@@ -30,13 +30,19 @@ public class Notification extends BaseTimeEntity{
     @JoinColumn(name = "sender_id")
     private User sender;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "party_id")
+    private Party party;
+
     @Builder
-    public Notification(User receiver, User sender, NotificationType notificationType, String title, String content, String eventId) {
+    public Notification(User receiver, User sender, NotificationType notificationType, String title, String content, String eventId, Party party) {
+
         this.receiver = receiver;
         this.sender = sender;
         this.notificationType = notificationType;
         this.title = title;
         this.content = content;
         this.eventId = eventId;
+        this.party = party;
     }
 }
