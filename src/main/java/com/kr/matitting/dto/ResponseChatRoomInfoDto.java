@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(description = "채팅방 정보 Response(채팅방 + 유저 리스트)")
 public class ResponseChatRoomInfoDto {
-    @Schema(description = "채팅방 Response")
+    @Schema(description = "채팅방 Response", implementation = ChatRoomInfoRes.class)
     private ChatRoomInfoRes chatRoomInfoRes;
-    @Schema(description = "채팅방 유저 리스트 Response")
+    @Schema(description = "채팅방 유저 리스트 Response", implementation = ResponseChatUserList.class)
     private ResponseChatUserList responseChatUserList;
 
     public ResponseChatRoomInfoDto(ChatRoomInfoRes chatRoomInfoRes, ResponseChatUserList responseChatUserList) {

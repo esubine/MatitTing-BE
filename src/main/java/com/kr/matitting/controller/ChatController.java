@@ -38,10 +38,11 @@ public class ChatController {
     @GetMapping("/{roomId}")
     public ResponseEntity<ResponseChatListDto> getChats(@PathVariable Long roomId,
                                                         @AuthenticationPrincipal User user,
-                                                        @RequestParam(value = "size", defaultValue = "5", required = false) Integer size,
-                                                        @RequestParam(value = "lastChatId") Long lastChatId) {
-        PageRequest pageable = PageRequest.of(0, size);
-        ResponseChatListDto responseChatListDto = chatService.getChats(user.getId(), roomId, lastChatId, pageable);
+                                                        @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
+                                                        @RequestParam(value = "page", defaultValue = "0", required = false) Integer page
+                                                        ) {
+        PageRequest pageable = PageRequest.of(page, size);
+        ResponseChatListDto responseChatListDto = chatService.getChats(user.getId(), roomId, pageable);
         return ResponseEntity.ok(responseChatListDto);
     }
 

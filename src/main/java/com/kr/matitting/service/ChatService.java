@@ -34,30 +34,19 @@ public class ChatService {
 
     // 내 전체 채팅방 조회
     @Transactional(readOnly = true)
-    public ResponseChatRoomListDto getChatRooms(Long userId, Long lastId, Pageable pageable) {
+    public ResponseChatRoomListDto getChatRooms(Long userId, Pageable pageable) {
         if (chatUserRepository.findByUserId(userId).isEmpty()) {
             throw new ChatException(IS_NOT_HAVE_CHAT_ROOM);
         }
-
-        LocalDateTime time = (lastId == 0L) ? null : getModifiedDate(lastId);
-        return chatRoomRepositoryImpl.getChatRooms(userId, time, pageable);
-    }
-
-    private LocalDateTime getModifiedDate(Long lastId) {
-        Optional<ChatRoom> chatRoom = chatRoomRepository.findById(lastId);
-        if (chatRoom.isPresent()) {
-            return chatRoom.get().getModifiedDate();
-        } else {
-            throw new ChatException(NOT_FOUND_CHAT_ROOM);
-        }
+        return chatRoomRepositoryImpl.getChatRooms(userId, pageable);
     }
 
     @Transactional(readOnly = true)
-    public ResponseChatListDto getChats(Long userId, Long roomId, Long lastChatId, Pageable pageable) {
+    public ResponseChatListDto getChats(Long userId, Long roomId, Pageable pageable) {
         chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
         chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
 
-        return chatRepositoryCustomImpl.getChatList(roomId, pageable, lastChatId);
+        return chatRepositoryCustomImpl.getChatList(roomId, pageable);
     }
 
     // 채팅방 유저 강퇴 - 방장만 가능

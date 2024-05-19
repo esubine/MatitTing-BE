@@ -1,6 +1,7 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.dto.*;
+import com.kr.matitting.dto.ResponseChatRoomInfoDto;
+import com.kr.matitting.dto.ResponseChatRoomListDto;
 import com.kr.matitting.entity.User;
 import com.kr.matitting.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,12 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat-rooms")
@@ -29,9 +27,11 @@ public class ChatRoomController {
                                                         "[로직 설명]  \n\n" +
                                                         "유저가 참여하고 있는 채팅방들을 조회하여 response로 리턴합니다. \n\n" +
                                                         "※ 유저 정보는 헤더에 있는 토큰으로 식별합니다. \n\n" +
-                                                        "※ size default는 5입니다. \n\n" +
+                                                        "※ size default는 10입니다. 필수로 입력하지 않아도 됩니다. \n\n" +
+                                                        "(기본 Size가 10으로 정해져있습니다. 다른 size로 조회하고자 하는 경우 적절하게 입력해주세요) \n\n" +
                                                         "※ 정렬 기준은 최신순입니다. \n\n" +
-                                                        "※ lastChatRoomId는 이전에 어떤 채팅방까지 리턴하였는지 식별하기 위한 값입니다. 처음 요청하는 경우에는 0으로 입력하여 주시길 바랍니다.")
+                                                        "※ page default는 0입니다. 필수로 입력하지 않아도 됩니다. \n\n" +
+                                                        "(다음 페이지 조회를 원하는 경우 ResponsePageInfoDto의 page에 +1하여 요청하면 다음 페이지 조회가 가능합니다.)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
                     content = {
@@ -39,26 +39,11 @@ public class ChatRoomController {
     })
     @GetMapping
     public ResponseEntity<ResponseChatRoomListDto> getAllRooms(@AuthenticationPrincipal User user,
-                                                               @RequestParam(value = "size", defaultValue = "5", required = false) Integer size,
-                                                               @RequestParam(value = "lastChatRoomId") Long lastChatRoomId) {
-        Pageable pageable = PageRequest.of(0, size ,Sort.Direction.DESC, "modifiedDate" );
-        return ResponseEntity.ok(chatService.getChatRooms(user.getId(), lastChatRoomId, pageable));
-    }
-
-
-    @Operation(summary = "채팅방 내 유저들 조회", description = "채팅방 참여 중인 유저 조회 API \n\n" +
-                                                        "[로직 설명] \n\n" +
-                                                        "입력한 room id에 해당하는 채팅방에 참여중인 유저 정보를 리턴합니다. \n\n" +
-                                                        "※ 헤더의 토큰으로 식별한 유저(요청자)가 해당 채팅방에 참여하고 있지 않은 경우 \"회원 정보가 없습니다.\"으로 리턴됩니다. \n\n")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK",
-                    content = {
-                            @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatUserList.class)))})
-    })
-    @GetMapping("/user/{roomId}")
-    public ResponseEntity<ResponseChatUserList> getUserInfos(@PathVariable Long roomId,
-                                                                      @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(chatService.getRoomUsers(roomId, user.getId()));
+                                                               @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
+                                                               @RequestParam(value = "page", defaultValue = "0", required = false) Integer page
+                                                                ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(chatService.getChatRooms(user.getId(), pageable));
     }
 
     @Operation(summary = "채팅방의 정보조회", description = "채팅방의 정보조회 API \n\n" +
