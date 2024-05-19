@@ -73,7 +73,7 @@ public class ChatRoomController {
     public ResponseEntity<ResponseChatRoomInfoDto> getChatRoomInfo(@PathVariable Long chatRoomId,
                                                                     @AuthenticationPrincipal User user){
 
-        return ResponseEntity.ok(chatService.getChatRoomInfo(chatRoomId));
+        return ResponseEntity.ok(chatService.getChatRoomInfo(chatRoomId, user.getId()));
     }
 
 }
