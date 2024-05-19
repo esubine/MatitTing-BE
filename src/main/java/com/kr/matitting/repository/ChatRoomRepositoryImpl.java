@@ -8,6 +8,8 @@ import com.kr.matitting.entity.ChatRoom;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -32,14 +34,11 @@ public class ChatRoomRepositoryImpl {
                 .where(chatUser.user.id.eq(userId))
                 .orderBy(chatRoom.modifiedDate.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1);
+                .limit(pageable.getPageSize());
 
         List<ChatRoom> chatRooms = query.fetch();
 
-        boolean hasNext = chatRooms.size() > pageable.getPageSize();
-        if (hasNext) {
-            chatRooms.remove(pageable.getPageSize());
-        }
+        Page<ChatRoom> chatRoomsPage = new PageImpl<>(chatRooms, pageable, chatRooms.size());
 
         List<ResponseChatRoomDto> responseChatRoomDtos = chatRooms.stream()
                 .map(chatRoom -> ResponseChatRoomDto.builder()
@@ -52,7 +51,7 @@ public class ChatRoomRepositoryImpl {
                         .build())
                 .toList();
 
-        ResponsePageInfoDto pageInfoDto = new ResponsePageInfoDto(pageable.getPageNumber(), hasNext);
+        ResponsePageInfoDto pageInfoDto = new ResponsePageInfoDto(pageable.getPageNumber(), chatRoomsPage.hasNext() );
 
         return new ResponseChatRoomListDto(responseChatRoomDtos, pageInfoDto);
     }

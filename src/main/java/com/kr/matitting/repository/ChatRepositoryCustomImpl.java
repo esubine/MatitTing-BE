@@ -6,6 +6,8 @@ import com.kr.matitting.dto.ResponsePageInfoDto;
 import com.kr.matitting.entity.Chat;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -26,13 +28,10 @@ public class ChatRepositoryCustomImpl {
                 .where(chat.chatRoom.id.eq(roomId))
                 .orderBy(chat.createDate.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        boolean hasNextChat = chatList.size() > pageable.getPageSize();
-        if (hasNextChat) {
-            chatList.remove(chatList.size() - 1);
-        }
+        Page<Chat> chatPage = new PageImpl<>(chatList, pageable, chatList.size());
 
         List<ResponseChatDto> responseChatDtos = chatList.stream()
                 .map(chat -> ResponseChatDto.builder()
@@ -45,7 +44,7 @@ public class ChatRepositoryCustomImpl {
                         .build())
                 .toList();
 
-        ResponsePageInfoDto pageInfo = new ResponsePageInfoDto(pageable.getPageNumber(), hasNextChat);
+        ResponsePageInfoDto pageInfo = new ResponsePageInfoDto(pageable.getPageNumber(), chatPage.hasNext());
 
         return new ResponseChatListDto(responseChatDtos, pageInfo);
     }
