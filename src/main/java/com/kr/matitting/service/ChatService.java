@@ -116,7 +116,7 @@ public class ChatService {
     public void sendMessage(ChatMessageDto chatMessageDto) {
         Long roomId = chatMessageDto.getRoomId();
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
-        ChatUser sendUser = chatUserRepository.findByUserIdAndChatRoomId(chatMessageDto.getChatUserId(), chatRoom.getId()).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
+        ChatUser sendUser = chatUserRepository.findById(chatMessageDto.getChatUserId()).orElseThrow(()->new ChatException(NOT_FOUND_CHAT_USER_INFO));
         chatRoom.setModifiedDate(LocalDateTime.now());
 
         chatRoom.getChatUserList().stream()
@@ -147,9 +147,13 @@ public class ChatService {
         chatUserRepository.save(chatUser);
     }
 
-    public ResponseChatRoomInfoDto getChatRoomInfo(Long chatRoomId) {
+    public ResponseChatRoomInfoDto getChatRoomInfo(Long chatRoomId, Long userId) {
+        // 채팅방 정보
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        ChatRoomInfoRes chatRoomInfoRes = new ChatRoomInfoRes(chatRoom);
+        //유저 정보
+        ResponseChatUserList responseChatUserList = getRoomUsers(chatRoomId, userId);
 
-        return new ResponseChatRoomInfoDto(chatRoom);
+        return new ResponseChatRoomInfoDto(chatRoomInfoRes, responseChatUserList);
     }
 }
