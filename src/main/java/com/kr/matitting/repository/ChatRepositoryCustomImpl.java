@@ -2,37 +2,42 @@ package com.kr.matitting.repository;
 
 import com.kr.matitting.dto.ResponseChatDto;
 import com.kr.matitting.dto.ResponseChatListDto;
-import com.kr.matitting.dto.ResponseChatPageInfoDto;
+import com.kr.matitting.dto.ResponsePageInfoDto;
 import com.kr.matitting.entity.Chat;
+import com.kr.matitting.entity.User;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 import static com.kr.matitting.entity.QChat.chat;
+import static com.kr.matitting.entity.QReview.review;
 
 @Repository
 @RequiredArgsConstructor
 public class ChatRepositoryCustomImpl {
     private final JPAQueryFactory queryFactory;
 
-    public ResponseChatListDto getChatList(Long roomId, Pageable pageable, Long lastChatId) {
+    public ResponseChatListDto getChatList(Long roomId, Pageable pageable) {
 
         List<Chat> chatList = queryFactory
                 .select(chat)
                 .from(chat)
-                .where(chat.chatRoom.id.eq(roomId),
-                        lastChatId == 0L ? null : chat.id.lt(lastChatId))
+                .where(chat.chatRoom.id.eq(roomId))
                 .orderBy(chat.createDate.desc())
-                .limit(pageable.getPageSize() + 1)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        boolean hasNextChat = chatList.size() > pageable.getPageSize();
-        if (hasNextChat) {
-            chatList.remove(chatList.size() - 1);
-        }
+
+        long totalCount = getChatListCount(roomId);
+
+        System.out.println("totalCount = " + totalCount);
+        Page<Chat> chatPage = new PageImpl<>(chatList, pageable, totalCount);
 
         List<ResponseChatDto> responseChatDtos = chatList.stream()
                 .map(chat -> ResponseChatDto.builder()
@@ -44,17 +49,18 @@ public class ChatRepositoryCustomImpl {
                         .createAt(chat.getCreateDate())
                         .build())
                 .toList();
-        ResponseChatPageInfoDto pageInfo = checkLastChat(chatList, responseChatDtos, hasNextChat);
+
+        ResponsePageInfoDto pageInfo = new ResponsePageInfoDto(pageable.getPageNumber(), chatPage.hasNext());
 
         return new ResponseChatListDto(responseChatDtos, pageInfo);
     }
 
-    private ResponseChatPageInfoDto checkLastChat(List<Chat> chats, List<ResponseChatDto> responseChatDtos, boolean hasNextChat) {
-
-        Long lastChatId = chats.isEmpty() ? null : responseChatDtos.get(chats.size() - 1).getChatId();
-
-        return new ResponseChatPageInfoDto(lastChatId, hasNextChat);
-
+    private Long getChatListCount(Long roomId) {
+        return queryFactory
+                .select(chat.count())
+                .from(chat)
+                .where(chat.chatRoom.id.eq(roomId))
+                .fetchOne();
     }
 
 }

@@ -18,8 +18,6 @@ public interface ChatUserRepository extends JpaRepository<ChatUser, Long> {
 //                                                 Pageable pageable);
 
     Optional<ChatUser> findByUserIdAndChatRoomId(Long userId, Long roomId);
-
-
     @Query("select cu from ChatUser cu " +
             "join fetch cu.chatRoom " +
             "where cu.chatRoom.party.id = :partyId")

@@ -28,7 +28,12 @@ public class ChatController {
 
     @Operation(summary = "채팅 기록 가져오기", description = "채팅 기록 조회 API \n\n" +
                                                         "[로직 설명] \n\n" +
-                                                        "채팅방 id에 해당하는 채팅방의 채팅 기록을 조회하여 리턴합니다.")
+                                                        "채팅방 id에 해당하는 채팅방의 채팅 기록을 조회하여 리턴합니다. \n\n" +
+                                                        "※ size default는 10입니다. 필수로 입력하지 않아도 됩니다. \n\n" +
+                                                            "(기본 Size가 10으로 정해져있습니다. 다른 size로 조회하고자 하는 경우 적절하게 입력해주세요) \n\n" +
+                                                        "※ 정렬 기준은 최신순입니다. \n\n" +
+                                                        "※ page default는 0입니다. 필수로 입력하지 않아도 됩니다. \n\n" +
+                                                        "(다음 페이지 조회를 원하는 경우 ResponsePageInfoDto의 page에 +1하여 요청하면 다음 채팅 조회가 가능합니다.)")
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
@@ -38,10 +43,11 @@ public class ChatController {
     @GetMapping("/{roomId}")
     public ResponseEntity<ResponseChatListDto> getChats(@PathVariable Long roomId,
                                                         @AuthenticationPrincipal User user,
-                                                        @RequestParam(value = "size", defaultValue = "5", required = false) Integer size,
-                                                        @RequestParam(value = "lastChatId") Long lastChatId) {
-        PageRequest pageable = PageRequest.of(0, size);
-        ResponseChatListDto responseChatListDto = chatService.getChats(user.getId(), roomId, lastChatId, pageable);
+                                                        @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
+                                                        @RequestParam(value = "page", defaultValue = "0", required = false) Integer page
+                                                        ) {
+        PageRequest pageable = PageRequest.of(page, size);
+        ResponseChatListDto responseChatListDto = chatService.getChats(user.getId(), roomId, pageable);
         return ResponseEntity.ok(responseChatListDto);
     }
 
