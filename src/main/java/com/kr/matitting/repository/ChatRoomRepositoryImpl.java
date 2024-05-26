@@ -38,7 +38,9 @@ public class ChatRoomRepositoryImpl {
 
         List<ChatRoom> chatRooms = query.fetch();
 
-        Page<ChatRoom> chatRoomsPage = new PageImpl<>(chatRooms, pageable, chatRooms.size());
+        long totalCount = getChatCount(userId);
+
+        Page<ChatRoom> chatRoomsPage = new PageImpl<>(chatRooms, pageable, totalCount);
 
         List<ResponseChatRoomDto> responseChatRoomDtos = chatRooms.stream()
                 .map(chatRoom -> ResponseChatRoomDto.builder()
@@ -63,6 +65,15 @@ public class ChatRoomRepositoryImpl {
                 .where(chat.chatRoom.eq(chatRoom))
                 .orderBy(chat.createDate.desc())
                 .fetchFirst();
+    }
+
+    private Long getChatCount(Long userId) {
+        return queryFactory
+                .select(chatRoom.count())
+                .from(chatUser)
+                .join(chatUser.chatRoom, chatRoom)
+                .where(chatUser.user.id.eq(userId))
+                .fetchOne();
     }
 }
 
