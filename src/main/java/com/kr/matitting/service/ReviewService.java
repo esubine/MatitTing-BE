@@ -64,7 +64,7 @@ public class ReviewService {
 
         Page<Review> hostReview = reviewRepositoryCustom.getHostReview(pageable, user);
 
-        List<ReviewGetRes> reviewGetRes = hostReview.getContent().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer())).toList();
+        List<ReviewGetRes> reviewGetRes = hostReview.getContent().stream().map(review -> ReviewGetRes.toDto(review, review.getReviewer(), user)).toList();
         ResponsePageInfoDto responsePageInfoDto = new ResponsePageInfoDto(hostReview.getNumber(), hostReview.hasNext());
 
         return new ReviewListRes(reviewGetRes, responsePageInfoDto);
