@@ -18,8 +18,11 @@ public class ReviewGetRes {
     private Long reviewId;
     @Schema(description = "User Profile Image", example = "증명사진.jpg")
     private String userProfileImg;
-    @Schema(description = "Sender or Receiver 닉네임", example = "새싹개발자")
-    private String nickname;
+    //TODO: 보낸 사람과 방장 nickname을 구분할 필요가 있어 보임!!
+    @Schema(description = "방장 닉네임", example = "방장")
+    private String hostNickname;
+    @Schema(description = "Sender 닉네임", example = "새싹개발자")
+    private String senderNickname;
     @Schema(description = "review rating", example = "5")
     private Integer rating;
     @Schema(description = "리뷰 내용", example = "방장님 멋져요.")
@@ -33,6 +36,19 @@ public class ReviewGetRes {
         return new ReviewGetRes(
                 review.getId(),
                 user.getImgUrl(),
+                null,
+                user.getNickname(),
+                review.getRating(),
+                review.getContent(),
+                review.getImgUrl(),
+                review.getCreateDate());
+    }
+
+    public static ReviewGetRes toDto(Review review, User user, User host) {
+        return new ReviewGetRes(
+                review.getId(),
+                user.getImgUrl(),
+                host.getNickname(),
                 user.getNickname(),
                 review.getRating(),
                 review.getContent(),
