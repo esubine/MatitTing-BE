@@ -28,6 +28,8 @@ public class ReviewInfoRes {
     private LocalDate createAt;
     @Schema(description = "리뷰를 쓴 사람인지에 대한 유무", example = "true")
     private Boolean isSelfReview;
+    @Schema(description = "Reviwer Profile Image", example = "새싹개발자프로필이미지.jpg")
+    private String reviewerImg;
 
     public static ReviewInfoRes toDto(Review review, User user) {
         Boolean selfReview = user != null && review.getReviewer().getId().equals(user.getId());
@@ -39,7 +41,8 @@ public class ReviewInfoRes {
                 review.getRating(),
                 review.getImgUrl(),
                 review.getCreateDate().toLocalDate(),
-                selfReview
+                selfReview,
+                review.getReviewer().getImgUrl()
         );
     }
 }
