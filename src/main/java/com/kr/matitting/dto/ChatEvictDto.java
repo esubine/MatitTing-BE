@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class ChatEvictDto {
-    private Long targetId;
+    private Long targetChatUserId;
 }

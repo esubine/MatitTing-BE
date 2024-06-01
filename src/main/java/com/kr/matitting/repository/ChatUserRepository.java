@@ -29,13 +29,10 @@ public interface ChatUserRepository extends JpaRepository<ChatUser, Long> {
 //    List<ChatUser> findByChatRoomIdFJRoom(@Param("roomId") List<Long> roomIds);
 
     List<ChatUser> findByChatRoomId(Long roomId);
-
-    Optional<ChatUser> findByIdAndChatRoomId(Long id, Long roomId);
-
     List<ChatUser> findByUserId(Long userId);
 
-    @Query("select cu.chatRoom.id from ChatUser cu " +
-            "where cu.user.id =: userId")
-    List<Long> getChatRoomIdByUserId(@Param("userId") Long userId);
-
+    @Query("select cu from ChatUser cu " +
+            "join fetch cu.chatRoom " +
+            "where cu.id = :chatUserId and cu.chatRoom.id = :roomId")
+    Optional<ChatUser> findByIdAndChatRoom(Long chatUserId, Long roomId);
 }
