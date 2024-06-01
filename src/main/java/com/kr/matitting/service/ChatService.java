@@ -42,6 +42,13 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
+    public ResponseChatRoomListDto getChatRoomsByTitleSearch(Long userId, Pageable pageable, String searchTitle){
+        if(chatUserRepository.findByUserId(userId).isEmpty()){
+            throw new ChatException(IS_NOT_HAVE_CHAT_ROOM);
+        } return chatRoomRepositoryImpl.getChatRoomsByTitleSearch(userId, pageable, searchTitle);
+    }
+
+    @Transactional(readOnly = true)
     public ResponseChatListDto getChats(Long userId, Long roomId, Pageable pageable) {
         chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
         chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));

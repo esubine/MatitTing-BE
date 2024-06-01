@@ -61,4 +61,13 @@ public class ChatRoomController {
         return ResponseEntity.ok(chatService.getChatRoomInfo(chatRoomId, user.getId()));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<ResponseChatRoomListDto> getChatRoomsByTitleSearch(@AuthenticationPrincipal User user,
+                                                                           @RequestParam(value ="title") String searchTitle,
+                                                                           @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
+                                                                           @RequestParam(value = "page", defaultValue = "0", required = false) Integer page){
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(chatService.getChatRoomsByTitleSearch(user.getId(), pageable, searchTitle));
+    }
+
 }
