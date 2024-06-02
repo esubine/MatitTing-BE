@@ -18,14 +18,14 @@ public class ChatRoomInfoRes {
     @Schema(description = "채팅방 제목 id")
     private String title;
     @Schema(description = "채팅 방장 id")
-    private Long masterId;
+    private Long masterUserId;
     @Schema(description = "채팅방에 해당하는 파티 id")
     private Long partyId;
 
     public ChatRoomInfoRes(ChatRoom chatRoom) {
         this.chatRoomId = chatRoom.getId();
         this.title = chatRoom.getTitle();
-        this.masterId = chatRoom.getMaster().getId();
+        this.masterUserId = chatRoom.getMaster().getId();
         this.partyId = chatRoom.getParty().getId();
     }
 }
