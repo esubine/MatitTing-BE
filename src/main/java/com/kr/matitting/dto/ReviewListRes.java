@@ -10,5 +10,5 @@ import java.util.List;
 public class ReviewListRes {
     private List<ReviewGetRes> reviewGetResList;
 
-    private ResponsePageInfoDto pageInfoDto;
+    private ResponsePageInfoDto pageInfo;
 }
