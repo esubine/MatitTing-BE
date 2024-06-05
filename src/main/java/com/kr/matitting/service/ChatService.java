@@ -42,6 +42,13 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
+    public ResponseChatRoomListDto getChatRoomsByTitleSearch(Long userId, Pageable pageable, String searchTitle){
+        if(chatUserRepository.findByUserId(userId).isEmpty()){
+            throw new ChatException(IS_NOT_HAVE_CHAT_ROOM);
+        } return chatRoomRepositoryImpl.getChatRoomsByTitleSearch(userId, pageable, searchTitle);
+    }
+
+    @Transactional(readOnly = true)
     public ResponseChatListDto getChats(Long userId, Long roomId, Pageable pageable) {
         chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
         chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
@@ -51,11 +58,11 @@ public class ChatService {
 
     // 채팅방 유저 강퇴 - 방장만 가능
     @Transactional
-    public void evictUser(Long userId, Long targetId, Long roomId) {
+    public void evictUser(Long userId, Long targetChatUserId, Long roomId) {
         ChatUser owner = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
 
         if (owner.getUserRole().equals(HOST)) {
-            ChatUser participant = chatUserRepository.findByUserIdAndChatRoomId(targetId, roomId).orElseThrow(
+            ChatUser participant = chatUserRepository.findByIdAndChatRoom(targetChatUserId, roomId).orElseThrow(
                     () -> new ChatException(NOT_FOUND_CHAT_USER_INFO)
             );
             chatUserRepository.delete(participant);

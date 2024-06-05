@@ -67,6 +67,6 @@ public class ChatController {
     public void evictUser(@PathVariable Long roomId,
                           @RequestBody ChatEvictDto chatEvictDto,
                           @AuthenticationPrincipal User user) {
-        chatService.evictUser(user.getId(), chatEvictDto.getTargetId(), roomId);
+        chatService.evictUser(user.getId(), chatEvictDto.getTargetChatUserId(), roomId);
     }
 }
