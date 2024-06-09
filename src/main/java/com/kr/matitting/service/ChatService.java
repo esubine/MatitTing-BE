@@ -42,10 +42,11 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseChatRoomListDto getChatRoomsByTitleSearch(Long userId, Pageable pageable, String searchTitle){
-        if(chatUserRepository.findByUserId(userId).isEmpty()){
+    public ResponseChatRoomListDto getChatRoomsByTitleSearch(Long userId, Pageable pageable, String searchTitle) {
+        if (chatUserRepository.findByUserId(userId).isEmpty()) {
             throw new ChatException(IS_NOT_HAVE_CHAT_ROOM);
-        } return chatRoomRepositoryImpl.getChatRoomsByTitleSearch(userId, pageable, searchTitle);
+        }
+        return chatRoomRepositoryImpl.getChatRoomsByTitleSearch(userId, pageable, searchTitle);
     }
 
     @Transactional(readOnly = true)
@@ -62,11 +63,15 @@ public class ChatService {
         ChatUser owner = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
 
         if (owner.getUserRole().equals(HOST)) {
-            ChatUser participant = chatUserRepository.findByIdAndChatRoom(targetChatUserId, roomId).orElseThrow(
+            ChatUser participant = chatUserRepository.findByIdAndChatRoomId(targetChatUserId, roomId).orElseThrow(
                     () -> new ChatException(NOT_FOUND_CHAT_USER_INFO)
             );
-            chatUserRepository.delete(participant);
-            messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, participant.getNickname()+"님이 퇴장했습니다.");
+            String exitMessage = participant.getNickname() + "님이 퇴장했습니다.";
+            ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+            Chat exitChat = new Chat(participant, chatRoom, exitMessage);
+            chatRepository.save(exitChat);
+
+            messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, exitMessage);
         } else {
             throw new ChatException(NO_PRINCIPAL);
         }
@@ -112,7 +117,7 @@ public class ChatService {
     public void sendMessage(ChatMessageDto chatMessageDto) {
         Long roomId = chatMessageDto.getRoomId();
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
-        ChatUser sendUser = chatUserRepository.findById(chatMessageDto.getChatUserId()).orElseThrow(()->new ChatException(NOT_FOUND_CHAT_USER_INFO));
+        ChatUser sendUser = chatUserRepository.findById(chatMessageDto.getChatUserId()).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
         chatRoom.setModifiedDate(LocalDateTime.now());
 
         chatRoom.getChatUserList().stream()
@@ -120,12 +125,14 @@ public class ChatService {
                 .findAny()
                 .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
 
+        String message = chatMessageDto.getMessage();
         if (MessageType.ENTER.equals(chatMessageDto.getType())) {
-            chatMessageDto.setMessage(sendUser.getNickname() + "님이 입장하였습니다.");
-        } else {
-            Chat chat = new Chat(sendUser, chatRoom, chatMessageDto.getMessage());
-            chatRepository.save(chat);
+            message = sendUser.getNickname() + "님이 입장하였습니다.";
+            chatMessageDto.setMessage(message);
         }
+
+        Chat chat = new Chat(sendUser, chatRoom, message);
+        chatRepository.save(chat);
 
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessageDto.getRoomId(), chatMessageDto);
     }
@@ -138,7 +145,12 @@ public class ChatService {
                 .orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
         ChatUser chatUser = new ChatUser(chatRoom, volunteer, VOLUNTEER);
 
-        messagingTemplate.convertAndSend("/sub/chat/room/" + chatRoom.getId(), volunteer.getNickname()+"님이 초대되었습니다.");
+        String message = volunteer.getNickname() + "님이 초대되었습니다.";
+
+        Chat inviteChat = new Chat(chatUser, chatRoom, message);
+        chatRepository.save(inviteChat);
+
+        messagingTemplate.convertAndSend("/sub/chat/room/" + chatRoom.getId(), message);
 
         chatUserRepository.save(chatUser);
     }
