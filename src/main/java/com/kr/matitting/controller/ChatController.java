@@ -3,7 +3,6 @@ package com.kr.matitting.controller;
 import com.kr.matitting.dto.ChatEvictDto;
 import com.kr.matitting.dto.ChatMessageDto;
 import com.kr.matitting.dto.ResponseChatListDto;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -42,12 +41,12 @@ public class ChatController {
     })
     @GetMapping("/{roomId}")
     public ResponseEntity<ResponseChatListDto> getChats(@PathVariable Long roomId,
-                                                        @AuthenticationPrincipal User user,
+                                                        @AuthenticationPrincipal Long userId,
                                                         @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
                                                         @RequestParam(value = "page", defaultValue = "0", required = false) Integer page
                                                         ) {
         PageRequest pageable = PageRequest.of(page, size);
-        ResponseChatListDto responseChatListDto = chatService.getChats(user.getId(), roomId, pageable);
+        ResponseChatListDto responseChatListDto = chatService.getChats(userId, roomId, pageable);
         return ResponseEntity.ok(responseChatListDto);
     }
 
@@ -66,7 +65,7 @@ public class ChatController {
     @DeleteMapping("/{roomId}")
     public void evictUser(@PathVariable Long roomId,
                           @RequestBody ChatEvictDto chatEvictDto,
-                          @AuthenticationPrincipal User user) {
-        chatService.evictUser(user.getId(), chatEvictDto.getTargetChatUserId(), roomId);
+                          @AuthenticationPrincipal Long userId) {
+        chatService.evictUser(userId, chatEvictDto.getTargetChatUserId(), roomId);
     }
 }

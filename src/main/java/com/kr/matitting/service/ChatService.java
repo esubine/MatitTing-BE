@@ -14,12 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static com.kr.matitting.constant.Role.HOST;
 import static com.kr.matitting.constant.Role.VOLUNTEER;
 import static com.kr.matitting.exception.chat.ChatExceptionType.*;
-import static com.kr.matitting.exception.user.UserExceptionType.NOT_FOUND_USER;
 
 @Service
 @RequiredArgsConstructor
@@ -31,28 +29,25 @@ public class ChatService {
     private final ChatRoomRepositoryImpl chatRoomRepositoryImpl;
     private final ChatRepositoryCustomImpl chatRepositoryCustomImpl;
     private final SimpMessageSendingOperations messagingTemplate;
+    private final EntityFacade entityFacade;
 
     // 내 전체 채팅방 조회
     @Transactional(readOnly = true)
     public ResponseChatRoomListDto getChatRooms(Long userId, Pageable pageable) {
-        if (chatUserRepository.findByUserId(userId).isEmpty()) {
-            throw new ChatException(IS_NOT_HAVE_CHAT_ROOM);
-        }
+        entityFacade.getChatUsersByUserId(userId);
         return chatRoomRepositoryImpl.getChatRooms(userId, pageable);
     }
 
     @Transactional(readOnly = true)
     public ResponseChatRoomListDto getChatRoomsByTitleSearch(Long userId, Pageable pageable, String searchTitle) {
-        if (chatUserRepository.findByUserId(userId).isEmpty()) {
-            throw new ChatException(IS_NOT_HAVE_CHAT_ROOM);
-        }
+        entityFacade.getChatUsersByUserId(userId);
         return chatRoomRepositoryImpl.getChatRoomsByTitleSearch(userId, pageable, searchTitle);
     }
 
     @Transactional(readOnly = true)
     public ResponseChatListDto getChats(Long userId, Long roomId, Pageable pageable) {
-        chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
-        chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
+        entityFacade.getChatRoom(roomId);
+        entityFacade.getChatUserByUserIdAndChatRoomId(userId, roomId);
 
         return chatRepositoryCustomImpl.getChatList(roomId, pageable);
     }
@@ -60,14 +55,12 @@ public class ChatService {
     // 채팅방 유저 강퇴 - 방장만 가능
     @Transactional
     public void evictUser(Long userId, Long targetChatUserId, Long roomId) {
-        ChatUser owner = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow();
+        ChatUser owner = entityFacade.getChatUserByUserIdAndChatRoomId(userId, roomId);
 
         if (owner.getUserRole().equals(HOST)) {
-            ChatUser participant = chatUserRepository.findByIdAndChatRoomId(targetChatUserId, roomId).orElseThrow(
-                    () -> new ChatException(NOT_FOUND_CHAT_USER_INFO)
-            );
+            ChatUser participant = entityFacade.getChatUserByUserIdAndChatRoomId(targetChatUserId, roomId);
             String exitMessage = participant.getNickname() + "님이 퇴장했습니다.";
-            ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+            ChatRoom chatRoom = entityFacade.getChatRoom(roomId);
             Chat exitChat = new Chat(participant, chatRoom, exitMessage);
             chatRepository.save(exitChat);
 
@@ -80,18 +73,15 @@ public class ChatService {
     // 채팅방 내 유저들의 정보 조회
     @Transactional(readOnly = true)
     public ResponseChatUserList getRoomUsers(Long roomId, Long userId) {
-        chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        entityFacade.getChatRoom(roomId);
+        ChatUser requestChatUser = entityFacade.getChatUserByUserIdAndChatRoomId(userId, roomId);
 
-        ChatUser requestChatUser = chatUserRepository.findByUserIdAndChatRoomId(userId, roomId).orElseThrow(() -> new ChatException(NOT_FOUND_USER));
-
-        List<ChatUser> chatUsers = chatUserRepository.findByChatRoomId(roomId);
-
+        List<ChatUser> chatUsers = entityFacade.getChatUsersByRoomId(roomId);
         List<ResponseChatRoomUserDto> responseChatRoomUserDtos = chatUsers.stream()
                 .map(ResponseChatRoomUserDto::new)
                 .toList();
 
         ResponseMyChatUserInfo responseMyChatUserInfo = new ResponseMyChatUserInfo(requestChatUser);
-
         return new ResponseChatUserList(responseChatRoomUserDtos, responseMyChatUserInfo);
     }
 
@@ -116,8 +106,9 @@ public class ChatService {
     @Transactional
     public void sendMessage(ChatMessageDto chatMessageDto) {
         Long roomId = chatMessageDto.getRoomId();
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
-        ChatUser sendUser = chatUserRepository.findById(chatMessageDto.getChatUserId()).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_USER_INFO));
+        ChatRoom chatRoom = entityFacade.getChatRoom(roomId);
+
+        ChatUser sendUser = entityFacade.getChatUser(chatMessageDto.getChatUserId());
         chatRoom.setModifiedDate(LocalDateTime.now());
 
         chatRoom.getChatUserList().stream()
@@ -157,7 +148,7 @@ public class ChatService {
 
     public ResponseChatRoomInfoDto getChatRoomInfo(Long chatRoomId, Long userId) {
         // 채팅방 정보
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ChatException(NOT_FOUND_CHAT_ROOM));
+        ChatRoom chatRoom = entityFacade.getChatRoom(chatRoomId);
         ChatRoomInfoRes chatRoomInfoRes = new ChatRoomInfoRes(chatRoom);
         //유저 정보
         ResponseChatUserList responseChatUserList = getRoomUsers(chatRoomId, userId);

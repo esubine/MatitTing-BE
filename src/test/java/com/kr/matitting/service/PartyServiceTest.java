@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -138,12 +139,12 @@ class PartyServiceTest {
                 .menu("커피")
                 .thumbnail(null)
                 .build();
-        return partyService.createParty(user, partyCreateDto);
+        return partyService.createParty(user.getId(), partyCreateDto);
     }
 
     ResponseCreatePartyJoinDto partyJoin(Long partyId, User volunteer, PartyJoinStatus status, String oneLineIntroduce) {
         PartyJoinDto partyJoinDto = new PartyJoinDto(partyId, status, oneLineIntroduce);
-        return partyService.joinParty(partyJoinDto, volunteer);
+        return partyService.joinParty(partyJoinDto, volunteer.getId());
     }
 
     @DisplayName("파티 정보 불러오기 성공")
@@ -152,10 +153,10 @@ class PartyServiceTest {
         //when
         party1.setPartyTime(LocalDateTime.now().minusHours(5));
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "멋져요", 50, List.of("단체사진.jpg"));
-        reviewService.createReview(reviewCreateReq, user2);
+        reviewService.createReview(reviewCreateReq, user2.getId());
 
-        ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user1, party1.getId());
-        ResponsePartyDetailDto partyInfo1 = partyService.getPartyInfo(user1, party2.getId());
+        ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user1.getId(), party1.getId());
+        ResponsePartyDetailDto partyInfo1 = partyService.getPartyInfo(user1.getId(), party2.getId());
 
         //then
         assertThat(partyInfo.getPartyId()).isEqualTo(party1.getId());
@@ -182,7 +183,7 @@ class PartyServiceTest {
     @Test
     void 파티_조회_실패_없는_파티ID() {
         //when, then
-        assertThrows(PartyException.class, () -> partyService.getPartyInfo(user1, party1.getId()+2L));
+        assertThrows(PartyException.class, () -> partyService.getPartyInfo(user1.getId(), party1.getId()+2L));
     }
 
     @DisplayName("파티 수정 성공")
@@ -193,7 +194,7 @@ class PartyServiceTest {
 
         //when
 //        partyService.partyUpdate(user1, partyUpdateDto, party1.getId());
-        ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user1, party1.getId());
+        ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user1.getId(), party1.getId());
 
         //then
         assertThat(partyInfo.getIsLeader()).isTrue();
@@ -232,24 +233,24 @@ class PartyServiceTest {
     @Test
     void 파티_삭제_성공() {
         //when
-        partyService.deleteParty(user1, party1.getId());
+        partyService.deleteParty(user1.getId(), party1.getId());
 
         //then
-        assertThrows(PartyException.class, () -> partyService.getPartyInfo(user1, party1.getId()));
+        assertThrows(PartyException.class, () -> partyService.getPartyInfo(user1.getId(), party1.getId()));
     }
 
     @DisplayName("파티 삭제 실패 권한 없음")
     @Test
     void 파티_삭제_실패_권한없음() {
         //when, then
-        assertThrows(UserException.class, () -> partyService.deleteParty(user2, party1.getId()));
+        assertThrows(UserException.class, () -> partyService.deleteParty(user2.getId(), party1.getId()));
     }
 
     @DisplayName("파티 삭제 실패 없는 파티 ID")
     @Test
     void 파티_삭제_실패_없는_파티ID() {
         //when, then
-        assertThrows(PartyException.class, () -> partyService.deleteParty(user2, party1.getId()+100L));
+        assertThrows(PartyException.class, () -> partyService.deleteParty(user2.getId(), party1.getId()+100L));
     }
 
     @DisplayName("파티 신청 성공")
@@ -259,7 +260,7 @@ class PartyServiceTest {
         PartyJoinDto partyJoinDto = new PartyJoinDto(party2.getId(), PartyJoinStatus.APPLY, "안녕하세요");
 
         //when
-        ResponseCreatePartyJoinDto responseCreatePartyJoinDto = partyService.joinParty(partyJoinDto, user1);
+        ResponseCreatePartyJoinDto responseCreatePartyJoinDto = partyService.joinParty(partyJoinDto, user1.getId());
 
         //then
         assertThat(responseCreatePartyJoinDto.getPartyJoinId()).isNotNull();
@@ -272,7 +273,7 @@ class PartyServiceTest {
         PartyJoinDto partyJoinDto = new PartyJoinDto(party1.getId(), PartyJoinStatus.APPLY, "안녕하세요");
 
         //when, then
-        assertThrows(UserException.class, () -> partyService.joinParty(partyJoinDto, user1));
+        assertThrows(UserException.class, () -> partyService.joinParty(partyJoinDto, user1.getId()));
     }
 
     @DisplayName("파티 신청 실패 중복 신청")
@@ -282,10 +283,10 @@ class PartyServiceTest {
         PartyJoinDto partyJoinDto = new PartyJoinDto(party2.getId(), PartyJoinStatus.APPLY, "안녕하세요");
 
         //when
-        partyService.joinParty(partyJoinDto, user1);
+        partyService.joinParty(partyJoinDto, user1.getId());
 
         //then
-        assertThrows(PartyJoinException.class, () -> partyService.joinParty(partyJoinDto, user1));
+        assertThrows(PartyJoinException.class, () -> partyService.joinParty(partyJoinDto, user1.getId()));
     }
 
     @DisplayName("파티 신청 취소 성공")
@@ -293,11 +294,11 @@ class PartyServiceTest {
     void 파티_신청취소_성공() {
         //given
         PartyJoinDto partyJoinDto = new PartyJoinDto(party2.getId(), PartyJoinStatus.APPLY, "안녕하세요");
-        ResponseCreatePartyJoinDto responseCreatePartyJoinDto = partyService.joinParty(partyJoinDto, user1);
+        ResponseCreatePartyJoinDto responseCreatePartyJoinDto = partyService.joinParty(partyJoinDto, user1.getId());
 
         //when
         PartyJoinDto partyJoinDto1 = new PartyJoinDto(party2.getId(), PartyJoinStatus.CANCEL, null);
-        ResponseCreatePartyJoinDto responseCreatePartyJoinDto1 = partyService.joinParty(partyJoinDto1, user1);
+        ResponseCreatePartyJoinDto responseCreatePartyJoinDto1 = partyService.joinParty(partyJoinDto1, user1.getId());
 
         //then
         assertThat(responseCreatePartyJoinDto1.getPartyJoinId()).isNotNull();
@@ -310,7 +311,7 @@ class PartyServiceTest {
         PartyJoinDto partyJoinDto1 = new PartyJoinDto(party2.getId(), PartyJoinStatus.CANCEL, null);
 
         //when, then
-        assertThrows(PartyJoinException.class, () -> partyService.joinParty(partyJoinDto1, user1));
+        assertThrows(PartyJoinException.class, () -> partyService.joinParty(partyJoinDto1, user1.getId()));
     }
 
     @DisplayName("파티 신청 실패 신청 Type이 잘못됌")
@@ -329,7 +330,7 @@ class PartyServiceTest {
         PartyDecisionDto partyDecisionDto = new PartyDecisionDto(responseCreatePartyDto.getPartyId(), "잔디 개발자", PartyDecision.ACCEPT);
 
         //when
-        String result = partyService.decideUser(partyDecisionDto, user1);
+        String result = partyService.decideUser(partyDecisionDto, user1.getId());
 
         //then
         assertThat(result).isEqualTo("Accept Request Completed");
@@ -344,7 +345,7 @@ class PartyServiceTest {
         PartyDecisionDto partyDecisionDto = new PartyDecisionDto(responseCreatePartyDto.getPartyId() + 2L, "잔디 개발자", PartyDecision.ACCEPT);
 
         //when, then
-        assertThrows(PartyJoinException.class, () -> partyService.decideUser(partyDecisionDto, user1));
+        assertThrows(PartyJoinException.class, () -> partyService.decideUser(partyDecisionDto, user1.getId()));
     }
 
     @DisplayName("파티 거절 성공")
@@ -356,7 +357,7 @@ class PartyServiceTest {
         PartyDecisionDto partyDecisionDto = new PartyDecisionDto(responseCreatePartyDto.getPartyId(), "잔디 개발자", PartyDecision.REFUSE);
 
         //when
-        String result = partyService.decideUser(partyDecisionDto, user1);
+        String result = partyService.decideUser(partyDecisionDto, user1.getId());
 
         //then
         assertThat(result).isEqualTo("Refuse Request Completed");
@@ -372,7 +373,7 @@ class PartyServiceTest {
         ResponseCreatePartyJoinDto responseCreatePartyJoinDto1 = partyJoin(responseCreatePartyDto2.getPartyId(), user1, PartyJoinStatus.APPLY, "곤니찌와");
 
         //when
-        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user1, Role.HOST, 1, 0L);
+        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user1.getId(), Role.HOST, null);
 
         //then
         assertThat(joinList.getPartyList().size()).isEqualTo(1);
@@ -381,7 +382,6 @@ class PartyServiceTest {
         assertThat(joinList.getPartyList().get(0).getOneLineIntroduce()).isEqualTo("봉쥬르");
         assertThat(joinList.getPartyList().get(0).getTypeMatch()).isTrue();
         assertThat(joinList.getPageInfo().isHasNext()).isFalse();
-        assertThat(joinList.getPageInfo().getLastId()).isEqualTo(responseCreatePartyJoinDto.getPartyJoinId());
     }
 
     @DisplayName("파티 신청 현황 조회 성공 - VOLUNTEER")
@@ -394,14 +394,13 @@ class PartyServiceTest {
         ResponseCreatePartyJoinDto responseCreatePartyJoinDto1 = partyJoin(responseCreatePartyDto2.getPartyId(), user1, PartyJoinStatus.APPLY, "안녕하세요");
 
         //when
-        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user1, Role.VOLUNTEER, 1, 0L);
+        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user1.getId(), Role.VOLUNTEER, null);
 
         //then
         assertThat(joinList.getPartyList().size()).isEqualTo(1);
         assertThat(joinList.getPartyList().get(0).getNickname()).isNull();
         assertThat(joinList.getPartyList().get(0).getPartyGender()).isEqualTo(MALE);
         assertThat(joinList.getPageInfo().isHasNext()).isFalse();
-        assertThat(joinList.getPageInfo().getLastId()).isEqualTo(responseCreatePartyJoinDto1.getPartyJoinId());
     }
 
     @DisplayName("파티 신청 현황 조회 실패 잘못된 Role")
@@ -414,7 +413,7 @@ class PartyServiceTest {
         partyJoin(responseCreatePartyDto2.getPartyId(), user1, PartyJoinStatus.APPLY, "안녕하세요");
 
         //when, then
-        assertThrows(IllegalArgumentException.class, () -> partyService.getJoinList(user1, Role.valueOf("check"), 1, 0L));
+        assertThrows(IllegalArgumentException.class, () -> partyService.getJoinList(user1.getId(), Role.valueOf("check"), null));
     }
 
     @DisplayName("파티 신청 현황 조회 실패 없는 사용자")
@@ -430,7 +429,7 @@ class PartyServiceTest {
         userRepository.deleteById(user2.getId());
 
         //when, then
-        assertThrows(UserException.class, () -> partyService.getJoinList(user1, Role.HOST, 1, 0L));
-        assertThrows(UserException.class, () -> partyService.getJoinList(user1, Role.VOLUNTEER, 1, 0L));
+        assertThrows(UserException.class, () -> partyService.getJoinList(user1.getId(), Role.HOST, null));
+        assertThrows(UserException.class, () -> partyService.getJoinList(user1.getId(), Role.VOLUNTEER, null));
     }
 }

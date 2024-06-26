@@ -21,6 +21,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -132,7 +135,7 @@ class ReviewServiceTest {
                 .menu("커피")
                 .thumbnail(null)
                 .build();
-        ResponseCreatePartyDto party = partyService.createParty(user1, partyCreateDto);
+        ResponseCreatePartyDto party = partyService.createParty(user1.getId(), partyCreateDto);
         this.party1 = partyRepository.findById(party.getPartyId()).get();
     }
 
@@ -152,7 +155,7 @@ class ReviewServiceTest {
                 .menu("커피")
                 .thumbnail(null)
                 .build();
-        return partyService.createParty(user, partyCreateDto);
+        return partyService.createParty(user.getId(), partyCreateDto);
     }
 
     @DisplayName("후기 생성 성공")
@@ -162,7 +165,7 @@ class ReviewServiceTest {
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
 
         //when
-        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2.getId());
         Optional<Review> reviewById = reviewRepository.findById(review.getReviewId());
 
         //then
@@ -181,7 +184,7 @@ class ReviewServiceTest {
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId() + 100L, "방장님 멋져요.", 50, List.of("추억사진.jpg"));
 
         //when, then
-        assertThrows(PartyException.class, () -> reviewService.createReview(reviewCreateReq, user2));
+        assertThrows(PartyException.class, () -> reviewService.createReview(reviewCreateReq, user2.getId()));
     }
 
 //    @DisplayName("후기 생성 실패 - 유저 없음")
@@ -205,7 +208,7 @@ class ReviewServiceTest {
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
 
         //when, then
-        assertThrows(ReviewException.class, () -> reviewService.createReview(reviewCreateReq, user2));
+        assertThrows(ReviewException.class, () -> reviewService.createReview(reviewCreateReq, user2.getId()));
     }
 
     @DisplayName("후기 생성 실패 - 중복 등록")
@@ -213,10 +216,10 @@ class ReviewServiceTest {
     void 후기_생성_실패_중복등록() {
         //given
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2.getId());
 
         //when, then
-        assertThrows(ReviewException.class, () -> reviewService.createReview(reviewCreateReq, user2));
+        assertThrows(ReviewException.class, () -> reviewService.createReview(reviewCreateReq, user2.getId()));
     }
 
     @DisplayName("후기 수정 성공")
@@ -224,11 +227,11 @@ class ReviewServiceTest {
     void 후기_수정_성공() {
         //given
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2.getId());
         ReviewUpdateReq reviewUpdateReq = new ReviewUpdateReq(review.getReviewId(), "방장님 이뻐요.", 80, List.of("이쁜사진.jpg"));
 
         //when
-        reviewService.updateReview(reviewUpdateReq, user2);
+        reviewService.updateReview(reviewUpdateReq, user2.getId());
         entityManager.flush();
         Optional<Review> findReview = reviewRepository.findById(review.getReviewId());
 
@@ -244,11 +247,11 @@ class ReviewServiceTest {
     void 후기_수정_실패_Role위반() {
         //given
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2.getId());
         ReviewUpdateReq reviewUpdateReq = new ReviewUpdateReq(review.getReviewId(), "방장님 이뻐요.", 80, List.of("이쁜사진.jpg"));
 
         //when, then
-        assertThrows(UserException.class, () -> reviewService.updateReview(reviewUpdateReq, user1));
+        assertThrows(UserException.class, () -> reviewService.updateReview(reviewUpdateReq, user1.getId()));
     }
 
     @DisplayName("후기 삭제 성공")
@@ -256,11 +259,11 @@ class ReviewServiceTest {
     void 후기_삭제_성공() {
         //given
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2.getId());
         ReviewDeleteReq reviewDeleteReq = new ReviewDeleteReq(review.getReviewId());
 
         //when
-        reviewService.deleteReview(reviewDeleteReq, user2);
+        reviewService.deleteReview(reviewDeleteReq, user2.getId());
         Optional<Review> byId = reviewRepository.findById(review.getReviewId());
 
         //then
@@ -272,11 +275,11 @@ class ReviewServiceTest {
     void 후기_삭제_실패_Role위반() {
         //given
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2);
+        ReviewCreateRes review = reviewService.createReview(reviewCreateReq, user2.getId());
         ReviewDeleteReq reviewDeleteReq = new ReviewDeleteReq(review.getReviewId());
 
         //when, then
-        assertThrows(UserException.class, () -> reviewService.deleteReview(reviewDeleteReq, user1));
+        assertThrows(UserException.class, () -> reviewService.deleteReview(reviewDeleteReq, user1.getId()));
     }
 
     @DisplayName("후기 리스트 조회 성공")
@@ -286,15 +289,17 @@ class ReviewServiceTest {
         ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
         ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(party1.getId(), "방장님 멋져요2.", 20, List.of("추억사진2.jpg"));
         ReviewCreateReq reviewCreateReq3 = new ReviewCreateReq(party1.getId(), "방장님 멋져요3.", 30, List.of("추억사진3.jpg"));
-        reviewService.createReview(reviewCreateReq1, user2);
-        reviewService.createReview(reviewCreateReq2, user3);
-        reviewService.createReview(reviewCreateReq3, user4);
+        reviewService.createReview(reviewCreateReq1, user2.getId());
+        reviewService.createReview(reviewCreateReq2, user3.getId());
+        reviewService.createReview(reviewCreateReq3, user4.getId());
+
+        Pageable pageable = PageRequest.of(0, 5);
 
         //when
-        ResponseReviewList reviewList1 = reviewService.getReviewList(user1, ReviewType.RECEIVER, 0, 5);
-        ResponseReviewList reviewList2 = reviewService.getReviewList(user2, ReviewType.SENDER, 0, 5);
-        ResponseReviewList reviewList3 = reviewService.getReviewList(user3, ReviewType.SENDER, 0, 5);
-        ResponseReviewList reviewList4 = reviewService.getReviewList(user4, ReviewType.SENDER, 0, 5);
+        ResponseReviewList reviewList1 = reviewService.getReviewList(user1.getId(), ReviewType.RECEIVER, pageable);
+        ResponseReviewList reviewList2 = reviewService.getReviewList(user2.getId(), ReviewType.SENDER, pageable);
+        ResponseReviewList reviewList3 = reviewService.getReviewList(user3.getId(), ReviewType.SENDER, pageable);
+        ResponseReviewList reviewList4 = reviewService.getReviewList(user4.getId(), ReviewType.SENDER, pageable);
 
         //then
         assertThat(reviewList1.getReviewGetResList().size()).isEqualTo(3);
@@ -314,12 +319,14 @@ class ReviewServiceTest {
         ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
         ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(party1.getId(), "방장님 멋져요2.", 20, List.of("추억사진2.jpg"));
         ReviewCreateReq reviewCreateReq3 = new ReviewCreateReq(party1.getId(), "방장님 멋져요3.", 30, List.of("추억사진3.jpg"));
-        reviewService.createReview(reviewCreateReq1, user2);
-        reviewService.createReview(reviewCreateReq2, user3);
-        reviewService.createReview(reviewCreateReq3, user4);
+        reviewService.createReview(reviewCreateReq1, user2.getId());
+        reviewService.createReview(reviewCreateReq2, user3.getId());
+        reviewService.createReview(reviewCreateReq3, user4.getId());
+
+        Pageable pageable = PageRequest.of(0, 3);
 
         //when, then
-        assertThrows(IllegalArgumentException.class, () -> reviewService.getReviewList(user1, ReviewType.valueOf("test"), 0, 3));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.getReviewList(user1.getId(), ReviewType.valueOf("test"), pageable));
     }
 
     @DisplayName("후기 상세 조회 성공")
@@ -327,10 +334,10 @@ class ReviewServiceTest {
     void 후기_상세조회_성공() {
         //given
         ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(party1.getId(), "방장님 멋져요1.", 10, List.of("추억사진1.jpg"));
-        ReviewCreateRes review = reviewService.createReview(reviewCreateReq1, user2);
+        ReviewCreateRes review = reviewService.createReview(reviewCreateReq1, user2.getId());
 
         //when
-        ReviewInfoRes findReview = reviewService.getReview(user2, review.getReviewId());
+        ReviewInfoRes findReview = reviewService.getReview(user2.getId(), review.getReviewId());
         ReviewInfoRes findReview1 = reviewService.getReview(null, review.getReviewId());
 
         //then
@@ -349,11 +356,13 @@ class ReviewServiceTest {
     void 방장_후기조회_성공() {
         //given
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-        ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2);
-        ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3);
+        ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2.getId());
+        ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3.getId());
+
+        Pageable pageable = PageRequest.of(0, 3);
 
         //when
-        ReviewListRes hostReviewList = reviewService.getHostReviewList(user1.getId(), review1.getReviewId(), 3);
+        ReviewListRes hostReviewList = reviewService.getHostReviewList(user1.getId(), pageable);
 
         //then
         assertThat(hostReviewList.getReviewGetResList().size()).isEqualTo(2);
@@ -366,8 +375,8 @@ class ReviewServiceTest {
     void 방장_후기조회_실패_없는_유저ID() {
         //given
         ReviewCreateReq reviewCreateReq = new ReviewCreateReq(party1.getId(), "방장님 멋져요.", 50, List.of("추억사진.jpg"));
-        ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2);
-        ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3);
+        ReviewCreateRes review1 = reviewService.createReview(reviewCreateReq, user2.getId());
+        ReviewCreateRes review2 = reviewService.createReview(reviewCreateReq, user3.getId());
 
         //when, then
         assertThrows(UserException.class, () -> reviewService.getHostReviewList(user1.getId() + 100L, 0L, 5));

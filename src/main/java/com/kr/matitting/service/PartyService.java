@@ -40,9 +40,11 @@ public class PartyService {
     private final NotificationService notificationService;
     private final ChatService chatService;
     private final PartyJoinRepositoryCustom partyJoinRepositoryCustom;
+    private final EntityFacade entityFacade;
 
-    public ResponsePartyDetailDto getPartyInfo(User user, Long partyId) {
-        Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+    public ResponsePartyDetailDto getPartyInfo(Long userId, Long partyId) {
+        User user = entityFacade.getUser(userId);
+        Party party = entityFacade.getParty(partyId);
         increaseHit(partyId);
 
         return ResponsePartyDetailDto.from(party, user);
@@ -52,9 +54,10 @@ public class PartyService {
         partyRepository.increaseHit(partyId);
     }
 
-    public ResponseCreatePartyDto createParty(User user, PartyCreateDto request) {
+    public ResponseCreatePartyDto createParty(Long userId, PartyCreateDto request) {
         log.info("=== createParty() start ===");
 
+        User user = entityFacade.getUser(userId);
         // address 변환, deadline, thumbnail이 null일 경우 처리하는 로직 처리 후 생성
         Party party = createBasePartyBuilder(request, user);
         Party savedParty = partyRepository.save(party);
@@ -103,9 +106,11 @@ public class PartyService {
         return address;
     }
 
-    public void partyUpdate(User user, PartyUpdateDto partyUpdateDto, Long partyId) {
-        Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
-        checkRole(user, party);
+    public void partyUpdate(Long userId, PartyUpdateDto partyUpdateDto, Long partyId) {
+        User user = entityFacade.getUser(userId);
+        Party party = entityFacade.getParty(partyId);
+
+        checkRole(user.getId(), party);
         if (partyUpdateDto.partyTitle() != null) {
             party.setPartyTitle(partyUpdateDto.partyTitle());
         }
@@ -156,15 +161,16 @@ public class PartyService {
         }
     }
 
-    public void deleteParty(User user, Long partyId) {
-        Party party = partyRepository.findById(partyId).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+    public void deleteParty(Long userId, Long partyId) {
+        User user = entityFacade.getUser(userId);
+        Party party = entityFacade.getParty(partyId);
 
-        checkRole(user, party);
+        checkRole(user.getId(), party);
         partyRepository.delete(party);
     }
 
-    private void checkRole(User user, Party party) {
-        if (!user.getId().equals(party.getUser().getId())) {
+    private void checkRole(Long userId, Party party) {
+        if (!userId.equals(party.getUser().getId())) {
             throw new UserException(UserExceptionType.INVALID_ROLE_USER);
         }
     }
@@ -192,10 +198,12 @@ public class PartyService {
                 .build();
     }
 
-    public ResponseCreatePartyJoinDto joinParty(PartyJoinDto partyJoinDto, User user) {
+    public ResponseCreatePartyJoinDto joinParty(PartyJoinDto partyJoinDto, Long userId) {
         log.info("=== joinParty() start ===");
 
-        Party party = partyRepository.findById(partyJoinDto.partyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        User user = entityFacade.getUser(userId);
+        Party party = entityFacade.getParty(partyJoinDto.partyId());
+
         if (party.getUser().getId().equals(user.getId())) throw new UserException(UserExceptionType.INVALID_ROLE_USER);
 
         Optional<PartyJoin> existingJoin = partyJoinRepository.findByPartyIdAndLeaderIdAndUserId(party.getId(), party.getUser().getId(), user.getId());
@@ -222,9 +230,10 @@ public class PartyService {
         }
     }
 
-    public String decideUser(PartyDecisionDto partyDecisionDto, User user) {
+    public String decideUser(PartyDecisionDto partyDecisionDto, Long userId) {
         log.info("=== decideUser() start ===");
 
+        User user = entityFacade.getUser(userId);
         User volunteerUser = userRepository.findByNickname(partyDecisionDto.getNickname()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
         PartyJoin findPartyJoin = partyJoinRepository.findByPartyIdAndUserId(
                 partyDecisionDto.getPartyId(),
@@ -235,7 +244,7 @@ public class PartyService {
 
         partyJoinRepository.delete(findPartyJoin);
 
-        Party party = partyRepository.findById(partyDecisionDto.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+        Party party = entityFacade.getParty(partyDecisionDto.getPartyId());
         if (partyDecisionDto.getStatus() == PartyDecision.ACCEPT) {
             log.info("=== ACCEPT ===");
 
@@ -255,16 +264,16 @@ public class PartyService {
         }
     }
 
-    public ResponseGetPartyJoinDto getJoinList(User user, Role role, Pageable pageable) {
+    public ResponseGetPartyJoinDto getJoinList(Long userId, Role role, Pageable pageable) {
+        User user = entityFacade.getUser(userId);
         Page<PartyJoin> partyJoinPage = partyJoinRepositoryCustom.getPartyJoin(pageable, user, role);
 
         switch (role) {
             case HOST:
                 List<InvitationRequestDto> hostInvitation = partyJoinPage.getContent().stream()
                         .map(partyJoin -> {
-                            User volunteerUser = userRepository.findById(partyJoin.getUserId())
-                                    .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-                            return InvitationRequestDto.toDto(partyJoin, volunteerUser, role);
+                            User volunteer = entityFacade.getUser(partyJoin.getUserId());
+                            return InvitationRequestDto.toDto(partyJoin, volunteer, role);
                         })
                         .toList();
                 ResponsePageInfoDto hostPageInfoDto = new ResponsePageInfoDto(partyJoinPage.getPageable().getPageNumber(), partyJoinPage.hasNext());
@@ -272,9 +281,8 @@ public class PartyService {
             case VOLUNTEER:
                 List<InvitationRequestDto> volunteerInvitation = partyJoinPage.getContent().stream()
                         .map(partyJoin -> {
-                            User leaderUser = userRepository.findById(partyJoin.getLeaderId())
-                                    .orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-                            return InvitationRequestDto.toDto(partyJoin, leaderUser, role);
+                            User leader = entityFacade.getUser(partyJoin.getLeaderId());
+                            return InvitationRequestDto.toDto(partyJoin, leader, role);
                         })
                         .toList();
                 ResponsePageInfoDto volunteerPageInfoDto = new ResponsePageInfoDto(partyJoinPage.getPageable().getPageNumber(), partyJoinPage.hasNext());

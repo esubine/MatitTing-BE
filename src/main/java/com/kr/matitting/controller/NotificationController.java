@@ -1,10 +1,7 @@
 package com.kr.matitting.controller;
 
-import com.kr.matitting.entity.User;
 import com.kr.matitting.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -26,11 +23,11 @@ public class NotificationController {
             "Request시 Header에 'Last-Event-ID'를 넣어주어 마지막으로 받은 알림이 어디까지인지 BackEnd에게 요청")
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId,
             HttpServletResponse response
     ) {
         response.setHeader("X-Accel-Buffering", "no");
-        return ResponseEntity.ok(notificationService.subscribe(user, lastEventId));
+        return ResponseEntity.ok(notificationService.subscribe(userId, lastEventId));
     }
 }

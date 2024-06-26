@@ -92,7 +92,7 @@ class MainServiceTest {
                 .menu("돈까스")
                 .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
-        ResponseCreatePartyDto party1 = partyService.createParty(user1, partyCreateDto1);
+        ResponseCreatePartyDto party1 = partyService.createParty(user1.getId(), partyCreateDto1);
         this.party1 = partyRepository.findById(party1.getPartyId()).get();
         
         PartyCreateDto partyCreateDto2 = PartyCreateDto.builder()
@@ -109,7 +109,7 @@ class MainServiceTest {
                 .menu("뷔페")
                 .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
-        ResponseCreatePartyDto party2 = partyService.createParty(user1, partyCreateDto2);
+        ResponseCreatePartyDto party2 = partyService.createParty(user1.getId(), partyCreateDto2);
         this.party2 = partyRepository.findById(party2.getPartyId()).get();
 
         PartyCreateDto partyCreateDto3 = PartyCreateDto.builder()
@@ -126,7 +126,7 @@ class MainServiceTest {
                 .menu("고기")
                 .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
-        ResponseCreatePartyDto party3 = partyService.createParty(user1, partyCreateDto3);
+        ResponseCreatePartyDto party3 = partyService.createParty(user1.getId(), partyCreateDto3);
         this.party3 = partyRepository.findById(party3.getPartyId()).get();
 
         PartyCreateDto partyCreateDto4 = PartyCreateDto.builder()
@@ -143,7 +143,7 @@ class MainServiceTest {
                 .menu("떡볶이")
                 .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
-        ResponseCreatePartyDto party4 = partyService.createParty(user1, partyCreateDto4);
+        ResponseCreatePartyDto party4 = partyService.createParty(user1.getId(), partyCreateDto4);
         this.party4 = partyRepository.findById(party4.getPartyId()).get();
 
         PartyCreateDto partyCreateDto5 = PartyCreateDto.builder()
@@ -160,7 +160,7 @@ class MainServiceTest {
                 .menu("피자")
                 .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
-        ResponseCreatePartyDto party5 = partyService.createParty(user1, partyCreateDto5);
+        ResponseCreatePartyDto party5 = partyService.createParty(user1.getId(), partyCreateDto5);
         this.party5 = partyRepository.findById(party5.getPartyId()).get();
 
         PartyCreateDto partyCreateDto6 = PartyCreateDto.builder()
@@ -177,7 +177,7 @@ class MainServiceTest {
                 .menu("스시")
                 .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
-        ResponseCreatePartyDto party6 = partyService.createParty(user1, partyCreateDto6);
+        ResponseCreatePartyDto party6 = partyService.createParty(user1.getId(), partyCreateDto6);
         this.party6 = partyRepository.findById(party6.getPartyId()).get();
     }
 
