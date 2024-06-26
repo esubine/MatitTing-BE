@@ -6,8 +6,8 @@ import com.kr.matitting.exception.token.TokenException;
 import com.kr.matitting.exception.user.UserException;
 import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
-import com.kr.matitting.repository.UserRepository;
 import com.kr.matitting.redis.RedisUtil;
+import com.kr.matitting.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,13 +23,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import java.io.IOException;
-import java.util.Collections;
-
-import static com.kr.matitting.exception.token.TokenExceptionType.*;
+import static com.kr.matitting.exception.token.TokenExceptionType.BLACK_LIST_ACCESS_TOKEN;
+import static com.kr.matitting.exception.token.TokenExceptionType.INVALID_ACCESS_TOKEN;
 
 
 @Component
@@ -73,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 DecodedJWT decodedJWT = jwtService.isTokenValid(token);
                 String socialId = jwtService.getSocialId(decodedJWT);
                 User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
-                Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, Collections.singleton(new SimpleGrantedAuthority(user.getRole().getKey())));
+                Authentication authentication = new UsernamePasswordAuthenticationToken(user.getId(), null, Collections.singleton(new SimpleGrantedAuthority(user.getRole().getKey())));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 doFilter(request, response, filterChain);

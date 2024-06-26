@@ -27,14 +27,16 @@ public class NotificationService {
 
     private final EmitterRepository emitterRepository;
     private final NotificationRepository notificationRepository;
+    private final EntityFacade entityFacade;
 
     /**
      * SSE 연결
-     * @param user
+     * @param userId
      * @param lastEventId
      * @return
      */
-    public SseEmitter subscribe(User user, String lastEventId) {
+    public SseEmitter subscribe(Long userId, String lastEventId) {
+        User user = entityFacade.getUser(userId);
 
         String emitterId = makeTimeIncludeId(user.getId());
 

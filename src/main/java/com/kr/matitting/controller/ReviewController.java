@@ -2,7 +2,6 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.constant.ReviewType;
 import com.kr.matitting.dto.*;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.party.PartyException;
 import com.kr.matitting.exception.reivew.ReviewException;
 import com.kr.matitting.exception.user.UserException;
@@ -35,10 +34,10 @@ public class ReviewController {
             @ApiResponse(responseCode = "200", description = "리뷰 리스트 조회 성공", content = @Content(schema = @Schema(implementation = ResponseReviewList.class))),
     })
     @GetMapping
-    public ResponseEntity<ResponseReviewList> getReviewList(@AuthenticationPrincipal User user,
+    public ResponseEntity<ResponseReviewList> getReviewList(@AuthenticationPrincipal Long userId,
                                                             @RequestParam ReviewType reviewType,
                                                             @PageableDefault Pageable pageable) {
-        return ResponseEntity.ok(reviewService.getReviewList(user, reviewType, pageable));
+        return ResponseEntity.ok(reviewService.getReviewList(userId, reviewType, pageable));
     }
 
     @Operation(summary = "방장 리뷰 리스트 조회", description = "방장의 리뷰 리스트를 불러오는 API \n\n" +
@@ -61,8 +60,8 @@ public class ReviewController {
             @ApiResponse(responseCode = "404(1700)", description = "리뷰 정보가 없음", content = @Content(schema = @Schema(implementation = ReviewException.class)))
     })
     @GetMapping("/{reviewId}")
-    public ResponseEntity<ReviewInfoRes> getReview(@AuthenticationPrincipal User user, @PathVariable Long reviewId) {
-        return ResponseEntity.ok(reviewService.getReview(user, reviewId));
+    public ResponseEntity<ReviewInfoRes> getReview(@AuthenticationPrincipal Long userId, @PathVariable Long reviewId) {
+        return ResponseEntity.ok(reviewService.getReview(userId, reviewId));
     }
 
     @Operation(summary = "리뷰 작성", description = "방장에게 리뷰를 작성하는 API")
@@ -74,8 +73,8 @@ public class ReviewController {
             @ApiResponse(responseCode = "409(1702)", description = "작성한 리뷰가 이미 존재", content = @Content(schema = @Schema(implementation = ReviewException.class)))
     })
     @PostMapping
-    public ResponseEntity<ReviewCreateRes> createReview(@RequestBody ReviewCreateReq reviewCreateReq, @AuthenticationPrincipal User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(reviewCreateReq, user));
+    public ResponseEntity<ReviewCreateRes> createReview(@RequestBody ReviewCreateReq reviewCreateReq, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(reviewCreateReq, userId));
     }
 
     @Operation(summary = "리뷰 수정", description = "작성한 리뷰를 수정하는 API")
@@ -85,8 +84,8 @@ public class ReviewController {
             @ApiResponse(responseCode = "404(1700)", description = "리뷰 정보가 없음", content = @Content(schema = @Schema(implementation = ReviewException.class)))
     })
     @PatchMapping
-    public ResponseEntity<?> updateReview(@RequestBody ReviewUpdateReq reviewUpdateReq, @AuthenticationPrincipal User user) {
-        reviewService.updateReview(reviewUpdateReq, user);
+    public ResponseEntity<?> updateReview(@RequestBody ReviewUpdateReq reviewUpdateReq, @AuthenticationPrincipal Long userId) {
+        reviewService.updateReview(reviewUpdateReq, userId);
         return ResponseEntity.ok(null);
     }
 
@@ -97,8 +96,8 @@ public class ReviewController {
             @ApiResponse(responseCode = "404(1700)", description = "리뷰 정보가 없음", content = @Content(schema = @Schema(implementation = ReviewException.class)))
     })
     @DeleteMapping
-    public ResponseEntity<?> deleteReview(@RequestBody ReviewDeleteReq reviewDeleteReq, @AuthenticationPrincipal User user) {
-        reviewService.deleteReview(reviewDeleteReq, user);
+    public ResponseEntity<?> deleteReview(@RequestBody ReviewDeleteReq reviewDeleteReq, @AuthenticationPrincipal Long userId) {
+        reviewService.deleteReview(reviewDeleteReq, userId);
         return ResponseEntity.ok(null);
     }
 }

@@ -2,7 +2,6 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.dto.ResponseChatRoomInfoDto;
 import com.kr.matitting.dto.ResponseChatRoomListDto;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -38,12 +37,12 @@ public class ChatRoomController {
                             @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatRoomListDto.class)))})
     })
     @GetMapping
-    public ResponseEntity<ResponseChatRoomListDto> getAllRooms(@AuthenticationPrincipal User user,
+    public ResponseEntity<ResponseChatRoomListDto> getAllRooms(@AuthenticationPrincipal Long userId,
                                                                @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
                                                                @RequestParam(value = "page", defaultValue = "0", required = false) Integer page
                                                                 ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(chatService.getChatRooms(user.getId(), pageable));
+        return ResponseEntity.ok(chatService.getChatRooms(userId, pageable));
     }
 
     @Operation(summary = "채팅방의 정보조회", description = "채팅방의 정보조회 API \n\n" +
@@ -56,9 +55,9 @@ public class ChatRoomController {
     })
     @GetMapping("/{chatRoomId}")
     public ResponseEntity<ResponseChatRoomInfoDto> getChatRoomInfo(@PathVariable Long chatRoomId,
-                                                                    @AuthenticationPrincipal User user){
+                                                                    @AuthenticationPrincipal Long userId){
 
-        return ResponseEntity.ok(chatService.getChatRoomInfo(chatRoomId, user.getId()));
+        return ResponseEntity.ok(chatService.getChatRoomInfo(chatRoomId, userId));
     }
 
     @Operation(summary = "내 채팅방 검색", description = "내 채팅방 검색 API \n\n" +
@@ -77,12 +76,12 @@ public class ChatRoomController {
                             @Content(array = @ArraySchema(schema = @Schema(implementation = ResponseChatRoomListDto.class)))})
     })
     @GetMapping("/search")
-    public ResponseEntity<ResponseChatRoomListDto> getChatRoomsByTitleSearch(@AuthenticationPrincipal User user,
+    public ResponseEntity<ResponseChatRoomListDto> getChatRoomsByTitleSearch(@AuthenticationPrincipal Long userId,
                                                                            @RequestParam(value ="title") String searchTitle,
                                                                            @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
                                                                            @RequestParam(value = "page", defaultValue = "0", required = false) Integer page){
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(chatService.getChatRoomsByTitleSearch(user.getId(), pageable, searchTitle));
+        return ResponseEntity.ok(chatService.getChatRoomsByTitleSearch(userId, pageable, searchTitle));
     }
 
 }

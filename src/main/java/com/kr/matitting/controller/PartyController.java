@@ -2,7 +2,6 @@ package com.kr.matitting.controller;
 
 import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.*;
-import com.kr.matitting.entity.User;
 import com.kr.matitting.exception.Map.MapException;
 import com.kr.matitting.exception.Map.MapExceptionType;
 import com.kr.matitting.exception.party.PartyException;
@@ -24,8 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,10 +50,10 @@ public class PartyController {
 
     @PostMapping
     public ResponseEntity<ResponseCreatePartyDto> createParty(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @RequestBody @Valid PartyCreateDto request
     ) {
-        ResponseCreatePartyDto responseCreatePartyDto = partyService.createParty(user, request);
+        ResponseCreatePartyDto responseCreatePartyDto = partyService.createParty(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseCreatePartyDto);
     }
 
@@ -77,8 +74,8 @@ public class PartyController {
         @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PatchMapping("/{partyId}")
-    public ResponseEntity<String> updateParty(@AuthenticationPrincipal User user, @RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
-        partyService.partyUpdate(user, partyUpdateDto, partyId);
+    public ResponseEntity<String> updateParty(@AuthenticationPrincipal Long userId, @RequestBody PartyUpdateDto partyUpdateDto, @PathVariable Long partyId) {
+        partyService.partyUpdate(userId, partyUpdateDto, partyId);
         return ResponseEntity.ok("Success Party update");
     }
 
@@ -94,8 +91,8 @@ public class PartyController {
         @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
     })
     @GetMapping("/{partyId}")
-    public ResponseEntity<ResponsePartyDetailDto> partyDetail(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
-        ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(user, partyId);
+    public ResponseEntity<ResponsePartyDetailDto> partyDetail(@AuthenticationPrincipal Long userId, @PathVariable Long partyId) {
+        ResponsePartyDetailDto partyInfo = partyService.getPartyInfo(userId, partyId);
         return ResponseEntity.ok(partyInfo);
     }
 
@@ -106,8 +103,8 @@ public class PartyController {
         @ApiResponse(responseCode = "404(800)", description = "파티 정보가 없습니다.", content = @Content(schema = @Schema(implementation = PartyException.class)))
     })
     @DeleteMapping("/{partyId}")
-    public ResponseEntity<String> partyDelete(@AuthenticationPrincipal User user, @PathVariable Long partyId) {
-        partyService.deleteParty(user, partyId);
+    public ResponseEntity<String> partyDelete(@AuthenticationPrincipal Long userId, @PathVariable Long partyId) {
+        partyService.deleteParty(userId, partyId);
         return ResponseEntity.ok("Success Party Delete");
     }
 
@@ -127,8 +124,8 @@ public class PartyController {
         @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PostMapping("/participation")
-    public ResponseEntity<ResponseCreatePartyJoinDto> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(partyService.joinParty(partyJoinDto, user));
+    public ResponseEntity<ResponseCreatePartyJoinDto> JoinParty(@RequestBody @Valid PartyJoinDto partyJoinDto, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(partyService.joinParty(partyJoinDto, userId));
     }
 
     @Operation(summary = "파티 참가 수락/거절", description = "참여 수락/거절 API \n\n " +
@@ -147,8 +144,8 @@ public class PartyController {
         @ApiResponse(responseCode = "403(602)", description = "요청한 회원정보가 잘못되었습니다.", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @PostMapping("/decision")
-    public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyDecisionDto partyDecisionDto, @AuthenticationPrincipal User user) {
-        String result = partyService.decideUser(partyDecisionDto, user);
+    public ResponseEntity<String> AcceptRefuseParty(@RequestBody @Valid PartyDecisionDto partyDecisionDto, @AuthenticationPrincipal Long userId) {
+        String result = partyService.decideUser(partyDecisionDto, userId);
         return ResponseEntity.ok(result);
     }
 
@@ -168,10 +165,10 @@ public class PartyController {
                                                 "\t sort : 최신순으로 정렬하여 response하도록 설정 request X \n\n")
     @ApiResponse(responseCode = "200", description = "파티 현황 조회 성공", content = @Content(schema = @Schema(implementation = ResponseMyParty.class)))
     @GetMapping("/party-status")
-    public ResponseEntity<ResponseMyParty> myPartyList(@AuthenticationPrincipal User user,
+    public ResponseEntity<ResponseMyParty> myPartyList(@AuthenticationPrincipal Long userId,
                                                        @PageableDefault Pageable pageable,
                                                        @Valid PartyStatusReq partyStatusReq) {
-        return ResponseEntity.ok(userService.getMyPartyList(user, partyStatusReq, pageable));
+        return ResponseEntity.ok(userService.getMyPartyList(userId, partyStatusReq, pageable));
     }
 
     @Operation(summary = "파티 신청 현황", description = "실시간 파티 현황 API \n\n" +
@@ -186,10 +183,10 @@ public class PartyController {
         @ApiResponse(responseCode = "403(602)", description = "권한이 없는 사용자, Role이 유효하지 않음", content = @Content(schema = @Schema(implementation = UserException.class))),
     })
     @GetMapping("/party-join")
-    public ResponseEntity<ResponseGetPartyJoinDto> getJoinList(@AuthenticationPrincipal User user,
+    public ResponseEntity<ResponseGetPartyJoinDto> getJoinList(@AuthenticationPrincipal Long userId,
                                                                @PageableDefault Pageable pageable,
                                                                @NotNull @RequestParam Role role) {
-        ResponseGetPartyJoinDto joinList = partyService.getJoinList(user, role, pageable);
+        ResponseGetPartyJoinDto joinList = partyService.getJoinList(userId, role, pageable);
         return ResponseEntity.ok(joinList);
     }
 }

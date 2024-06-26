@@ -171,7 +171,7 @@ class UserServiceTest {
 
     ResponseCreatePartyJoinDto partyJoin(Long partyId, User volunteer, PartyJoinStatus status, String ondLineIntroduce) {
         PartyJoinDto partyJoinDto = new PartyJoinDto(partyId, status, ondLineIntroduce);
-        return partyService.joinParty(partyJoinDto, volunteer);
+        return partyService.joinParty(partyJoinDto, volunteer.getId());
     }
 
     ResponseCreatePartyDto partyCreate(User user) {
@@ -190,7 +190,7 @@ class UserServiceTest {
                 .menu("커피")
                 .thumbnail(null)
                 .build();
-        return partyService.createParty(user, partyCreateDto);
+        return partyService.createParty(user.getId(), partyCreateDto);
     }
 
     @DisplayName("내 프로필 수정 성공")
@@ -200,7 +200,7 @@ class UserServiceTest {
         UserUpdateDto userUpdateDto = new UserUpdateDto("수정했음", "수정이미지.jpg");
 
         //when
-        userService.update(user1, userUpdateDto);
+        userService.update(user1.getId(), userUpdateDto);
         Optional<User> byId = userRepository.findById(user1.getId());
 
         //then
@@ -217,7 +217,7 @@ class UserServiceTest {
         user1.setId(100L);
 
         //when, then
-        assertThrows(UserException.class, () -> userService.update(user1, userUpdateDto));
+        assertThrows(UserException.class, () -> userService.update(user1.getId(), userUpdateDto));
     }
 
     @DisplayName("로그아웃 성공")
@@ -227,7 +227,7 @@ class UserServiceTest {
         String accessToken = jwtService.createAccessToken(user1);
 
         //when
-        userService.logout(accessToken, user1);
+        userService.logout(accessToken, user1.getId());
 
         //then
         assertThat(redisUtil.getData(accessToken)).isEqualTo("logout");
@@ -240,7 +240,7 @@ class UserServiceTest {
         String accessToken = "Bearer sfdlkjfsejklfsekjlfesjlkjlksfejlsfeljsljse.fesjisfejifsfesiljsfeljifsjielefs.sfelijsfejilfesjilefsjils";
 
         //when, then
-        assertThrows(TokenException.class, () -> userService.logout(accessToken, user1));
+        assertThrows(TokenException.class, () -> userService.logout(accessToken, user1.getId()));
     }
 
     //회원탈퇴
@@ -251,7 +251,7 @@ class UserServiceTest {
         String accessToken = jwtService.createAccessToken(user1);
 
         //when
-        userService.withdraw(accessToken, user1);
+        userService.withdraw(accessToken, user1.getId());
 
         //then
         assertThat(redisUtil.getData(accessToken)).isEqualTo("logout");
@@ -265,14 +265,14 @@ class UserServiceTest {
         String accessToken = "Bearer sfdlkjfsejklfsekjlfesjlkjlksfejlsfeljsljse.fesjisfejifsfesiljsfeljifsjielefs.sfelijsfejilfesjilefsjils";
 
         //when, then
-        assertThrows(TokenException.class, () -> userService.withdraw(accessToken, user1));
+        assertThrows(TokenException.class, () -> userService.withdraw(accessToken, user1.getId()));
     }
 
     @DisplayName("내 정보 조회 성공")
     @Test
     void 내정보조회_성공() {
         //when
-        ResponseMyInfo myInfo = userService.getMyInfo(user1);
+        ResponseMyInfo myInfo = userService.getMyInfo(user1.getId());
 
         //then
         assertThat(myInfo.getUserId()).isEqualTo(user1.getId());
@@ -301,14 +301,14 @@ class UserServiceTest {
 
         PartyDecisionDto partyDecisionDto1 = new PartyDecisionDto(responseCreatePartyDto3.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
         PartyDecisionDto partyDecisionDto2 = new PartyDecisionDto(responseCreatePartyDto4.getPartyId(), user1.getNickname(), PartyDecision.ACCEPT);
-        partyService.decideUser(partyDecisionDto1, user2);
-        partyService.decideUser(partyDecisionDto2, user2);
+        partyService.decideUser(partyDecisionDto1, user2.getId());
+        partyService.decideUser(partyDecisionDto2, user2.getId());
 
         ReviewCreateReq reviewCreateReq1 = new ReviewCreateReq(responseCreatePartyDto3.getPartyId(), "잘먹었습니다", 5, null);
         ReviewCreateReq reviewCreateReq2 = new ReviewCreateReq(responseCreatePartyDto4.getPartyId(), "못먹었습니다", 1, null);
 
-        reviewService.createReview(reviewCreateReq1, user1);
-        reviewService.createReview(reviewCreateReq2, user1);
+        reviewService.createReview(reviewCreateReq1, user1.getId());
+        reviewService.createReview(reviewCreateReq2, user1.getId());
 
         PageRequest pageRequest1 = PageRequest.of(0, 1);
         PageRequest pageRequest2 = PageRequest.of(1, 1);
@@ -317,10 +317,10 @@ class UserServiceTest {
         PartyStatusReq partyStatusReq2 = new PartyStatusReq(Role.VOLUNTEER, RECRUIT);
 
         //when
-        ResponseMyParty myPartyList1 = userService.getMyPartyList(user1, partyStatusReq1, pageRequest1);
-        ResponseMyParty myPartyList2 = userService.getMyPartyList(user1, partyStatusReq1, pageRequest2);
-        ResponseMyParty myPartyList3 = userService.getMyPartyList(user1, partyStatusReq2, pageRequest1);
-        ResponseMyParty myPartyList4 = userService.getMyPartyList(user1, partyStatusReq2, pageRequest2);
+        ResponseMyParty myPartyList1 = userService.getMyPartyList(user1.getId(), partyStatusReq1, pageRequest1);
+        ResponseMyParty myPartyList2 = userService.getMyPartyList(user1.getId(), partyStatusReq1, pageRequest2);
+        ResponseMyParty myPartyList3 = userService.getMyPartyList(user1.getId(), partyStatusReq2, pageRequest1);
+        ResponseMyParty myPartyList4 = userService.getMyPartyList(user1.getId(), partyStatusReq2, pageRequest2);
 
         //then
         assertThat(myPartyList1.getPartyList().size()).isEqualTo(1);

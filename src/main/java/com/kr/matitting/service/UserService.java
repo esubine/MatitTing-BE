@@ -4,12 +4,9 @@ import com.kr.matitting.constant.Role;
 import com.kr.matitting.dto.*;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.user.UserException;
-import com.kr.matitting.exception.user.UserExceptionType;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.redis.RedisUtil;
 import com.kr.matitting.repository.PartyRepositoryImpl;
-import com.kr.matitting.repository.PartyTeamRepository;
 import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +25,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
+    private final EntityFacade entityFacade;
     private final UserRepository userRepository;
-    private final PartyTeamRepository partyTeamRepository;
     private final PartyRepositoryImpl partyRepository;
     private final JwtService jwtService;
     private final RedisUtil redisUtil;
 
     public User signUp(UserSignUpDto userSignUpDto) {
-        User user = userRepository.findById(userSignUpDto.userId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        User user = entityFacade.getUser(userSignUpDto.userId());
         user.setNickname(userSignUpDto.nickname());
         user.setGender(userSignUpDto.gender());
         user.setAge(LocalDate.now().getYear() - userSignUpDto.birthday().getYear());
@@ -44,23 +41,26 @@ public class UserService {
         return user;
     }
 
-    public void update(User user, UserUpdateDto userUpdateDto) {
+    public void update(Long userId, UserUpdateDto userUpdateDto) {
+        User user = entityFacade.getUser(userId);
         if (userUpdateDto.nickname() != null) user.setNickname(userUpdateDto.nickname());
         if (userUpdateDto.imgUrl() != null) user.setImgUrl(userUpdateDto.imgUrl());
     }
 
-    public void logout(String accessToken, User user) {
-        log.info("=== logout() start ===");
+    public void logout(String accessToken, Long userId) {
+        log.debug("=== logout() start ===");
 
+        User user = entityFacade.getUser(userId);
         jwtService.isTokenValid(accessToken);
         //expired 시간 check
         tokenRemove(accessToken, user.getSocialId());
     }
 
 
-    public void withdraw(String accessToken, User user) {
+    public void withdraw(String accessToken, Long userId) {
         log.info("=== withdraw() start ===");
 
+        User user = entityFacade.getUser(userId);
         tokenRemove(accessToken, user.getSocialId());
         userRepository.delete(user);
     }
@@ -76,11 +76,14 @@ public class UserService {
         redisUtil.setDateExpire(accessToken, "logout", expiration);
     }
 
-    public ResponseMyInfo getMyInfo(User user) {
+    public ResponseMyInfo getMyInfo(Long userId) {
+        User user = entityFacade.getUser(userId);
         return ResponseMyInfo.toDto(user);
     }
 
-    public ResponseMyParty getMyPartyList(User user, PartyStatusReq partyStatusReq, Pageable pageable) {
+    public ResponseMyParty getMyPartyList(Long userId, PartyStatusReq partyStatusReq, Pageable pageable) {
+        User user = entityFacade.getUser(userId);
+
         Page<Party> myParty = partyRepository.getMyParty(user, partyStatusReq, pageable);
         List<ResponsePartyDto> responsePartyDtos = myParty.stream()
                 .map(party -> {

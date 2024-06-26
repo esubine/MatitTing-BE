@@ -5,8 +5,6 @@ import com.kr.matitting.dto.*;
 import com.kr.matitting.entity.Party;
 import com.kr.matitting.entity.Review;
 import com.kr.matitting.entity.User;
-import com.kr.matitting.exception.party.PartyException;
-import com.kr.matitting.exception.party.PartyExceptionType;
 import com.kr.matitting.exception.reivew.ReviewException;
 import com.kr.matitting.exception.reivew.ReviewExceptionType;
 import com.kr.matitting.exception.user.UserException;
@@ -18,9 +16,7 @@ import com.kr.matitting.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,13 +35,15 @@ public class ReviewService {
     private final PartyRepository partyRepository;
     private final UserRepository userRepository;
     private final ReviewRepositoryCustom reviewRepositoryCustom;
+    private final EntityFacade entityFacade;
 
     /**
      * 리뷰 리스트 조회
      */
-    public ResponseReviewList getReviewList(User user, ReviewType reviewType, Pageable pageable) {
-        List<ReviewGetRes> list;
+    public ResponseReviewList getReviewList(Long userId, ReviewType reviewType, Pageable pageable) {
+        User user = entityFacade.getUser(userId);
 
+        List<ReviewGetRes> list;
         int start = pageable.getPageNumber() * pageable.getPageSize();
         int end = start + pageable.getPageSize() + 1;
 
@@ -60,7 +58,7 @@ public class ReviewService {
      * 방장 리뷰 조회
      */
     public ReviewListRes getHostReviewList(Long userId, Pageable pageable) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        User user = entityFacade.getUser(userId);
 
         Page<Review> hostReview = reviewRepositoryCustom.getHostReview(pageable, user);
 
@@ -77,16 +75,18 @@ public class ReviewService {
     /**
      * 리뷰 상세 조회
      */
-    public ReviewInfoRes getReview(User user, Long reviewId) {
-        Review review = getReview(reviewId);
+    public ReviewInfoRes getReview(Long userId, Long reviewId) {
+        User user = entityFacade.getUser(userId);
+        Review review = entityFacade.getReview(reviewId);
         return ReviewInfoRes.toDto(review, user);
     }
 
     /**
      * 리뷰 생성
      */
-    public ReviewCreateRes createReview(ReviewCreateReq reviewCreateReq, User user) {
-        Party party = partyRepository.findById(reviewCreateReq.getPartyId()).orElseThrow(() -> new PartyException(PartyExceptionType.NOT_FOUND_PARTY));
+    public ReviewCreateRes createReview(ReviewCreateReq reviewCreateReq, Long userId) {
+        User user = entityFacade.getUser(userId);
+        Party party = entityFacade.getParty(reviewCreateReq.getPartyId());
 
         Optional<Review> byReview = reviewRepository.findByParty_IdAndReceiver_IdAndReviewer_Id(party.getId(), party.getUser().getId(), user.getId());
         if (byReview.isPresent())
@@ -96,7 +96,7 @@ public class ReviewService {
         if (party.getPartyTime().isAfter(LocalDateTime.now()))
             throw new ReviewException(ReviewExceptionType.NOT_START_PARTY);
 
-        User receiver = userRepository.findById(party.getUser().getId()).orElseThrow(() -> new UserException(UserExceptionType.NOT_FOUND_USER));
+        User receiver = entityFacade.getUser(party.getUser().getId());
         Review review = Review.builder()
                 .content(reviewCreateReq.getContent())
                 .rating(reviewCreateReq.getRating())
@@ -126,9 +126,10 @@ public class ReviewService {
     /**
      * 리뷰 업데이트
      */
-    public void updateReview(ReviewUpdateReq reviewUpdateReq, User user) {
-        Review review = getReview(reviewUpdateReq.getReviewId());
-        checkRole(user, review);
+    public void updateReview(ReviewUpdateReq reviewUpdateReq, Long userId) {
+        User user = entityFacade.getUser(userId);
+        Review review = entityFacade.getReview(reviewUpdateReq.getReviewId());
+        checkRole(user.getId(), review);
 
         if (reviewUpdateReq.getContent() != null)
             review.setContent(reviewUpdateReq.getContent());
@@ -141,9 +142,10 @@ public class ReviewService {
     /**
      * 리뷰 삭제
      */
-    public void deleteReview(ReviewDeleteReq reviewDeleteReq, User user) {
-        Review review = getReview(reviewDeleteReq.getReviewId());
-        checkRole(user, review);
+    public void deleteReview(ReviewDeleteReq reviewDeleteReq, Long userId) {
+        User user = entityFacade.getUser(userId);
+        Review review = entityFacade.getReview(reviewDeleteReq.getReviewId());
+        checkRole(user.getId(), review);
 
         reviewRepository.deleteById(review.getId());
     }
@@ -151,15 +153,8 @@ public class ReviewService {
     /**
      * 리뷰 주인 Check
      */
-    private void checkRole(User user, Review review) {
-        if (!user.getId().equals(review.getReviewer().getId()))
+    private void checkRole(Long userId, Review review) {
+        if (!userId.equals(review.getReviewer().getId()))
             throw new UserException(UserExceptionType.INVALID_ROLE_USER);
-    }
-
-    /**
-     * 리뷰 DB 조회
-     */
-    private Review getReview(Long reviewId) {
-        return reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewException(ReviewExceptionType.NOT_FOUND_REVIEW));
     }
 }
