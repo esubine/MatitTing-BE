@@ -25,12 +25,14 @@ public class PartyScheduler {
     private final PartyRepository partyRepository;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 0 */1 * * ?", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 0 */1 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "10 * * * * *", zone = "Asia/Seoul")
     public void checkEndParty() {
 
         log.info("=== party 상태 변경 스케줄러 시작 ===");
 
-        LocalDateTime overedPartyTime = LocalDateTime.now().minusHours(5);
+//        LocalDateTime overedPartyTime = LocalDateTime.now().minusHours(5);
+        LocalDateTime overedPartyTime = LocalDateTime.now().minusMinutes(1);
 
         List<Party> partyList = partyRepository.getPartyIsNotPartyFinish(PartyStatus.PARTY_FINISH);
 
