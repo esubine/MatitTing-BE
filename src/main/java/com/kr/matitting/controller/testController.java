@@ -131,8 +131,8 @@ public class testController {
                 .role(Role.USER)
                 .build();
         User saved1 = userRepository.save(user1);
-        String saved1AccessToken = jwtService.createAccessToken(saved1);
-        String saved1refreshToken = jwtService.createRefreshToken(saved1);
+        String saved1AccessToken = "Bearer " + jwtService.createAccessToken(saved1);
+        String saved1refreshToken = "Bearer " + jwtService.createRefreshToken(saved1);
 
         User user2 = User.builder()
                 .socialId("213312213")
@@ -145,8 +145,8 @@ public class testController {
                 .role(Role.USER)
                 .build();
         User saved2 = userRepository.save(user2);
-        String saved2AccessToken = jwtService.createAccessToken(saved2);
-        String saved2refreshToken = jwtService.createRefreshToken(saved2);
+        String saved2AccessToken = "Bearer " + jwtService.createAccessToken(saved2);
+        String saved2refreshToken = "Bearer " + jwtService.createRefreshToken(saved2);
 
         Party party1 = Party.builder()
                 .partyTitle("새싹개발자와 돈까스를 먹자!")
