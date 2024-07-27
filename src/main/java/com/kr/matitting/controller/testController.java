@@ -131,8 +131,8 @@ public class testController {
                 .role(Role.USER)
                 .build();
         User saved1 = userRepository.save(user1);
-        String saved1AccessToken = jwtService.createAccessToken(saved1);
-        String saved1refreshToken = jwtService.createRefreshToken(saved1);
+        String saved1AccessToken = "Bearer " + jwtService.createAccessToken(saved1);
+        String saved1refreshToken = "Bearer " + jwtService.createRefreshToken(saved1);
 
         User user2 = User.builder()
                 .socialId("213312213")
@@ -145,8 +145,8 @@ public class testController {
                 .role(Role.USER)
                 .build();
         User saved2 = userRepository.save(user2);
-        String saved2AccessToken = jwtService.createAccessToken(saved2);
-        String saved2refreshToken = jwtService.createRefreshToken(saved2);
+        String saved2AccessToken = "Bearer " + jwtService.createAccessToken(saved2);
+        String saved2refreshToken = "Bearer " + jwtService.createRefreshToken(saved2);
 
         Party party1 = Party.builder()
                 .partyTitle("새싹개발자와 돈까스를 먹자!")
@@ -211,107 +211,154 @@ public class testController {
     }
 
     @Operation(summary = "파티 현황 테스트 데이터 생성", description = "파티 현황 테스트를 위한 더미 데이터 생성 API\n\n" +
-            "1. 유저 3명을 만든다, 파티 3개를 만든다\n" +
-            "=> 유저1 : 파티1,파티2\t\t유저2 : 파티3\t\t유저3 : 파티 없음\n" +
+            "1. 유저 3명과 각 유저별 [마감, 파티 종료, 모집 중] 파티 3개를 생성\n" +
             "2. 파티 신청을 맺는다\n" +
-            "=> 유저1은 파티3에 참가요청, 유저2는 파티1에 참가요청, 유저3은 파티1, 파티2에 참가요청\n" +
+            "=> 유저1 -> 유저2의 첫 번째 파티, 유저2는 유저3의 첫 번째 파티, 유저3은 유저1의 첫 번째 파티에 참가요청\n" +
             "3. 파티를 전부 수락!!\n\n" +
             "예상결과\n" +
             "\n" +
             "=> 유저1\n" +
-            "\t만든 파티 -> 파티1, 파티2\n" +
-            "\t속한 파티 -> 파티3\n" +
+            "\t만든 파티 -> 파티1[마감], 파티2[파티 종료], 파티3[모집중]\n" +
+            "\t속한 파티 -> 파티4\n" +
             "=> 유저2\n" +
-            "\t만든 파티 -> 파티3\n" +
-            "\t속한 파티 -> 파티1\n" +
+            "\t만든 파티 -> 파티4[마감], 파티5[파티 종료], 파티6[모집중]\n" +
+            "\t속한 파티 -> 파티7\n" +
             "=> 유저3\n" +
-            "\t만든 파티 -> 파티 없음\n" +
-            "\t속한 파티 -> 파티1, 파티2")
-    @PostMapping("/matitting4")
-    public ResponseEntity<Map<String, Object>> testPartyStatus() {
-        Optional<User> bySocialId_01 = userRepository.findBySocialId("1");
-        Optional<User> bySocialId_02 = userRepository.findBySocialId("2");
-        Optional<User> bySocialId_03 = userRepository.findBySocialId("3");
+            "\t만든 파티 -> 파티7[마감], 파티8[파티 종료], 파티9[모집중]\n" +
+            "\t속한 파티 -> 파티1")
+            @PostMapping("/matitting4")
+            public ResponseEntity<Map<String, Object>>testPartyStatus(){
+            Optional<User>bySocialId_01 = userRepository.findBySocialId("1");
+            Optional<User>bySocialId_02 = userRepository.findBySocialId("2");
+            Optional<User>bySocialId_03 = userRepository.findBySocialId("3");
 
-        bySocialId_01.ifPresent(user -> userRepository.deleteById(user.getId()));
-        bySocialId_02.ifPresent(user -> userRepository.deleteById(user.getId()));
-        bySocialId_03.ifPresent(user -> userRepository.deleteById(user.getId()));
+            bySocialId_01.ifPresent(user -> userRepository.deleteById(user.getId()));
+            bySocialId_02.ifPresent(user -> userRepository.deleteById(user.getId()));
+            bySocialId_03.ifPresent(user -> userRepository.deleteById(user.getId()));
 
-        User user1 = User.builder()
-                .socialId("1")
-                .oauthProvider(OauthProvider.NAVER)
-                .email("1@naver.com")
-                .nickname("유저1")
-                .age(1)
-                .imgUrl("유저1.jpg")
-                .gender(Gender.MALE)
-                .role(Role.USER)
-                .build();
+            User user1=User.builder()
+            .socialId("1")
+            .oauthProvider(OauthProvider.NAVER)
+            .email("1@naver.com")
+            .nickname("유저1")
+            .age(1)
+            .imgUrl("유저1.jpg")
+            .gender(Gender.MALE)
+            .role(Role.USER)
+            .build();
 
-        User user2 = User.builder()
-                .socialId("2")
-                .oauthProvider(OauthProvider.KAKAO)
-                .email("2@kakao.com")
-                .nickname("유저2")
-                .age(2)
-                .imgUrl("유저2.jpg")
-                .gender(Gender.FEMALE)
-                .role(Role.USER)
-                .build();
+            User user2=User.builder()
+            .socialId("2")
+            .oauthProvider(OauthProvider.KAKAO)
+            .email("2@kakao.com")
+            .nickname("유저2")
+            .age(2)
+            .imgUrl("유저2.jpg")
+            .gender(Gender.FEMALE)
+            .role(Role.USER)
+            .build();
 
-        User user3 = User.builder()
-                .socialId("3")
-                .oauthProvider(OauthProvider.NAVER)
-                .email("3@naver.com")
-                .nickname("유저3")
-                .age(3)
-                .imgUrl("유저3.jpg")
-                .gender(Gender.MALE)
-                .role(Role.USER)
-                .build();
+            User user3=User.builder()
+            .socialId("3")
+            .oauthProvider(OauthProvider.NAVER)
+            .email("3@naver.com")
+            .nickname("유저3")
+            .age(3)
+            .imgUrl("유저3.jpg")
+            .gender(Gender.MALE)
+            .role(Role.USER)
+            .build();
 
-        User u1 = userRepository.save(user1);
-        User u2 = userRepository.save(user2);
-        User u3 = userRepository.save(user3);
+            User u1=userRepository.save(user1);
+            User u2=userRepository.save(user2);
+            User u3=userRepository.save(user3);
 
-        String u1AccessToken = jwtService.createAccessToken(u1);
-        String u2AccessToken = jwtService.createAccessToken(u2);
-        String u3AccessToken = jwtService.createAccessToken(u3);
+            String u1AccessToken="Bearer " + jwtService.createAccessToken(u1);
+            String u2AccessToken="Bearer " + jwtService.createAccessToken(u2);
+            String u3AccessToken="Bearer " + jwtService.createAccessToken(u3);
 
-        PartyCreateDto partyCreateDto1 = PartyCreateDto.builder()
-                .partyTitle("유저1의 파티")
-                .partyContent("방장은 유저1입니다")
-                .partyPlaceName("유저1집")
+            PartyCreateDto partyCreateDto1=PartyCreateDto.builder()
+            .partyTitle("유저1의 파티!")
+            .partyContent("방장은 유저1입니다!")
+            .partyPlaceName("유저1집!")
+            .partyTime(LocalDateTime.now().plusDays(3))
+            .totalParticipant(2)
+            .longitude(126.9854393172053)
+            .latitude(37.545685580653476)
+            .gender(Gender.ALL)
+            .category(PartyCategory.KOREAN)
+            .age(PartyAge.ALL)
+            .menu("제육볶음")
+            .thumbnail("유저1 증명사진.jpg")
+            .build();
+
+            PartyCreateDto partyCreateDto2=PartyCreateDto.builder()
+            .partyTitle("유저1의 파티!!")
+            .partyContent("방장은 유저1입니다!!")
+            .partyPlaceName("유저1집!!")
+            .partyTime(LocalDateTime.now())
+            .totalParticipant(2)
+            .longitude(126.9854393172053)
+            .latitude(37.545685580653476)
+            .gender(Gender.ALL)
+            .category(PartyCategory.KOREAN)
+            .age(PartyAge.ALL)
+            .menu("돈까스")
+            .thumbnail("유저1 증명사진.jpg")
+            .build();
+
+            PartyCreateDto partyCreateDto3=PartyCreateDto.builder()
+            .partyTitle("유저1의 파티!!!")
+            .partyContent("방장은 유저1입니다!!!")
+            .partyPlaceName("유저1집!!!")
+            .partyTime(LocalDateTime.now().plusDays(1))
+            .longitude(126.9854393172058)
+            .latitude(37.545685580653484)
+            .gender(Gender.ALL)
+            .category(PartyCategory.KOREAN)
+            .age(PartyAge.ALL)
+            .menu("국밥")
+            .thumbnail("유저1 증명사진.jpg")
+            .build();
+
+        ResponseCreatePartyDto u1p1 = partyService.createParty(u1.getId(), partyCreateDto1);
+        ResponseCreatePartyDto u1p2 = partyService.createParty(u1.getId(), partyCreateDto2);
+        ResponseCreatePartyDto u1p3 = partyService.createParty(u1.getId(), partyCreateDto3);
+
+        PartyCreateDto partyCreateDto4 = PartyCreateDto.builder()
+                .partyTitle("유저2의 파티!")
+                .partyContent("방장은 유저2입니다!")
+                .partyPlaceName("유저2집!")
                 .partyTime(LocalDateTime.now().plusDays(3))
-                .totalParticipant(6)
+                .totalParticipant(2)
                 .longitude(126.9854393172053)
                 .latitude(37.545685580653476)
                 .gender(Gender.ALL)
                 .category(PartyCategory.KOREAN)
                 .age(PartyAge.ALL)
                 .menu("제육볶음")
-                .thumbnail("유저1 증명사진.jpg")
+                .thumbnail("유저2 증명사진.jpg")
                 .build();
 
-        PartyCreateDto partyCreateDto2 = PartyCreateDto.builder()
-                .partyTitle("유저1의 파티")
-                .partyContent("방장은 유저1입니다")
-                .partyPlaceName("유저1집")
-                .partyTime(LocalDateTime.now().plusDays(5))
-                .totalParticipant(4)
+        PartyCreateDto partyCreateDto5 = PartyCreateDto.builder()
+                .partyTitle("유저2의 파티!!")
+                .partyContent("방장은 유저2입니다!!")
+                .partyPlaceName("유저2집!!")
+                .partyTime(LocalDateTime.now())
+                .totalParticipant(2)
                 .longitude(126.9854393172053)
                 .latitude(37.545685580653476)
                 .gender(Gender.ALL)
                 .category(PartyCategory.KOREAN)
                 .age(PartyAge.ALL)
                 .menu("돈까스")
-                .thumbnail("유저1 증명사진.jpg")
+                .thumbnail("유저2 증명사진.jpg")
                 .build();
 
-        PartyCreateDto partyCreateDto3 = PartyCreateDto.builder()
-                .partyTitle("유저2의 파티")
-                .partyContent("방장은 유저2입니다")
-                .partyPlaceName("유저2집")
+        PartyCreateDto partyCreateDto6 = PartyCreateDto.builder()
+                .partyTitle("유저2의 파티!!!")
+                .partyContent("방장은 유저2입니다!!!")
+                .partyPlaceName("유저2집!!!")
                 .partyTime(LocalDateTime.now().plusDays(1))
                 .longitude(126.9854393172058)
                 .latitude(37.545685580653484)
@@ -322,37 +369,83 @@ public class testController {
                 .thumbnail("유저2 증명사진.jpg")
                 .build();
 
-        ResponseCreatePartyDto p1 = partyService.createParty(u1.getId(), partyCreateDto1);
-        ResponseCreatePartyDto p2 = partyService.createParty(u1.getId(), partyCreateDto2);
-        ResponseCreatePartyDto p3 = partyService.createParty(u2.getId(), partyCreateDto3);
+        ResponseCreatePartyDto u2p1 = partyService.createParty(u2.getId(), partyCreateDto4);
+        ResponseCreatePartyDto u2p2 = partyService.createParty(u2.getId(), partyCreateDto5);
+        ResponseCreatePartyDto u2p3 = partyService.createParty(u2.getId(), partyCreateDto6);
+
+        PartyCreateDto partyCreateDto7 = PartyCreateDto.builder()
+                .partyTitle("유저3의 파티!")
+                .partyContent("방장은 유저3입니다1")
+                .partyPlaceName("유저3집!")
+                .partyTime(LocalDateTime.now().plusDays(3))
+                .totalParticipant(2)
+                .longitude(126.9854393172053)
+                .latitude(37.545685580653476)
+                .gender(Gender.ALL)
+                .category(PartyCategory.KOREAN)
+                .age(PartyAge.ALL)
+                .menu("제육볶음")
+                .thumbnail("유저3 증명사진.jpg")
+                .build();
+
+        PartyCreateDto partyCreateDto8 = PartyCreateDto.builder()
+                .partyTitle("유저3의 파티!!")
+                .partyContent("방장은 유저3입니다!!")
+                .partyPlaceName("유저3집!!")
+                .partyTime(LocalDateTime.now())
+                .totalParticipant(2)
+                .longitude(126.9854393172053)
+                .latitude(37.545685580653476)
+                .gender(Gender.ALL)
+                .category(PartyCategory.KOREAN)
+                .age(PartyAge.ALL)
+                .menu("돈까스")
+                .thumbnail("유저3 증명사진.jpg")
+                .build();
+
+        PartyCreateDto partyCreateDto9 = PartyCreateDto.builder()
+                .partyTitle("유저3의 파티!!!")
+                .partyContent("방장은 유저3입니다!!!")
+                .partyPlaceName("유저3집!!!")
+                .partyTime(LocalDateTime.now().plusDays(1))
+                .longitude(126.9854393172058)
+                .latitude(37.545685580653484)
+                .gender(Gender.ALL)
+                .category(PartyCategory.KOREAN)
+                .age(PartyAge.ALL)
+                .menu("국밥")
+                .thumbnail("유저3 증명사진.jpg")
+                .build();
+
+        ResponseCreatePartyDto u3p1 = partyService.createParty(u3.getId(), partyCreateDto7);
+        ResponseCreatePartyDto u3p2 = partyService.createParty(u3.getId(), partyCreateDto8);
+        ResponseCreatePartyDto u3p3 = partyService.createParty(u3.getId(), partyCreateDto9);
+
+
 
         /**
-         * 유저1이 파티3에 신청
+         * 유저1이 유저2의 첫 번째 파티에 신청
          */
-        PartyJoinDto partyJoinDto1 = new PartyJoinDto(p3.getPartyId(), PartyJoinStatus.APPLY, "안녕하세요 유저1입니다.");
-        PartyDecisionDto partyDecisionDto1 = new PartyDecisionDto(p3.getPartyId(), "유저1", PartyDecision.ACCEPT);
+        PartyJoinDto partyJoinDto1 = new PartyJoinDto(u2p1.getPartyId(), PartyJoinStatus.APPLY, "안녕하세요 유저1입니다.");
+        PartyDecisionDto partyDecisionDto1 = new PartyDecisionDto(u2p1.getPartyId(), "유저1", PartyDecision.ACCEPT);
         partyService.joinParty(partyJoinDto1, u1.getId());
         partyService.decideUser(partyDecisionDto1, u2.getId());
 
         /**
-         * 유저2이 파티1에 신청
+         * 유저2이 유저3의 첫 번째 파티에 신청
          */
-        PartyJoinDto partyJoinDto2 = new PartyJoinDto(p1.getPartyId(), PartyJoinStatus.APPLY, "안녕하세요 유저2입니다.");
-        PartyDecisionDto partyDecisionDto2 = new PartyDecisionDto(p1.getPartyId(), "유저2", PartyDecision.ACCEPT);
+        PartyJoinDto partyJoinDto2 = new PartyJoinDto(u3p1.getPartyId(), PartyJoinStatus.APPLY, "안녕하세요 유저2입니다.");
+        PartyDecisionDto partyDecisionDto2 = new PartyDecisionDto(u3p1.getPartyId(), "유저2", PartyDecision.ACCEPT);
         partyService.joinParty(partyJoinDto2, u2.getId());
-        partyService.decideUser(partyDecisionDto2, u1.getId());
+        partyService.decideUser(partyDecisionDto2, u3.getId());
 
         /**
-         * 유저3이 파티1, 파티2에 신청
+         * 유저3이 유저1의 첫 번째 파티에 신청
          */
-        PartyJoinDto partyJoinDto3_1 = new PartyJoinDto(p1.getPartyId(), PartyJoinStatus.APPLY, "안녕하세요 유저3입니다.");
-        PartyJoinDto partyJoinDto3_2 = new PartyJoinDto(p2.getPartyId(), PartyJoinStatus.APPLY, "안녕하세요 유저3입니다.");
-        PartyDecisionDto partyDecisionDto3_1 = new PartyDecisionDto(p1.getPartyId(), "유저3", PartyDecision.ACCEPT);
-        PartyDecisionDto partyDecisionDto3_2 = new PartyDecisionDto(p2.getPartyId(), "유저3", PartyDecision.ACCEPT);
-        partyService.joinParty(partyJoinDto3_1, u3.getId());
-        partyService.joinParty(partyJoinDto3_2, u3.getId());
-        partyService.decideUser(partyDecisionDto3_1, u1.getId());
-        partyService.decideUser(partyDecisionDto3_2, u1.getId());
+        PartyJoinDto partyJoinDto3 = new PartyJoinDto(u1p1.getPartyId(), PartyJoinStatus.APPLY, "안녕하세요 유저3입니다.");
+        PartyDecisionDto partyDecisionDto3 = new PartyDecisionDto(u1p1.getPartyId(), "유저3", PartyDecision.ACCEPT);
+        partyService.joinParty(partyJoinDto3, u3.getId());
+        partyService.decideUser(partyDecisionDto3, u1.getId());
 
         Map<String, Object> ResponseData = new HashMap<>();
         ResponseData.put("유저1의 ID", u1.getId());
