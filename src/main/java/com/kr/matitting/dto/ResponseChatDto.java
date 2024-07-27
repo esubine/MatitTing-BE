@@ -1,5 +1,6 @@
 package com.kr.matitting.dto;
 
+import com.kr.matitting.constant.MessageType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,4 +17,5 @@ public class ResponseChatDto {
     private String message;
     private String imgUrl;
     private LocalDateTime createAt;
+    private MessageType messageType;
 }

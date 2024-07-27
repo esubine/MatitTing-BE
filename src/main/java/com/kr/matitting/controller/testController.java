@@ -3,9 +3,7 @@ package com.kr.matitting.controller;
 import ch.qos.logback.core.model.Model;
 import com.kr.matitting.constant.*;
 import com.kr.matitting.dto.*;
-import com.kr.matitting.entity.Party;
-import com.kr.matitting.entity.PartyJoin;
-import com.kr.matitting.entity.User;
+import com.kr.matitting.entity.*;
 import com.kr.matitting.jwt.service.JwtService;
 import com.kr.matitting.repository.*;
 import com.kr.matitting.service.PartyService;
@@ -22,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.kr.matitting.constant.Role.HOST;
 
 @Controller
 @RequiredArgsConstructor
@@ -171,6 +171,11 @@ public class testController {
         partyRepository.save(party1);
         Long party1Id = party1.getId();
 
+        ChatRoom room1 = new ChatRoom(party1, user1, party1.getPartyTitle());
+        chatRoomRepository.save(room1);
+        ChatUser chatUser1 = new ChatUser(room1, user1, HOST);
+        chatUserRepository.save(chatUser1);
+
         Party party2 = Party.builder()
                 .partyTitle("잔디개발자와 피자를 먹자!")
                 .partyContent("페페로니 vs 하와이안!")
@@ -193,6 +198,11 @@ public class testController {
                 .build();
         partyRepository.save(party2);
         Long party2Id = party2.getId();
+
+        ChatRoom room2 = new ChatRoom(party2, user2, party2.getPartyTitle());
+        chatRoomRepository.save(room2);
+        ChatUser chatUser2 = new ChatUser(room2, user2, HOST);
+        chatUserRepository.save(chatUser2);
 
         PartyJoin partyJoin1 = PartyJoin.builder()
                 .party(party1)

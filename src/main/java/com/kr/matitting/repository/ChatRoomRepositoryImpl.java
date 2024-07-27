@@ -36,9 +36,9 @@ public class ChatRoomRepositoryImpl {
                 .from(chatRoom)
                 .join(chatRoom.chatUserList, chatUser)
                 .leftJoin(chat).on(chat.chatRoom.eq(chatRoom))
-                .where(chatUser.user.id.eq(userId))
+                .where(chatUser.user.id.eq(userId).and(chatUser.isDeleted.eq(false)))
                 .groupBy(chatRoom.id)
-                .orderBy(chat.createDate.max().desc())
+                .orderBy(chatRoom.modifiedDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -70,9 +70,11 @@ public class ChatRoomRepositoryImpl {
                 .from(chatRoom)
                 .join(chatRoom.chatUserList, chatUser)
                 .leftJoin(chat).on(chat.chatRoom.eq(chatRoom))
-                .where(chatUser.user.id.eq(userId).and(chatRoom.title.containsIgnoreCase(searchTitle)))
+                .where(chatUser.user.id.eq(userId).
+                        and(chatRoom.title.containsIgnoreCase(searchTitle)).
+                        and(chatUser.isDeleted.eq(false)))
                 .groupBy(chatRoom.id)
-                .orderBy(chat.createDate.max().desc())
+                .orderBy(chatRoom.modifiedDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
@@ -113,6 +115,17 @@ public class ChatRoomRepositoryImpl {
                 .join(chatUser.chatRoom, chatRoom)
                 .where(chatUser.user.id.eq(userId))
                 .fetchOne();
+    }
+
+    public List<ChatUser> getChatUsers(Long roomId) {
+        JPAQuery<ChatUser> query = queryFactory
+                .select(chatUser)
+                .from(chatUser)
+                .where(chatUser.chatRoom.id.eq(roomId).and(chatUser.isDeleted.eq(false)))
+                .orderBy(chatUser.id.asc());
+
+        List<ChatUser> chatUsers = query.fetch();
+        return chatUsers;
     }
 }
 
