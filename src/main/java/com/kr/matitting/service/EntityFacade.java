@@ -78,6 +78,14 @@ public class EntityFacade {
             throw new ChatException(ChatExceptionType.NOT_FOUND_CHAT_USER_INFO);
         return chatUserByUserIdAndChatRoomId.get();
     }
+
+    public ChatUser getChatUserByChatUserId(Long userId) {
+        Optional<ChatUser> chatUserByUserIdAndChatRoomId = chatUserRepository.findById(userId);
+        if (chatUserByUserIdAndChatRoomId.isEmpty())
+            throw new ChatException(ChatExceptionType.NOT_FOUND_CHAT_USER_INFO);
+        return chatUserByUserIdAndChatRoomId.get();
+    }
+
     public List<ChatUser> getChatUsersByUserId(Long userId) {
         List<ChatUser> ChatUsersByUserId = chatUserRepository.findByUserId(userId);
         if (ChatUsersByUserId.isEmpty()) throw new ChatException(ChatExceptionType.IS_NOT_HAVE_CHAT_ROOM);

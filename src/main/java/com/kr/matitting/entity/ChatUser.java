@@ -5,11 +5,13 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "chat_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 public class ChatUser extends BaseTimeEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +31,9 @@ public class ChatUser extends BaseTimeEntity{
 
     @Enumerated(EnumType.STRING)
     private Role userRole;
+
+    @Column(name ="is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     public ChatUser(ChatRoom chatRoom, User user, Role userRole) {
         this.chatRoom = chatRoom;

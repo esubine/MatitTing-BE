@@ -47,6 +47,7 @@ public class ChatRepositoryCustomImpl {
                         .message(chat.getMessage())
                         .imgUrl(chat.getSendUser().getUser().getImgUrl())
                         .createAt(chat.getCreateDate())
+                        .messageType(chat.getMessageType())
                         .build())
                 .toList();
 
