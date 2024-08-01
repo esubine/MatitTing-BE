@@ -126,7 +126,7 @@ public class testController {
                 .email("parksn5029@nate.com")
                 .nickname("나무개발자")
                 .age(26)
-                .imgUrl("증명사진100.jpg")
+                .imgUrl("https://matitting.s3.ap-northeast-2.amazonaws.com/30a751f1-441c-4ccc-87d4-822079b0c410")
                 .gender(Gender.MALE)
                 .role(Role.USER)
                 .build();
@@ -140,7 +140,7 @@ public class testController {
                 .email("parksn5029@naver.com")
                 .nickname("잔디개발자")
                 .age(22)
-                .imgUrl("망한사진.jpg")
+                .imgUrl("https://matitting.s3.ap-northeast-2.amazonaws.com/c58c561b-866e-4fa6-8a0d-b5984a5d2eab")
                 .gender(Gender.FEMALE)
                 .role(Role.USER)
                 .build();
@@ -252,7 +252,7 @@ public class testController {
             .email("1@naver.com")
             .nickname("유저1")
             .age(1)
-            .imgUrl("유저1.jpg")
+            .imgUrl("https://matitting.s3.ap-northeast-2.amazonaws.com/23f120d2-0153-4fd8-8f91-e87177a1385c")
             .gender(Gender.MALE)
             .role(Role.USER)
             .build();
@@ -263,7 +263,7 @@ public class testController {
             .email("2@kakao.com")
             .nickname("유저2")
             .age(2)
-            .imgUrl("유저2.jpg")
+            .imgUrl("https://matitting.s3.ap-northeast-2.amazonaws.com/a21f5db9-9741-4dd5-a351-ee8012b94424")
             .gender(Gender.FEMALE)
             .role(Role.USER)
             .build();
@@ -274,7 +274,7 @@ public class testController {
             .email("3@naver.com")
             .nickname("유저3")
             .age(3)
-            .imgUrl("유저3.jpg")
+            .imgUrl("https://matitting.s3.ap-northeast-2.amazonaws.com/c4263726-7c7e-4170-abf1-b45a0b6313e0")
             .gender(Gender.MALE)
             .role(Role.USER)
             .build();
@@ -299,7 +299,7 @@ public class testController {
             .category(PartyCategory.KOREAN)
             .age(PartyAge.ALL)
             .menu("제육볶음")
-            .thumbnail("유저1 증명사진.jpg")
+            .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
             .build();
 
             PartyCreateDto partyCreateDto2=PartyCreateDto.builder()
@@ -314,7 +314,7 @@ public class testController {
             .category(PartyCategory.KOREAN)
             .age(PartyAge.ALL)
             .menu("돈까스")
-            .thumbnail("유저1 증명사진.jpg")
+            .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
             .build();
 
             PartyCreateDto partyCreateDto3=PartyCreateDto.builder()
@@ -328,7 +328,7 @@ public class testController {
             .category(PartyCategory.KOREAN)
             .age(PartyAge.ALL)
             .menu("국밥")
-            .thumbnail("유저1 증명사진.jpg")
+            .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/korean.jpeg")
             .build();
 
         ResponseCreatePartyDto u1p1 = partyService.createParty(u1.getId(), partyCreateDto1);
@@ -344,10 +344,10 @@ public class testController {
                 .longitude(126.9854393172053)
                 .latitude(37.545685580653476)
                 .gender(Gender.ALL)
-                .category(PartyCategory.KOREAN)
+                .category(PartyCategory.JAPANESE)
                 .age(PartyAge.ALL)
-                .menu("제육볶음")
-                .thumbnail("유저2 증명사진.jpg")
+                .menu("라멘")
+                .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
 
         PartyCreateDto partyCreateDto5 = PartyCreateDto.builder()
@@ -361,8 +361,8 @@ public class testController {
                 .gender(Gender.ALL)
                 .category(PartyCategory.KOREAN)
                 .age(PartyAge.ALL)
-                .menu("돈까스")
-                .thumbnail("유저2 증명사진.jpg")
+                .menu("라멘")
+                .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
 
         PartyCreateDto partyCreateDto6 = PartyCreateDto.builder()
@@ -375,8 +375,8 @@ public class testController {
                 .gender(Gender.ALL)
                 .category(PartyCategory.KOREAN)
                 .age(PartyAge.ALL)
-                .menu("국밥")
-                .thumbnail("유저2 증명사진.jpg")
+                .menu("라멘")
+                .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/japanese.jpeg")
                 .build();
 
         ResponseCreatePartyDto u2p1 = partyService.createParty(u2.getId(), partyCreateDto4);
@@ -392,10 +392,10 @@ public class testController {
                 .longitude(126.9854393172053)
                 .latitude(37.545685580653476)
                 .gender(Gender.ALL)
-                .category(PartyCategory.KOREAN)
+                .category(PartyCategory.WESTERN)
                 .age(PartyAge.ALL)
-                .menu("제육볶음")
-                .thumbnail("유저3 증명사진.jpg")
+                .menu("피자")
+                .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/western.jpeg")
                 .build();
 
         PartyCreateDto partyCreateDto8 = PartyCreateDto.builder()
@@ -407,10 +407,10 @@ public class testController {
                 .longitude(126.9854393172053)
                 .latitude(37.545685580653476)
                 .gender(Gender.ALL)
-                .category(PartyCategory.KOREAN)
+                .category(PartyCategory.WESTERN)
                 .age(PartyAge.ALL)
-                .menu("돈까스")
-                .thumbnail("유저3 증명사진.jpg")
+                .menu("피자")
+                .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/western.jpeg")
                 .build();
 
         PartyCreateDto partyCreateDto9 = PartyCreateDto.builder()
@@ -421,10 +421,10 @@ public class testController {
                 .longitude(126.9854393172058)
                 .latitude(37.545685580653484)
                 .gender(Gender.ALL)
-                .category(PartyCategory.KOREAN)
+                .category(PartyCategory.WESTERN)
                 .age(PartyAge.ALL)
-                .menu("국밥")
-                .thumbnail("유저3 증명사진.jpg")
+                .menu("피자")
+                .thumbnail("https://matitting.s3.ap-northeast-2.amazonaws.com/western.jpeg")
                 .build();
 
         ResponseCreatePartyDto u3p1 = partyService.createParty(u3.getId(), partyCreateDto7);
